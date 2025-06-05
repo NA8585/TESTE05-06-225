@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Combustível Overlay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Estilos globais para o corpo */
+    body {
+      margin:0;
+      font-family:'Poppins',sans-serif;
+      background:transparent; /* Fundo transparente para a overlay */
+      overflow:hidden; /* Esconde overflow */
+      -webkit-user-select: none; /* Desabilita seleção de texto */
+    }
+
+    /* Estilo do wrapper principal da overlay redimensionável */
+    .resizable-overlay-wrapper {
+      position:absolute;
+      top:0;
+      left:0;
+      width:400px; /* Largura inicial */
+      height:auto; /* Altura automática para se ajustar ao conteúdo */
+      background:rgb(17,24,39); /* Cor de fundo escura */
+      border:2px solid #3b82f6; /* Borda azul */
+      border-radius:1rem; /* Cantos arredondados */
+      box-shadow:0 4px 10px rgba(0,0,0,0.5); /* Sombra */
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      -webkit-app-region:drag; /* Permite arrastar a janela no Electron */
+    }
+
+    /* Estilo dos manipuladores de redimensionamento */
+    .resize-handle {
+      position:absolute;
+      width:15px;
+      height:15px;
+      z-index:1001; /* Acima de outros elementos */
+      background:transparent; /* Transparente para não bloquear o conteúdo */
+      -webkit-app-region:no-drag; /* Desabilita arrasto da janela nos manipuladores */
+    }
+
+    /* Posição e cursor para cada manipulador */
+    .resize-handle.top-left    { top:0; left:0; cursor:nwse-resize; }
+    .resize-handle.top-center  { top:0; left:50%; transform:translateX(-50%); cursor:ns-resize; }
+    .resize-handle.top-right   { top:0; right:0; cursor:nesw-resize; }
+    .resize-handle.right-center{ top:50%; right:0; transform:translateY(-50%); cursor:ew-resize; }
+    .resize-handle.bottom-right{ bottom:0; right:0; cursor:se-resize; }
+    .resize-handle.bottom-center{ bottom:0; left:50%; transform:translateX(-50%); cursor:ns-resize; }
+    .resize-handle.bottom-left { bottom:0; left:0; cursor:sw-resize; }
+    .resize-handle.left-center { top:50%; left:0; transform:translateY(-50%); cursor:ew-resize; }
+
+    /* Estilo do cabeçalho da overlay (para arrastar e controles) */
+    .header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:4px 8px;
+      background:inherit;
+      cursor:move;
+      -webkit-app-region:drag;
+      border-top-left-radius:1rem;
+      border-top-right-radius:1rem;
+    }
+
+    /* Estilo do título no cabeçalho */
+    .header .title {
+      font-size:0.75rem;
+      font-weight:600;
+      white-space:nowrap;
+      color: #60a5fa; /* Cor do título */
+    }
+
+    /* Estilo dos controles (botões) no cabeçalho */
+    .controls {
+      display:flex;
+      gap:4px;
+      -webkit-app-region:no-drag; /* Desabilita arrasto da janela nos controles */
+    }
+
+    /* Estilo dos botões de controle */
+    .controls button {
+      background:#334155; /* Cor de fundo padrão */
+      border:none;
+      padding:2px 4px;
+      border-radius:4px;
+      font-size:0.6rem;
+      cursor:pointer;
+      transition:background 0.2s; /* Transição suave no hover */
+    }
+    .controls button:hover {
+      background:#475569; /* Cor de fundo no hover */
+    }
+    #closeBtn { background:#dc2626;} /* Cor do botão de fechar */
+    #closeBtn:hover { background:#ef4444;} /* Cor do botão de fechar no hover */
+
+    /* Estilo do popover de ajustes */
+    #settings-popover {
+      position:absolute;
+      top:40px;
+      right:10px;
+      display:none;
+      background-color:rgba(30,41,59,0.95);
+      border:1px solid #3b82f6;
+      border-radius:0.5rem;
+      padding:0.6rem;
+      z-index:1000;
+    }
+    #settings-popover label {
+      color:#cbd5e1;
+      font-size:0.7rem;
+    }
+
+    /* Estilos do card original (agora é o #root, ajustados para o novo wrapper) */
+    #root.calculator { /* Usamos #root.calculator para especificidade */
+      background: inherit; /* Herda do wrapper */
+      border: none; /* Borda movida para o wrapper principal */
+      border-radius: 0; /* Cantos arredondados movidos para o wrapper principal */
+      padding:1rem;
+      box-sizing:border-box;
+      color: #e5e7eb;
+      width: 100%; /* Preenche a largura do wrapper */
+      height: 100%; /* Preenche a altura disponível do wrapper */
+      display: flex; /* Para que o conteúdo interno se ajuste */
+      flex-direction: column; /* Para que o conteúdo interno se ajuste */
+    }
+    .row { display:flex; gap:0.5rem; margin-bottom:0.75rem; }
+    .row label { width:120px; font-weight:600; }
+    .row input {
+      flex:1;
+      background:#111827;
+      border:1px solid #374151;
+      border-radius:0.375rem;
+      padding:0.25rem;
+      color:#fff;
+    }
+    .btn {
+      background:#2563eb;
+      color:#fff;
+      font-weight:600;
+      padding:0.5rem 1rem;
+      border:none;
+      border-radius:0.375rem;
+      cursor:pointer;
+      transition:background 0.2s;
+    }
+    .btn:hover { background:#1e40af; }
+  </style>
+</head>
+<body>
+  <div class="resizable-overlay-wrapper" id="wrapper">
+    <div class="resize-handle top-left"    id="h-tl"></div>
+    <div class="resize-handle top-center"  id="h-tc"></div>
+    <div class="resize-handle top-right"   id="h-tr"></div>
+    <div class="resize-handle right-center"id="h-rc"></div>
+    <div class="resize-handle bottom-right"id="h-br"></div>
+    <div class="resize-handle bottom-center"id="h-bc"></div>
+    <div class="resize-handle bottom-left" id="h-bl"></div>
+    <div class="resize-handle left-center" id="h-lc"></div>
+    <div class="header" id="overlay-header">
+      <div class="title">Calculadora de Combustível</div>
+      <div class="controls">
+        <button id="pin"   title="Sempre visível">📌</button>
+        <button id="lock"  title="Travar/Destravar posição">🔒</button>
+        <button id="click" title="Ignorar cliques">🖱️</button>
+        <button id="gear"  title="Ajustes">⚙️</button>
+        <button id="closeBtn" title="Fechar overlay">✖</button>
+      </div>
+    </div>
+
+    <div id="root" class="calculator"></div>
+  </div>
+
+  <div id="settings-popover" style="position:absolute; top:40px; right:10px; display:none; background-color:rgba(30,41,59,0.95); border:1px solid #3b82f6; border-radius:0.5rem; padding:0.6rem; z-index:1000;">
+    <div style="margin-bottom:0.4rem;">
+      <label for="rangeOpacity">Opacidade</label>
+      <input type="range" id="rangeOpacity" min="0.1" max="1" step="0.01" value="0.98" style="width:100%;">
+    </div>
+    <div>
+      <label for="rangeContrast">Contraste</label>
+      <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1" style="width:100%;">
+    </div>
+  </div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function FuelCalculator() {
+      // estados
+      const [currentLap, setCurrentLap]     = useState(0);
+      const [remainingLaps, setRemainingLaps] = useState(0);
+      const [fuelLeft, setFuelLeft]         = useState(0);
+      const [lapConsumption, setLapConsumption] = useState(3.2);
+      const [tankCapacity, setTankCapacity] = useState(70);
+      const [safetyMargin, setSafetyMargin] = useState(2.0);
+      const [voltasSimuladas, setVoltasSimuladas] = useState('');
+      const [resultado, setResultado]       = useState('');
+
+      // WebSocket para atualizar currentLap e fuelLeft
+      useEffect(() => {
+        const socket = new WebSocket("ws://localhost:5221/ws");
+        socket.addEventListener("open", () => console.log("WS FuelCalculator conectado"));
+        socket.addEventListener("message", ({data}) => {
+          const d = JSON.parse(data);
+          // atualiza volta atual
+          setCurrentLap(d.Lap ?? 0);
+          // atualiza combustível restante (assume FuelLevelPct é fração 0–1)
+          const pct = d.FuelLevelPct ?? 0;
+          setFuelLeft(pct * tankCapacity);
+        });
+        return () => socket.close();
+      }, [tankCapacity]);
+
+      // Função de cálculo rápido
+      const calcular = () => {
+        const rl = Number(voltasSimuladas) || 0;
+        const req = rl * lapConsumption + safetyMargin;
+        const falt = Math.max(0, req - fuelLeft);
+        setResultado(`Para ${rl} voltas → Precisa de ${req.toFixed(1)}L (falta ${falt.toFixed(1)}L)`);
+      };
+
+      return (
+        <div>
+          <div className="row">
+            <label>Volta Atual:</label>
+            <input type="number" value={currentLap} readOnly />
+          </div>
+          <div className="row">
+            <label>Voltas Restantes:</label>
+            <input type="number"
+                   value={remainingLaps}
+                   onChange={e => setRemainingLaps(Number(e.target.value))} />
+          </div>
+          <div className="row">
+            <label>Combustível (L):</label>
+            <input type="number" value={fuelLeft.toFixed(1)} readOnly />
+          </div>
+          <div className="row">
+            <label>Consumo / Volta:</label>
+            <input type="number"
+                   value={lapConsumption}
+                   onChange={e => setLapConsumption(Number(e.target.value))} />
+          </div>
+          <div className="row">
+            <label>Capacidade (L):</label>
+            <input type="number"
+                   value={tankCapacity}
+                   onChange={e => setTankCapacity(Number(e.target.value))} />
+          </div>
+          <div className="row">
+            <label>Margem Segurança:</label>
+            <input type="number" step="0.1"
+                   value={safetyMargin}
+                   onChange={e => setSafetyMargin(Number(e.target.value))} />
+          </div>
+
+          <hr className="my-4 border-gray-700"/>
+
+          <div className="row">
+            <label>Voltas (rápido):</label>
+            <input type="number"
+                   value={voltasSimuladas}
+                   onChange={e => setVoltasSimuladas(e.target.value)} />
+          </div>
+          <div className="flex justify-center">
+            <button className="btn" onClick={calcular}>Calcular</button>
+          </div>
+          <p className="mt-2 text-center text-sm font-semibold">{resultado}</p>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root'))
+             .render(<FuelCalculator />);
+  </script>
+
+  <script>
+    // Referências para elementos DOM
+    const resizableOverlayWrapper = document.getElementById('wrapper');
+    const overlayHeader = document.getElementById('overlay-header');
+
+    // Variáveis de estado para redimensionamento
+    let isResizing = false;
+    let resizeHandleType = '';
+    let initialX, initialY;
+    let initialWidth, initialHeight;
+    let initialLeft, initialTop;
+
+    // Variáveis de estado para arrasto
+    let isDragging = false;
+    let dragStartX, dragStartY;
+    let windowStartX, windowStartY;
+
+    // Função para obter o cursor correto para cada direção de redimensionamento
+    function getCursorForHandle(handleType) {
+      switch (handleType) {
+        case 'topLeft': return 'nwse-resize';
+        case 'topCenter': return 'ns-resize';
+        case 'topRight': return 'nesw-resize';
+        case 'rightCenter': return 'ew-resize';
+        case 'bottomRight': return 'se-resize';
+        case 'bottomCenter': return 'ns-resize';
+        case 'bottomLeft': return 'sw-resize';
+        case 'leftCenter': return 'ew-resize';
+        default: return 'default';
+      }
+    }
+
+    // Adiciona event listeners aos manipuladores de redimensionamento
+    document.querySelectorAll('.resize-handle').forEach(handle => {
+      handle.addEventListener('mousedown', (e) => {
+        // Previne o comportamento padrão do navegador e a propagação do evento
+        e.preventDefault();
+        e.stopPropagation();
+
+        isResizing = true;
+        // Extrai o tipo de manipulador do ID (ex: 'h-tl' -> 'tl')
+        resizeHandleType = handle.id.replace('h-', '');
+        initialX = e.clientX;
+        initialY = e.clientY;
+        const rect = resizableOverlayWrapper.getBoundingClientRect();
+        initialWidth = rect.width;
+        initialHeight = rect.height;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        // Define o cursor do corpo para indicar redimensionamento
+        document.body.style.cursor = getCursorForHandle(resizeHandleType);
+      });
+    });
+
+    // Lógica de redimensionamento
+    function resize(e, handleType) {
+      if (!isResizing) return;
+
+      // Calcula a proporção inicial para manter ao pressionar Shift
+      const aspectRatio = initialWidth / initialHeight;
+      const shiftPressed = e.shiftKey;
+
+      let newWidth = initialWidth;
+      let newHeight = initialHeight;
+      let newLeft = initialLeft;
+      let newTop = initialTop;
+
+      const deltaX = e.clientX - initialX;
+      const deltaY = e.clientY - initialY;
+
+      // Ajusta as novas dimensões e posição com base no manipulador
+      switch (handleType) {
+        case 'bottomRight':
+          newWidth = initialWidth + deltaX;
+          newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY;
+          break;
+        case 'bottomLeft':
+          newWidth = initialWidth - deltaX;
+          newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY;
+          newLeft = initialLeft + deltaX;
+          break;
+        case 'topRight':
+          newWidth = initialWidth + deltaX;
+          newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY;
+          newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY);
+          break;
+        case 'topLeft':
+          newWidth = initialWidth - deltaX;
+          newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY;
+          newLeft = initialLeft + deltaX;
+          newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY);
+          break;
+        case 'rightCenter':
+          newWidth = initialWidth + deltaX;
+          break;
+        case 'leftCenter':
+          newWidth = initialWidth - deltaX;
+          newLeft = initialLeft + deltaX;
+          break;
+        case 'bottomCenter':
+          newHeight = initialHeight + deltaY;
+          break;
+        case 'topCenter':
+          newHeight = initialHeight - deltaY;
+          newTop = initialTop + deltaY;
+          break;
+      }
+
+      // Restrições de tamanho mínimo (ajustado para esta overlay)
+      const minWidth = 300;
+      const minHeight = 400; /* Aumentado para acomodar o conteúdo da calculadora */
+      newWidth = Math.max(newWidth, minWidth);
+      newHeight = Math.max(newHeight, minHeight);
+
+      // Limites da tela para evitar que a overlay saia da área visível
+      const screenWidth = window.screen.width;
+      const screenHeight = window.screen.height;
+
+      if (newLeft + newWidth > screenWidth) newWidth = screenWidth - newLeft;
+      if (newTop + newHeight > screenHeight) newHeight = screenHeight - newTop;
+      newLeft = Math.max(newLeft, 0);
+      newTop = Math.max(newTop, 0);
+
+      // Se a API Electron estiver disponível, usa setBounds para atualizar a janela
+      if (window.electronAPI?.setBounds) {
+        window.electronAPI.setBounds({
+          x: Math.round(newLeft),
+          y: Math.round(newTop),
+          width: Math.round(newWidth),
+          height: Math.round(newHeight)
+        });
+      } else {
+        // Caso contrário, atualiza os estilos CSS diretamente (para ambiente de navegador)
+        resizableOverlayWrapper.style.width = newWidth + 'px';
+        resizableOverlayWrapper.style.height = newHeight + 'px';
+        resizableOverlayWrapper.style.left = newLeft + 'px';
+        resizableOverlayWrapper.style.top = newTop + 'px';
+      }
+    }
+
+    // Lógica para iniciar o arrasto da overlay
+    overlayHeader.addEventListener('mousedown', (e) => {
+      // Verifica se o clique não foi em um controle (botão)
+      if (e.target.closest('.controls')) return;
+
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      const rect = resizableOverlayWrapper.getBoundingClientRect();
+      windowStartX = rect.left;
+      windowStartY = rect.top;
+      document.body.style.cursor = 'grabbing'; // Altera o cursor
+    });
+
+    // Lógica de movimento da overlay
+    function dragMove(e) {
+      if (!isDragging) return;
+
+      const deltaX = e.clientX - dragStartX;
+      const deltaY = e.clientY - dragStartY;
+
+      // Calcula os limites máximos de X e Y para a overlay
+      const maxX = window.screen.width - resizableOverlayWrapper.offsetWidth;
+      const maxY = window.screen.height - resizableOverlayWrapper.offsetHeight;
+
+      // Calcula as novas posições, garantindo que fiquem dentro dos limites
+      const newX = Math.min(Math.max(windowStartX + deltaX, 0), maxX);
+      const newY = Math.min(Math.max(windowStartY + deltaY, 0), maxY);
+
+      // Se a API Electron estiver disponível, usa setBounds para atualizar a janela
+      if (window.electronAPI?.setBounds) {
+        window.electronAPI.setBounds({
+          x: Math.round(newX),
+          y: Math.round(newY),
+          width: Math.round(resizableOverlayWrapper.offsetWidth),
+          height: Math.round(resizableOverlayWrapper.offsetHeight)
+        });
+      } else {
+        // Caso contrário, atualiza os estilos CSS diretamente
+        resizableOverlayWrapper.style.left = newX + 'px';
+        resizableOverlayWrapper.style.top = newY + 'px';
+      }
+    }
+
+    // Event listeners globais para mousemove e mouseup
+    document.addEventListener('mousemove', (e) => {
+      if (isResizing) {
+        resize(e, resizeHandleType);
+      } else if (isDragging) {
+        dragMove(e);
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      isResizing = false;
+      isDragging = false;
+      document.body.style.cursor = ''; // Restaura o cursor padrão
+    });
+
+    // FECHAR A OVERLAY
+    document.getElementById('closeBtn').onclick = () => {
+      // Se a API Electron estiver disponível, usa a função de fechar da API
+      if (window.electronAPI && window.electronAPI.closeOverlay) {
+        window.electronAPI.closeOverlay();
+      } else {
+        // Caso contrário, tenta fechar a janela do navegador
+        window.close();
+      }
+    };
+
+    // AJUSTES: OPACIDADE E CONTRASTE
+    const settingsPopover = document.getElementById('settings-popover');
+    const rangeOpacity = document.getElementById('rangeOpacity');
+    const rangeContrast = document.getElementById('rangeContrast');
+
+    // Abre/fecha o popover de ajustes ao clicar no botão de engrenagem
+    document.getElementById('gear').onclick = (e) => {
+      settingsPopover.style.display = settingsPopover.style.display === 'none' ? 'block' : 'none';
+      // Posiciona o popover à direita do botão de engrenagem
+      settingsPopover.style.right = (window.innerWidth - e.target.getBoundingClientRect().right + 10) + 'px';
+    };
+
+    // Atualiza a opacidade da overlay
+    rangeOpacity.oninput = (e) => {
+      const opacity = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.opacity = opacity;
+      localStorage.setItem('calculatorOverlayOpacity', opacity); // Salva no localStorage
+      // Se a API Electron estiver disponível, usa a função de opacidade da API
+      if (window.electronAPI && window.electronAPI.setOpacity) {
+        window.electronAPI.setOpacity(opacity);
+      }
+    };
+
+    // Atualiza o contraste da overlay
+    rangeContrast.oninput = (e) => {
+      const contrast = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.filter = `contrast(${contrast})`;
+      localStorage.setItem('calculatorOverlayContrast', contrast); // Salva no localStorage
+    };
+
+    // Carrega as configurações salvas ao iniciar
+    function loadSettings() {
+      const savedOpacity = localStorage.getItem('calculatorOverlayOpacity');
+      const savedContrast = localStorage.getItem('calculatorOverlayContrast');
+      const savedPinned = localStorage.getItem('calculatorOverlayPinned');
+      const savedLocked = localStorage.getItem('calculatorOverlayLocked');
+      const savedIgnoreClicks = localStorage.getItem('calculatorOverlayIgnoreClicks');
+
+      if (savedOpacity) {
+        rangeOpacity.value = savedOpacity;
+        resizableOverlayWrapper.style.opacity = savedOpacity;
+        if (window.electronAPI && window.electronAPI.setOpacity) {
+          window.electronAPI.setOpacity(parseFloat(savedOpacity));
+        }
+      }
+      if (savedContrast) {
+        rangeContrast.value = savedContrast;
+        resizableOverlayWrapper.style.filter = `contrast(${savedContrast})`;
+      }
+
+      // Carrega estado dos botões
+      if (savedPinned === 'true') {
+        pinned = true;
+        document.getElementById('pin').style.background = '#334155';
+        if (window.electronAPI && window.electronAPI.setAlwaysOnTop) {
+          window.electronAPI.setAlwaysOnTop(true);
+        }
+      } else {
+        pinned = false;
+        document.getElementById('pin').style.background = '#facc15';
+        if (window.electronAPI && window.electronAPI.setAlwaysOnTop) {
+          window.electronAPI.setAlwaysOnTop(false);
+        }
+      }
+
+      if (savedLocked === 'true') {
+        locked = true;
+        document.getElementById('lock').style.background = '#22d3ee';
+        resizableOverlayWrapper.style.pointerEvents = 'none';
+        if (window.electronAPI && window.electronAPI.toggleMovable) {
+          window.electronAPI.toggleMovable(false);
+        }
+      } else {
+        locked = false;
+        document.getElementById('lock').style.background = '#334155';
+        resizableOverlayWrapper.style.pointerEvents = '';
+        if (window.electronAPI && window.electronAPI.toggleMovable) {
+          window.electronAPI.toggleMovable(true);
+        }
+      }
+
+      if (savedIgnoreClicks === 'true') {
+        ignoreClicks = true;
+        document.getElementById('click').style.background = '#6366f1';
+        if (window.electronAPI && window.electronAPI.setIgnoreMouseEvents) {
+          window.electronAPI.setIgnoreMouseEvents(true, { forward: true });
+        }
+      } else {
+        ignoreClicks = false;
+        document.getElementById('click').style.background = '#334155';
+        if (window.electronAPI && window.electronAPI.setIgnoreMouseEvents) {
+          window.electronAPI.setIgnoreMouseEvents(false, { forward: true });
+        }
+      }
+    }
+    loadSettings(); // Chama a função ao carregar a página
+
+    // Fecha o popover de ajustes ao clicar fora dele
+    document.addEventListener('mousedown', (e) => {
+      if (settingsPopover.style.display === 'block' && !settingsPopover.contains(e.target) && e.target.id !== 'gear') {
+        settingsPopover.style.display = 'none';
+      }
+    });
+
+    // PIN: SEMPRE NO TOPO
+    let pinned = false; // Valor inicial, será sobrescrito por loadSettings
+    const pinButton = document.getElementById('pin');
+
+    pinButton.onclick = () => {
+      pinned = !pinned;
+      pinButton.style.background = pinned ? '#334155' : '#facc15';
+      localStorage.setItem('calculatorOverlayPinned', pinned); // Salva no localStorage
+      // Se a API Electron estiver disponível, usa a função setAlwaysOnTop
+      if (window.electronAPI && window.electronAPI.setAlwaysOnTop) {
+        window.electronAPI.setAlwaysOnTop(pinned);
+      }
+    };
+
+    // LOCK: TRAVAR MOVIMENTO/REDIMENSIONAMENTO
+    let locked = false; // Valor inicial, será sobrescrito por loadSettings
+    const lockButton = document.getElementById('lock');
+
+    lockButton.onclick = () => {
+      locked = !locked;
+      lockButton.style.background = locked ? '#22d3ee' : '#334155';
+      localStorage.setItem('calculatorOverlayLocked', locked); // Salva no localStorage
+      // Se a overlay estiver travada, desabilita eventos de ponteiro no wrapper
+      resizableOverlayWrapper.style.pointerEvents = locked ? 'none' : '';
+      // Se a API Electron estiver disponível, usa a função toggleMovable
+      if (window.electronAPI && window.electronAPI.toggleMovable) {
+        window.electronAPI.toggleMovable(!locked); // Passa o oposto para movable
+      }
+    };
+
+    // IGNORAR CLIQUES (Click-through)
+    let ignoreClicks = false; // Valor inicial, será sobrescrito por loadSettings
+    const clickButton = document.getElementById('click');
+
+    clickButton.onclick = () => {
+      ignoreClicks = !ignoreClicks;
+      clickButton.style.background = ignoreClicks ? '#6366f1' : '#334155';
+      localStorage.setItem('calculatorOverlayIgnoreClicks', ignoreClicks); // Salva no localStorage
+      // Se a API Electron estiver disponível, usa a função setIgnoreMouseEvents
+      if (window.electronAPI && window.electronAPI.setIgnoreMouseEvents) {
+        // O segundo parâmetro true permite o arrasto se o primeiro for true
+        window.electronAPI.setIgnoreMouseEvents(ignoreClicks, { forward: true });
+      }
+    };
+  </script>
+</body>
+</html>

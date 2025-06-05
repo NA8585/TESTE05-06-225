@@ -1,0 +1,29 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\wwwroot\\diagnostico.html",
+      "PackagePath": "staticwebassets\\diagnostico.html"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0-windows7.0\\staticwebassets\\msbuild.SuperBackendNR85IA.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0-windows7.0\\staticwebassets\\msbuild.SuperBackendNR85IA.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0-windows7.0\\staticwebassets\\msbuild.build.SuperBackendNR85IA.props",
+      "PackagePath": "build\\SuperBackendNR85IA.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0-windows7.0\\staticwebassets\\msbuild.buildMultiTargeting.SuperBackendNR85IA.props",
+      "PackagePath": "buildMultiTargeting\\SuperBackendNR85IA.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0-windows7.0\\staticwebassets\\msbuild.buildTransitive.SuperBackendNR85IA.props",
+      "PackagePath": "buildTransitive\\SuperBackendNR85IA.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

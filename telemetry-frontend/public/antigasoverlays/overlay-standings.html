@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Standings Overlay - Coaching NR85 IA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    html, body { margin:0; padding:0; width:100%; height:100%; font-family:'Poppins',sans-serif; background:transparent; }
+    body { background:rgba(15,23,42,0.9); color:#d1d5db; overflow:hidden; }
+    .overlay { display:flex; flex-direction:column; height:100%; }
+    .header, .footer { display:flex; align-items:center; justify-content:space-between; background:rgba(30,41,59,0.95); padding:0.5rem 1rem; }
+    .header { border-bottom:2px solid #3b82f6; -webkit-app-region:drag; }
+    .footer { border-top:2px solid #3b82f6; font-size:0.75rem; -webkit-app-region:drag; }
+    .logo { display:flex; align-items:center; gap:0.5rem; font-weight:600; -webkit-app-region:no-drag; }
+    .controls > i { margin-left:0.75rem; cursor:pointer; -webkit-app-region:no-drag; color:#cbd5e1; }
+    .controls > i:hover { color:#fff; }
+    .table-container { flex:1; overflow:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    th, td { padding:0.5rem 0.75rem; text-align:left; }
+    thead th { background:#2563eb; color:#fff; position:sticky; top:0; z-index:10; }
+    tbody tr:nth-child(even) td { background:rgba(30,41,59,0.6); }
+    tbody tr:nth-child(odd)  td { background:rgba(30,41,59,0.4); }
+    td.position { width:3rem; font-weight:700; color:#22c55e; }
+    td.number   { width:2.5rem; font-weight:500; }
+    td.car      { width:4rem; }
+    td.tire     { width:3rem; }
+    td.stint    { width:3rem; }
+    td.pit      { width:3rem; color:#fbbf24; font-weight:600; }
+    td.gap      { color:#f87171; }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="header">
+      <div class="logo">
+        <img src="images/logo.png" alt="Logo" class="w-6 h-6" />
+        <span>Standings - Coaching NR85 IA</span>
+      </div>
+      <div class="controls">
+        <i id="icon-pin"   class="fas fa-thumbtack"></i>
+        <i id="icon-lock"  class="fas fa-lock"></i>
+        <i id="icon-close" class="fas fa-times"></i>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nr</th>
+            <th>Carro</th>
+            <th>Equipe</th>
+            <th>Piloto</th>
+            <th>iRating</th>
+            <th>Safety</th>
+            <th>Melhor Volta</th>
+            <th>Última Volta</th>
+            <th>Gap</th>
+            <th>Pneu</th>
+            <th>Stint</th>
+            <th>Box</th>
+          </tr>
+        </thead>
+        <tbody id="standings-body">
+          <!-- Linhas serão inseridas via script -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div>
+        <i class="fas fa-clock mr-1"></i><span id="current-time">--:--</span>
+        <span class="mx-2">|</span>
+        Sessão: <span id="session-type">--</span>
+        <span class="mx-2">|</span>
+        Restante: <span id="time-remaining">--:--</span>
+        <span class="mx-2">|</span>
+        B.Bias: <span id="brake-bias">--%</span>
+      </div>
+      <div>
+        <i class="fas fa-weather"></i>
+        Condição: <span id="track-condition">--</span>
+        <span class="mx-2">|</span>
+        <i class="fas fa-temperature-low"></i>
+        Clima: <span id="weather">--°C</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const overlayAPI = window.overlayAPI || window.api || {};
+    document.getElementById('icon-close').onclick = () => overlayAPI.close?.();
+    document.getElementById('icon-lock').onclick  = () => overlayAPI.lock?.();
+    document.getElementById('icon-pin').onclick   = () => overlayAPI.pin?.();
+
+    const ws = new WebSocket('ws://localhost:5221/ws');
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      // Atualiza tabela
+      if (data.standings) {
+        const tbody = document.getElementById('standings-body');
+        tbody.innerHTML = '';
+        data.standings.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="position">${r.position}</td>
+            <td class="number">${r.number}</td>
+            <td class="car">${r.car}</td>
+            <td>${r.team}</td>
+            <td>${r.driver}</td>
+            <td>${r.irating}</td>
+            <td>${r.safetyRating}</td>
+            <td>${r.bestLap}</td>
+            <td>${r.lastLap}</td>
+            <td class="gap">${r.gap}</td>
+            <td class="tire">${r.tireCompound}</td>
+            <td class="stint">${r.stintLaps}</td>
+            <td class="pit">${r.onPitRoad ? 'Pit' : ''}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      // Atualiza rodapé
+      if (data.footer) {
+        document.getElementById('current-time').textContent   = data.footer.time;
+        document.getElementById('session-type').textContent    = data.footer.session;
+        document.getElementById('time-remaining').textContent = data.footer.remaining;
+        document.getElementById('brake-bias').textContent     = data.footer.brakeBias;
+        document.getElementById('track-condition').textContent= data.footer.condition;
+        document.getElementById('weather').textContent        = data.footer.weather;
+      }
+    };
+  </script>
+</body>
+</html>

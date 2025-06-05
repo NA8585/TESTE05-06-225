@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delta Overlay Estreita</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    /* Estilos globais para o corpo */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: transparent;
+      margin: 0;
+      overflow: hidden;
+      min-height: 100vh;
+      padding: 0;
+      -webkit-user-select: none;
+    }
+
+    /* Estilo do wrapper principal da overlay redimensionável */
+    .resizable-overlay-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 450px; /* Largura inicial, pode ser ajustada */
+      height: auto; /* Altura automática para se ajustar ao conteúdo */
+      background: rgb(17, 24, 39); /* Cor de fundo escura */
+      border: 2px solid #1d4ed8; /* Borda azul */
+      border-radius: 0.75rem; /* Cantos arredondados */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Sombra */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- ESTILOS PARA MODO DE EDIÇÃO GLOBAL --- */
+    .resizable-overlay-wrapper.global-edit-mode-active {
+      outline: 2px dashed rgba(0, 123, 255, 0.7) !important;
+      outline-offset: -2px;
+    }
+
+    /* Estilo dos manipuladores de redimensionamento */
+    .resize-handle {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      z-index: 1001;
+      background: transparent;
+      -webkit-app-region: no-drag;
+      display: none; /* Escondido por padrão */
+    }
+
+    .global-edit-mode-active .resize-handle {
+      display: block !important; /* Mostra apenas em modo de edição global */
+    }
+
+    /* Posição e cursor para cada manipulador */
+    .resize-handle.top-left    { top: 0; left: 0; cursor: nwse-resize; }
+    .resize-handle.top-center  { top: 0; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .resize-handle.top-right   { top: 0; right: 0; cursor: nesw-resize; }
+    .resize-handle.right-center{ top: 50%; right: 0; transform: translateY(-50%); cursor: ew-resize; }
+    .resize-handle.bottom-right{ bottom: 0; right: 0; cursor: se-resize; }
+    .resize-handle.bottom-center{ bottom: 0; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .resize-handle.bottom-left { bottom: 0; left: 0; cursor: sw-resize; }
+    .resize-handle.left-center { top: 50%; left: 0; transform: translateY(-50%); cursor: ew-resize; }
+
+    /* Estilo do cabeçalho da overlay (para arrastar e controles) */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      background: inherit;
+      cursor: default; /* Cursor padrão, muda para 'move' em modo de edição */
+      -webkit-app-region: drag; /* Permite arrastar a janela no Electron */
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.75rem;
+    }
+    .global-edit-mode-active .header {
+        cursor: move;
+    }
+
+    /* Estilo do título no cabeçalho */
+    .header .title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      color: #60a5fa; /* Cor do título Delta */
+    }
+
+    /* Estilo dos controles (botões) no cabeçalho */
+    .controls {
+      display: flex;
+      gap: 4px;
+      -webkit-app-region: no-drag; /* Desabilita arrasto da janela nos controles */
+    }
+
+    /* Estilo dos botões de controle */
+    .controls button {
+      background: #334155; /* Cor de fundo padrão */
+      border: none;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: background 0.2s; /* Transição suave no hover */
+    }
+    .controls button:hover {
+      background: #475569; /* Cor de fundo no hover */
+    }
+    #closeBtn { background: #dc2626; } /* Cor do botão de fechar */
+    #closeBtn:hover { background: #ef4444; } /* Cor do botão de fechar no hover */
+
+    /* Estilo do popover de ajustes */
+    #settings-popover {
+      position: absolute;
+      top: 40px;
+      right: 10px;
+      display: none;
+      background-color: rgba(30, 41, 59, 0.95);
+      border: 1px solid #3b82f6;
+      border-radius: 0.5rem;
+      padding: 0.6rem;
+      z-index: 1000;
+    }
+    #settings-popover label {
+      color: #cbd5e1;
+      font-size: 0.7rem;
+    }
+
+    /* Estilos do card original (ajustados para o novo wrapper) */
+    .card {
+      background-color: rgba(17, 24, 39, 0.9); /* Mantido para o conteúdo interno */
+      border: none; /* Borda movida para o wrapper principal */
+      border-radius: 0; /* Cantos arredondados movidos para o wrapper principal */
+      box-shadow: none; /* Sombra movida para o wrapper principal */
+      padding: 0.75rem 1rem;
+      width: 100%; /* Preenche a largura do wrapper */
+      color: #e5e7eb;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      box-sizing: border-box; /* Inclui padding na largura */
+      flex-grow: 1; /* Faz o conteúdo crescer para preencher o wrapper */
+    }
+    .card h2 {
+      display: none; /* Oculta o h2 original */
+    }
+    .gap-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.3rem;
+    }
+    .gap-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #d1d5db;
+    }
+    .bar {
+      width: 100%;
+      height: 8px;
+      background-color: #1f2937;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 0.3rem;
+    }
+    .bar-fill {
+      height: 100%;
+      position: absolute;
+      top: 0;
+      transition: width 0.1s ease-out, left 0.1s ease-out;
+    }
+    #main-delta-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .sectors-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .sector-bar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .sector-bar-container {
+      width: 100%;
+      height: 6px;
+      background-color: #1f2937;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.125rem;
+    }
+    .sector-fill {
+      height: 100%;
+      transition: width 0.1s ease-out;
+    }
+    .sector-time-text {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    /* Cores Tailwind redefinidas para classes CSS */
+    .text-blue-400 { color: #60a5fa; }
+    .text-purple-400 { color: #c084fc; }
+    .text-green-400 { color: #4ade80; }
+    .text-red-400 { color: #ef4444; }
+    .text-yellow-400 { color: #facc15; }
+    .text-gray-300 { color: #d1d5db; }
+    .setor-roxo    { background-color: #c084fc; }
+    .setor-verde   { background-color: #4ade80; }
+    .setor-vermelho{ background-color: #ef4444; }
+    .setor-neutro  { background-color: #facc15; }
+  </style>
+</head>
+<body>
+  <div class="resizable-overlay-wrapper" id="wrapper">
+    <div class="resize-handle top-left"    id="h-tl"></div>
+    <div class="resize-handle top-center"  id="h-tc"></div>
+    <div class="resize-handle top-right"   id="h-tr"></div>
+    <div class="resize-handle right-center"id="h-rc"></div>
+    <div class="resize-handle bottom-right"id="h-br"></div>
+    <div class="resize-handle bottom-center"id="h-bc"></div>
+    <div class="resize-handle bottom-left" id="h-bl"></div>
+    <div class="resize-handle left-center" id="h-lc"></div>
+
+    <div class="header" id="overlay-header">
+      <div class="title">Delta</div>
+      <div class="controls">
+        <button id="pin"   title="Sempre visível">📌</button>
+        <button id="lock"  title="Travar/Destravar posição">🔒</button>
+        <button id="click" title="Ignorar cliques">🖱️</button>
+        <button id="gear"  title="Ajustes">⚙️</button>
+        <button id="closeBtn" title="Fechar overlay">✖</button>
+      </div>
+    </div>
+
+    <div class="card" id="delta-card-content">
+      <div class="gap-container">
+        <div id="gap-behind" class="gap-label">--</div>
+        <div id="gap-front"  class="gap-label">--</div>
+      </div>
+      <div class="bar">
+        <div id="main-delta-bar-fill" class="bar-fill setor-neutro" style="width:0%; left:50%;"></div>
+      </div>
+      <div id="main-delta-text" class="text-gray-300">--</div>
+      <div class="sectors-container">
+        <div class="sector-bar-item">
+          <div class="sector-bar-container">
+            <div id="sector-bar-1" class="sector-fill setor-neutro" style="width:0%;"></div>
+          </div>
+          <div id="sector-time-1" class="sector-time-text text-gray-300">--</div>
+        </div>
+        <div class="sector-bar-item">
+          <div class="sector-bar-container">
+            <div id="sector-bar-2" class="sector-fill setor-neutro" style="width:0%;"></div>
+          </div>
+          <div id="sector-time-2" class="sector-time-text text-gray-300">--</div>
+        </div>
+        <div class="sector-bar-item">
+          <div class="sector-bar-container">
+            <div id="sector-bar-3" class="sector-fill setor-neutro" style="width:0%;"></div>
+          </div>
+          <div id="sector-time-3" class="sector-time-text text-gray-300">--</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-popover" style="position:absolute; top:40px; right:10px; display:none; background-color:rgba(30,41,59,0.95); border:1px solid #3b82f6; border-radius:0.5rem; padding:0.6rem; z-index:1000;">
+    <div style="margin-bottom:0.4rem;">
+      <label for="rangeOpacity">Opacidade</label>
+      <input type="range" id="rangeOpacity" min="0.1" max="1" step="0.01" value="0.98" style="width:100%;">
+    </div>
+    <div>
+      <label for="rangeContrast">Contraste</label>
+      <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1" style="width:100%;">
+    </div>
+  </div>
+
+  <script>
+    // --- Constantes e Variáveis de Estado ---
+    const OVERLAY_NAME = 'overlay-delta';
+    const resizableOverlayWrapper = document.getElementById('wrapper');
+    const overlayHeader = document.getElementById('overlay-header');
+    const settingsPopover = document.getElementById('settings-popover');
+    const rangeOpacity = document.getElementById('rangeOpacity');
+    const rangeContrast = document.getElementById('rangeContrast');
+    const pinButton = document.getElementById('pin');
+    const lockButton = document.getElementById('lock');
+    const clickButton = document.getElementById('click');
+    const gearButton = document.getElementById('gear');
+    const closeButton = document.getElementById('closeBtn');
+
+    let isResizing = false;
+    let resizeHandleType = '';
+    let initialX, initialY, initialWidth, initialHeight, initialLeft, initialTop;
+
+    let isDragging = false;
+    let dragStartX, dragStartY, windowStartX, windowStartY;
+
+    let isCurrentlyInGlobalEditMode = false;
+    let localPinned = false;
+    let localLocked = true;
+    let localIgnoreClicks = true;
+
+    // --- Lógica de Redimensionamento e Arraste ---
+    function getCursorForHandle(handleType) {
+      const cursors = { tl: 'nwse-resize', tc: 'ns-resize', tr: 'nesw-resize', rc: 'ew-resize', br: 'se-resize', bc: 'ns-resize', bl: 'sw-resize', lc: 'ew-resize' };
+      return cursors[handleType] || 'default';
+    }
+
+    document.querySelectorAll('.resize-handle').forEach(handle => {
+      handle.addEventListener('mousedown', (e) => {
+        if (!isCurrentlyInGlobalEditMode) return;
+        e.preventDefault(); e.stopPropagation();
+        isResizing = true;
+        resizeHandleType = handle.id.replace('h-', '');
+        initialX = e.clientX; initialY = e.clientY;
+        const rect = resizableOverlayWrapper.getBoundingClientRect();
+        initialWidth = rect.width; initialHeight = rect.height;
+        initialLeft = rect.left; initialTop = rect.top;
+        document.body.style.cursor = getCursorForHandle(resizeHandleType);
+      });
+    });
+
+    function resize(e, handleType) {
+      if (!isResizing || !isCurrentlyInGlobalEditMode) return;
+      const aspectRatio = initialWidth / initialHeight;
+      const shiftPressed = e.shiftKey;
+      let newWidth = initialWidth, newHeight = initialHeight, newLeft = initialLeft, newTop = initialTop;
+      const deltaX = e.clientX - initialX, deltaY = e.clientY - initialY;
+
+      switch (handleType) {
+        case 'br': newWidth = initialWidth + deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY; break;
+        case 'bl': newWidth = initialWidth - deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY; newLeft = initialLeft + deltaX; break;
+        case 'tr': newWidth = initialWidth + deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY; newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY); break;
+        case 'tl': newWidth = initialWidth - deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY; newLeft = initialLeft + deltaX; newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY); break;
+        case 'rc': newWidth = initialWidth + deltaX; break;
+        case 'lc': newWidth = initialWidth - deltaX; newLeft = initialLeft + deltaX; break;
+        case 'bc': newHeight = initialHeight + deltaY; break;
+        case 'tc': newHeight = initialHeight - deltaY; newTop = initialTop + deltaY; break;
+      }
+
+      const minWidth = 200, minHeight = 150;
+      newWidth = Math.max(newWidth, minWidth); newHeight = Math.max(newHeight, minHeight);
+      if (newLeft + newWidth > window.screen.width) newWidth = window.screen.width - newLeft;
+      if (newTop + newHeight > window.screen.height) newHeight = window.screen.height - newTop;
+      newLeft = Math.max(newLeft, 0); newTop = Math.max(newTop, 0);
+
+      if (window.electronAPI?.setBounds) {
+        window.electronAPI.setBounds(OVERLAY_NAME, {
+          x: Math.round(newLeft), y: Math.round(newTop),
+          width: Math.round(newWidth), height: Math.round(newHeight)
+        });
+      } else {
+        resizableOverlayWrapper.style.width = newWidth + 'px'; resizableOverlayWrapper.style.height = newHeight + 'px';
+        resizableOverlayWrapper.style.left = newLeft + 'px'; resizableOverlayWrapper.style.top = newTop + 'px';
+      }
+    }
+
+    overlayHeader.addEventListener('mousedown', (e) => {
+      if (!isCurrentlyInGlobalEditMode || e.target.closest('.controls')) return;
+      isDragging = true;
+      dragStartX = e.clientX; dragStartY = e.clientY;
+      const rect = resizableOverlayWrapper.getBoundingClientRect();
+      windowStartX = rect.left; windowStartY = rect.top;
+      document.body.style.cursor = 'grabbing';
+    });
+
+    function dragMove(e) {
+      if (!isDragging || !isCurrentlyInGlobalEditMode) return;
+      const deltaX = e.clientX - dragStartX, deltaY = e.clientY - dragStartY;
+      const maxX = window.screen.width - resizableOverlayWrapper.offsetWidth;
+      const maxY = window.screen.height - resizableOverlayWrapper.offsetHeight;
+      const newX = Math.min(Math.max(windowStartX + deltaX, 0), maxX);
+      const newY = Math.min(Math.max(windowStartY + deltaY, 0), maxY);
+
+      if (window.electronAPI?.setBounds) {
+        window.electronAPI.setBounds(OVERLAY_NAME, {
+          x: Math.round(newX), y: Math.round(newY),
+          width: Math.round(resizableOverlayWrapper.offsetWidth),
+          height: Math.round(resizableOverlayWrapper.offsetHeight)
+        });
+      } else {
+        resizableOverlayWrapper.style.left = newX + 'px'; resizableOverlayWrapper.style.top = newY + 'px';
+      }
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      if (isResizing) resize(e, resizeHandleType);
+      else if (isDragging) dragMove(e);
+    });
+
+    document.addEventListener('mouseup', () => {
+      isResizing = false; isDragging = false;
+      document.body.style.cursor = '';
+       // Salvar bounds ao final do arraste/redimensionamento
+      if ((isResizing || isDragging) && isCurrentlyInGlobalEditMode) {
+        if (window.electronAPI?.saveBounds) {
+          window.electronAPI.saveBounds(OVERLAY_NAME, {
+            x: Math.round(resizableOverlayWrapper.offsetLeft),
+            y: Math.round(resizableOverlayWrapper.offsetTop),
+            width: Math.round(resizableOverlayWrapper.offsetWidth),
+            height: Math.round(resizableOverlayWrapper.offsetHeight)
+          });
+        }
+      }
+    });
+
+    if (window.electronAPI && window.electronAPI.onUpdateBounds) {
+        window.electronAPI.onUpdateBounds((bounds) => {
+            if (bounds && typeof bounds.x === 'number') {
+                resizableOverlayWrapper.style.left = `${bounds.x}px`;
+                resizableOverlayWrapper.style.top = `${bounds.y}px`;
+                resizableOverlayWrapper.style.width = `${bounds.width}px`;
+                resizableOverlayWrapper.style.height = `${bounds.height}px`;
+            }
+        });
+    }
+
+    // --- Listener para Modo de Edição Global ---
+    if (window.electronAPI && window.electronAPI.onEditMode) {
+      window.electronAPI.onEditMode((isGlobalEditModeActive) => {
+        console.log(`${OVERLAY_NAME} - Modo de Edição Global: ${isGlobalEditModeActive}`);
+        isCurrentlyInGlobalEditMode = isGlobalEditModeActive;
+        resizableOverlayWrapper.classList.toggle('global-edit-mode-active', isGlobalEditModeActive);
+        overlayHeader.style.cursor = isGlobalEditModeActive ? 'move' : 'default';
+        // Ao entrar no modo de edição, desbloqueia temporariamente e desativa o click-through
+        if (isGlobalEditModeActive) {
+            updateVisualLockButtonState(false); // Desbloqueia para edição
+            updateVisualClickButtonState(false); // Permite cliques para edição
+        } else {
+            // Ao sair do modo de edição, restaura as preferências do usuário
+            updateVisualLockButtonState(loadSetting('locked', true));
+            updateVisualClickButtonState(loadSetting('ignoreClicks', true));
+        }
+      });
+    }
+
+    // --- Lógica dos Botões de Controle ---
+    closeButton.onclick = () => window.electronAPI?.closeOverlay?.(OVERLAY_NAME);
+
+    gearButton.onclick = (e) => {
+      settingsPopover.style.display = settingsPopover.style.display === 'none' ? 'block' : 'none';
+      // Posicionamento mais robusto do popover
+      const btnRect = e.target.getBoundingClientRect();
+      const wrapperRect = resizableOverlayWrapper.getBoundingClientRect();
+      settingsPopover.style.top = (btnRect.bottom - wrapperRect.top + 5) + 'px';
+      settingsPopover.style.right = (wrapperRect.right - btnRect.right) + 'px';
+
+    };
+    document.addEventListener('mousedown', (e) => {
+      if (settingsPopover.style.display === 'block' && !settingsPopover.contains(e.target) && e.target !== gearButton) {
+        settingsPopover.style.display = 'none';
+      }
+    });
+
+    rangeOpacity.oninput = (e) => {
+      const opacity = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.opacity = opacity;
+      saveSetting('opacity', opacity);
+    };
+    rangeContrast.oninput = (e) => {
+      // Ajustado para usar porcentagem no filtro CSS se for o caso, ou apenas o número
+      const contrastValue = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.filter = `contrast(${contrastValue})`; // Se for um número de 0.5 a 2
+      // Se for para ser em porcentagem (50% a 200%):
+      // resizableOverlayWrapper.style.filter = `contrast(${contrastValue * 100}%)`;
+      saveSetting('contrast', contrastValue);
+    };
+
+    function updateVisualPinButtonState(isPinned) {
+        pinButton.style.background = isPinned ? '#60a5fa' : '#334155';
+        pinButton.innerHTML = isPinned ? '📍' : '📌';
+    }
+    function updateVisualLockButtonState(isLocked) {
+        localLocked = isLocked; // Atualiza o estado local
+        lockButton.style.background = isLocked ? '#22d3ee' : '#334155';
+        lockButton.innerHTML = isLocked ? '🔓' : '🔒';
+        // A lógica de mostrar/esconder handles e mudar cursor do header é feita pelo 'global-edit-mode-active'
+    }
+    function updateVisualClickButtonState(shouldIgnoreClicks) {
+        localIgnoreClicks = shouldIgnoreClicks; // Atualiza o estado local
+        clickButton.style.background = shouldIgnoreClicks ? '#6366f1' : '#334155';
+        clickButton.innerHTML = shouldIgnoreClicks ? '🚫🖱️' : '🖱️';
+        window.electronAPI?.toggleClickThrough?.(OVERLAY_NAME, shouldIgnoreClicks);
+    }
+
+    pinButton.onclick = () => {
+      localPinned = !localPinned;
+      updateVisualPinButtonState(localPinned);
+      saveSetting('pinned', localPinned);
+      window.electronAPI?.setAlwaysOnTop?.(OVERLAY_NAME, localPinned);
+    };
+
+    lockButton.onclick = () => {
+      // Este botão agora apenas reflete a preferência, o modo de edição global controla a interatividade real
+      const preferredLockedState = !localLocked;
+      saveSetting('locked', preferredLockedState);
+      updateVisualLockButtonState(preferredLockedState);
+      // Se não estiver em modo de edição global, aplica o estado de lock/click-through salvo
+      if(!isCurrentlyInGlobalEditMode) {
+        window.electronAPI?.toggleMovable?.(OVERLAY_NAME, !preferredLockedState);
+      }
+    };
+
+    clickButton.onclick = () => {
+      // Este botão agora apenas reflete a preferência, o modo de edição global controla a interatividade real
+      const preferredIgnoreState = !localIgnoreClicks;
+      saveSetting('ignoreClicks', preferredIgnoreState);
+      updateVisualClickButtonState(preferredIgnoreState);
+       // Se não estiver em modo de edição global, aplica o estado de lock/click-through salvo
+      if(!isCurrentlyInGlobalEditMode) {
+         window.electronAPI?.toggleClickThrough?.(OVERLAY_NAME, preferredIgnoreState);
+      }
+    };
+
+    // --- Salvar e Carregar Configurações ---
+    const SETTINGS_PREFIX = `settings-${OVERLAY_NAME}-`;
+    function saveSetting(key, value) {
+      try { localStorage.setItem(SETTINGS_PREFIX + key, JSON.stringify(value)); } catch (e) { console.error("Erro ao salvar setting:", e); }
+    }
+    function loadSetting(key, defaultValue) {
+      try { const value = localStorage.getItem(SETTINGS_PREFIX + key); return value === null ? defaultValue : JSON.parse(value); } catch (e) { console.error("Erro ao carregar setting:", e); return defaultValue; }
+    }
+
+    function loadAllSettings() {
+      const opacity = loadSetting('opacity', 0.98);
+      rangeOpacity.value = opacity;
+      resizableOverlayWrapper.style.opacity = opacity;
+
+      const contrast = loadSetting('contrast', 1);
+      rangeContrast.value = contrast;
+      resizableOverlayWrapper.style.filter = `contrast(${contrast})`;
+
+      localPinned = loadSetting('pinned', false);
+      updateVisualPinButtonState(localPinned);
+      window.electronAPI?.setAlwaysOnTop?.(OVERLAY_NAME, localPinned);
+
+      // Carrega as preferências, mas o estado visual inicial será ditado pelo modo de edição global (se ativo)
+      const savedLocked = loadSetting('locked', true);
+      const savedIgnoreClicks = loadSetting('ignoreClicks', true);
+      updateVisualLockButtonState(savedLocked);
+      updateVisualClickButtonState(savedIgnoreClicks);
+
+      // Aplica estados de lock e click-through se não estiver em modo de edição global
+      // O listener onEditMode cuidará de aplicar o estado correto ao iniciar
+      if (!isCurrentlyInGlobalEditMode) {
+          window.electronAPI?.toggleMovable?.(OVERLAY_NAME, !savedLocked);
+          window.electronAPI?.toggleClickThrough?.(OVERLAY_NAME, savedIgnoreClicks);
+      }
+
+
+      if (window.electronAPI && window.electronAPI.getBounds) {
+          window.electronAPI.getBounds(OVERLAY_NAME).then(bounds => {
+              if (bounds && typeof bounds.x === 'number' && bounds.width > 0 && bounds.height > 0) {
+                  resizableOverlayWrapper.style.left = `${bounds.x}px`;
+                  resizableOverlayWrapper.style.top = `${bounds.y}px`;
+                  resizableOverlayWrapper.style.width = `${bounds.width}px`;
+                  resizableOverlayWrapper.style.height = `${bounds.height}px`;
+              } else {
+                  // Define bounds padrão se as salvas não forem válidas
+                  resizableOverlayWrapper.style.left = '50px';
+                  resizableOverlayWrapper.style.top = '50px';
+                  resizableOverlayWrapper.style.width = '450px';
+                  // A altura será auto, mas podemos definir um valor inicial se necessário
+              }
+          }).catch(err => {
+              console.error("Erro ao carregar bounds, usando padrão:", err);
+              resizableOverlayWrapper.style.left = '50px';
+              resizableOverlayWrapper.style.top = '50px';
+              resizableOverlayWrapper.style.width = '450px';
+          });
+      }
+    }
+
+    // --- Lógica de Dados da Overlay (WebSocket) ---
+    const gapBehindEl       = document.getElementById('gap-behind');
+    const gapFrontEl        = document.getElementById('gap-front');
+    const mainDeltaBarFill  = document.getElementById('main-delta-bar-fill');
+    const mainDeltaText     = document.getElementById('main-delta-text');
+    const sectorBarEls      = [document.getElementById('sector-bar-1'), document.getElementById('sector-bar-2'), document.getElementById('sector-bar-3')];
+    const sectorTimeEls     = [document.getElementById('sector-time-1'), document.getElementById('sector-time-2'), document.getElementById('sector-time-3')];
+
+    function getColorClasses(value, isBest = false) {
+      if (isBest) return ['setor-roxo', 'text-purple-400'];
+      if (value < -0.01) return ['setor-verde', 'text-green-400']; 
+      if (value >  0.01) return ['setor-vermelho', 'text-red-400']; 
+      return ['setor-neutro', 'text-yellow-400'];
+    }
+
+    function updateMainDeltaBar(value) { 
+      const normalizedValue = Math.max(-1, Math.min(1, value)); 
+      const [bgClass] = getColorClasses(normalizedValue); 
+      mainDeltaBarFill.className = `bar-fill ${bgClass}`;
+      if (normalizedValue >= 0) { 
+        mainDeltaBarFill.style.left = '50%';
+        mainDeltaBarFill.style.width = `${(normalizedValue) * 50}%`; 
+      } else { 
+        mainDeltaBarFill.style.left = `${50 + (normalizedValue * 50)}%`; 
+        mainDeltaBarFill.style.width = `${(-normalizedValue) * 50}%`; 
+      }
+    }
+
+    function updateSectorBars(values = [], bestFlags = []) {
+      values.forEach((v,i) => {
+        if(!sectorBarEls[i] || !sectorTimeEls[i]) return;
+        const valOrDefault = v ?? 0; // Trata null ou undefined como 0 para os cálculos
+        const isBestOrDefault = bestFlags[i] ?? false;
+        const [bg, txt] = getColorClasses(valOrDefault, isBestOrDefault);
+        sectorBarEls[i].className = `sector-fill ${bg}`;
+        
+        // Normaliza o valor para a barra de setor entre -0.25s e +0.25s para a visualização
+        // Se o delta for maior, a barra ainda preencherá 0% ou 100%
+        const sectorNormalizedValue = Math.max(-0.25, Math.min(0.25, valOrDefault)); 
+        const pct = (sectorNormalizedValue + 0.25) / 0.5 * 100; // Mapeia para 0-100%
+        sectorBarEls[i].style.width = `${pct}%`;
+
+        sectorTimeEls[i].className = `sector-time-text ${txt}`;
+        sectorTimeEls[i].textContent = `${valOrDefault >= 0 ? '+' : ''}${valOrDefault.toFixed(3)}`;
+      });
+    }
+
+    const WS_URL = window.OVERLAY_WS_URL || "ws://localhost:5221/ws";
+    let ws;
+    function connectWebSocket() {
+        ws = new WebSocket(WS_URL);
+        ws.onopen = () => console.log(`${OVERLAY_NAME} - WS Conectado a ${WS_URL}`);
+        
+        ws.onmessage = ({data}) => {
+            try {
+                const d = JSON.parse(data);
+                const dados = d.casper || d;
+
+                // --- Processamento específico para os campos da overlay-delta ---
+                // CORREÇÃO PARA CAMELCASE
+                const deltaValue = d.lapDeltaToSessionBestLap ?? d.lapDeltaToBestLap ?? d.sessionDeltaToLeader ?? 0;
+                const timeDeltaAhead = d.timeDeltaToCarAhead; 
+                const timeDeltaBehind = d.timeDeltaToCarBehind; 
+                const sectorDeltas = d.sectorDeltas; 
+                const sectorIsBest = d.sectorIsBest; 
+
+                // Atualiza o delta principal
+                mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
+                const [_, deltaColorClass] = getColorClasses(deltaValue); // Ignora a classe de background para o texto
+                mainDeltaText.className = `main-delta-text ${deltaColorClass}`; // Removido text-lg font-bold para manter do CSS
+                updateMainDeltaBar(deltaValue / 2.0); // Escala para a barra (-1 a +1 para a função)
+
+                // Atualiza gaps
+                gapFrontEl.textContent = (timeDeltaAhead != null && typeof timeDeltaAhead === 'number') ? `${timeDeltaAhead >= 0 ? '+' : ''}${timeDeltaAhead.toFixed(2)}s` : '--';
+                gapBehindEl.textContent = (timeDeltaBehind != null && typeof timeDeltaBehind === 'number') ? `${timeDeltaBehind >= 0 ? '+' : ''}${timeDeltaBehind.toFixed(2)}s` : '--';
+                
+                // Atualiza setores
+                if (Array.isArray(sectorDeltas) && Array.isArray(sectorIsBest) && sectorDeltas.length === sectorIsBest.length) {
+                    updateSectorBars(sectorDeltas, sectorIsBest);
+                } else {
+                    updateSectorBars([0,0,0], [false,false,false]);
+                }
+                // --- Fim do processamento específico ---
+
+            } catch (err) {
+                 console.error(`${OVERLAY_NAME} - Erro ao processar mensagem WS: ${err.message}. Dados recebidos:`, data, "Objeto de erro:", err);
+            }
+        };
+        
+        ws.onclose = (event) => { 
+            console.log(`${OVERLAY_NAME} - WS Desconectado. Código: ${event.code}, Motivo: ${event.reason}. Tentando reconectar...`);
+            setTimeout(connectWebSocket, 3000);
+        };
+        
+        ws.onerror = (event) => { 
+            console.error(`${OVERLAY_NAME} - Falha na conexão WebSocket com ${WS_URL}. Verifique se o servidor WebSocket está em execução e acessível.`);
+        };
+    }
+
+    // --- Inicialização ---
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAllSettings();
+      connectWebSocket();
+      // Estado inicial dos botões de lock/click-through é ditado por onEditMode se electronAPI estiver presente
+      // Se não, eles iniciam como definidos em loadAllSettings
+      if (!window.electronAPI?.onEditMode) {
+        const initialLocked = loadSetting('locked', true);
+        const initialIgnoreClicks = loadSetting('ignoreClicks', true);
+        updateVisualLockButtonState(initialLocked);
+        updateVisualClickButtonState(initialIgnoreClicks);
+        window.electronAPI?.toggleMovable?.(OVERLAY_NAME, !initialLocked);
+        window.electronAPI?.toggleClickThrough?.(OVERLAY_NAME, initialIgnoreClicks);
+      }
+    });
+  </script>
+</body>
+</html>

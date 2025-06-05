@@ -1,0 +1,147 @@
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\appsettings.Development.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\appsettings.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\package-lock.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.staticwebassets.runtime.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.staticwebassets.endpoints.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.exe
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.deps.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.runtimeconfig.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.pdb
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Aydsko.iRacingData.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\IRSDKSharper.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Http.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Logging.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Options.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Primitives.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Diagnostics.DiagnosticSource.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Net.Http.Json.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Text.Encodings.Web.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Text.Json.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\YamlDotNet.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.csproj.AssemblyReference.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.AssemblyInfoInputs.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.AssemblyInfo.cs
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.csproj.CoreCompileInputs.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\scopedcss\bundle\SuperBackendNR85IA.styles.css
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.build.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.development.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.build.endpoints.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.SuperBackendNR85IA.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.SuperBackendNR85IA.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.build.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.buildMultiTargeting.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.buildTransitive.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.pack.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBac.1929F8FE.Up2Date
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\refint\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.pdb
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.genruntimeconfig.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA (2)\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\ref\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\appsettings.Development.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\appsettings.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\package-lock.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.staticwebassets.endpoints.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.staticwebassets.runtime.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.exe
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.deps.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.runtimeconfig.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.pdb
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Aydsko.iRacingData.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\IRSDKSharper.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Http.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Logging.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Options.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Primitives.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Diagnostics.DiagnosticSource.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Net.Http.Json.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Text.Encodings.Web.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Text.Json.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\YamlDotNet.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.csproj.AssemblyReference.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.AssemblyInfoInputs.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.AssemblyInfo.cs
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.csproj.CoreCompileInputs.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\scopedcss\bundle\SuperBackendNR85IA.styles.css
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.build.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.development.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.build.endpoints.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.SuperBackendNR85IA.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.SuperBackendNR85IA.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.build.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.buildMultiTargeting.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.buildTransitive.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.pack.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBac.1929F8FE.Up2Date
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\refint\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.pdb
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.genruntimeconfig.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\ref\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\appsettings.Development.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\appsettings.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\package-lock.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.staticwebassets.runtime.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.staticwebassets.endpoints.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.exe
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.deps.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.runtimeconfig.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.pdb
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Aydsko.iRacingData.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\IRSDKSharper.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Http.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Logging.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Options.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\Microsoft.Extensions.Primitives.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Diagnostics.DiagnosticSource.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Net.Http.Json.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Text.Encodings.Web.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\System.Text.Json.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\YamlDotNet.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.csproj.AssemblyReference.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.AssemblyInfoInputs.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.AssemblyInfo.cs
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.csproj.CoreCompileInputs.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\scopedcss\bundle\SuperBackendNR85IA.styles.css
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.build.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.development.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.build.endpoints.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.SuperBackendNR85IA.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.SuperBackendNR85IA.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.build.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.buildMultiTargeting.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets\msbuild.buildTransitive.SuperBackendNR85IA.props
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\staticwebassets.pack.json
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBac.1929F8FE.Up2Date
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\refint\SuperBackendNR85IA.dll
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.pdb
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.genruntimeconfig.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0-windows7.0\ref\SuperBackendNR85IA.dll

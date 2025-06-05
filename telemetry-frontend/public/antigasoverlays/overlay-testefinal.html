@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnóstico Full Definitiva - ULTRA MEGA v3.1</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    html,body {
+      width:100%;
+      height:100%;
+      margin:0;
+      padding:0;
+      font-family:'Poppins',sans-serif;
+      overflow: hidden; 
+      position: relative; 
+    }
+    body {
+      background:#0f172a; 
+      background-image:radial-gradient(rgba(255,255,255,0.08) 1px,transparent 1px);
+      background-size:4px 4px; 
+      color: #d1d5db; 
+    }
+    .drag{-webkit-app-region:drag;}
+    .no-drag{-webkit-app-region:no-drag;}
+    
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+
+    #root {
+      position: absolute;
+      top: 1.75rem; 
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto; 
+      padding: 0.5rem; 
+      display: grid;
+      gap: 0.2rem 0.7rem; 
+      grid-template-columns: repeat(4, 1fr); 
+      align-content: start; 
+    }
+
+    .section {
+      background:#1e293b; 
+      border-left:4px solid #3b82f6; 
+      border-radius:0.25rem;
+      padding:0.3rem 0.7rem; 
+      font-weight:600;
+      color:#93c5fd; 
+      margin-top: 0.7rem; 
+      margin-bottom: 0.4rem;
+      font-size: 0.8em; 
+      grid-column: 1 / -1; 
+    }
+    #root > .section:first-child {
+        margin-top: 0.05rem;
+    }
+    
+    .data-item-container {
+      padding: 0.02rem 0.2rem; 
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-all; 
+      line-height: 1.3; 
+    }
+
+    .label {
+      color: #a1a1aa; 
+      font-weight: 500; 
+      font-size: 0.72em; 
+      margin-right: 0.3rem;
+    }
+    .value {
+      color: #22c55e; 
+      white-space: pre-wrap;
+      font-size: 0.72em; 
+      font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+    }
+    .value.miss { color: #f87171 !important; } 
+    .value.array { color: #a5b4fc; font-style: italic; } 
+    .value.bool-true { color: #34d399; } 
+    .value.bool-false { color: #fbbf24; } 
+    .value.unit { color: #7dd3fc; margin-left: 0.15rem; font-size: 0.9em;}
+    .value.decoded { color: #e5e7eb; } 
+
+    .flags-container { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+    .flag-indicator { padding: 0px 3px; border-radius: 3px; font-size: 0.65em; font-weight: 600; color: white; line-height: 1.2; }
+    .flag-green { background-color: #10b981; }
+    .flag-yellow { background-color: #f59e0b; }
+    .flag-blue { background-color: #3b82f6; }
+    .flag-red { background-color: #ef4444; }
+    .flag-white { background-color: #e5e7eb; color: #1f2937;}
+    .flag-checkered { background-image: linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(-45deg, #000 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #000 75%), linear-gradient(-45deg, transparent 75%, #000 75%); background-size: 8px 8px; background-color: #fff; color: #000; border: 1px solid #000; padding: 0px 2px;}
+    .flag-black { background-color: #1f2937; border: 1px solid #6b7280;}
+    .flag-meatball { background-color: #000; color: #f97316; border:1px solid #f97316; display: inline-flex; align-items:center; justify-content:center; width:10px; height:10px; border-radius:50%; font-size:0.8em;} 
+    .flag-furled { background-color: #4b5563; } 
+
+
+    ::-webkit-scrollbar { width: 6px; } 
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+    ::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 3px; } 
+    ::-webkit-scrollbar-thumb:hover { background-color: #6b7280; } 
+
+    body.opaque-fallback { background-color: #0f172a; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script> 
+</head>
+<body class="text-slate-300">
+
+  <header class="drag flex items-center justify-between h-7 px-2 bg-slate-800 text-xs text-slate-300">
+    <span>Diagnóstico Full Definitiva - ULTRA MEGA v3.1</span>
+    <div class="no-drag space-x-3">
+      <i id="icon-lock"   class="fa-solid fa-lock cursor-pointer hover:text-emerald-400 transition-colors"></i>
+      <i id="icon-pin"    class="fa-solid fa-thumbtack -rotate-45 cursor-pointer hover:text-emerald-400 transition-colors"></i>
+      <i id="icon-close"  class="fa-solid fa-xmark cursor-pointer hover:text-red-500 transition-colors"></i>
+    </div>
+  </header>
+
+  <div id="root"></div>
+
+<script>
+// Unica declaracao de overlayAPI
+const overlayAPI = window.overlayAPI || window.api || {};
+const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
+const rootElement = document.getElementById('root');
+
+let locked = false, pinned = false;
+const iconLock = document.getElementById('icon-lock');
+const iconPin = document.getElementById('icon-pin');
+const iconClose = document.getElementById('icon-close');
+
+if (iconClose) {
+    iconClose.onclick = () => {
+        if (overlayAPI.close) overlayAPI.close();
+        else console.log("Attempted to close. overlayAPI.close not found.");
+    };
+}
+if (iconLock) {
+    iconLock.onclick = (e) => {
+        locked = !locked;
+        if(overlayAPI.lock) overlayAPI.lock(locked);
+        else if(overlayAPI.toggleMovable) overlayAPI.toggleMovable(!locked);
+        
+        e.target.classList.toggle('fa-lock-open', locked);
+        e.target.classList.toggle('fa-lock', !locked);
+        e.target.classList.toggle('text-emerald-400', locked);
+        overlayAPI.saveSettings?.({ locked: locked });
+    };
+}
+if (iconPin) {
+    iconPin.onclick = (e) => {
+        pinned = !pinned;
+        if(overlayAPI.pin) overlayAPI.pin(pinned);
+        else if(overlayAPI.setAlwaysOnTop) overlayAPI.setAlwaysOnTop(pinned);
+
+        e.target.classList.toggle('-rotate-45', !pinned);
+        e.target.classList.toggle('rotate-0', pinned);
+        e.target.classList.toggle('text-emerald-400', pinned);
+        overlayAPI.saveSettings?.({ pinned: pinned });
+    };
+}
+if (iconPin) iconPin.classList.add('-rotate-45');
+
+
+(async () => { 
+    try {
+        const settings = await overlayAPI.loadSettings?.() || {};
+        if (settings.locked !== undefined) {
+            locked = settings.locked;
+            iconLock.classList.toggle('fa-lock-open', locked);
+            iconLock.classList.toggle('fa-lock', !locked);
+            iconLock.classList.toggle('text-emerald-400', locked);
+        }
+        if (settings.pinned !== undefined) {
+            pinned = settings.pinned;
+            iconPin.classList.toggle('-rotate-45', !pinned);
+            iconPin.classList.toggle('rotate-0', pinned);
+            iconPin.classList.toggle('text-emerald-400', pinned);
+        }
+    } catch (e) {
+        console.error("Error loading settings:", e);
+    }
+})();
+
+
+const globalState = { 
+    rawYaml: null, 
+    yamlData: {},
+    wasOnPitRoad: false,
+    lapAtLastPitStop: 0,
+};
+
+const fmtGenericValue = (value, unit = '') => {
+  if (value === undefined || value === null || (typeof value === 'number' && !isFinite(value))) return ['—', 'miss'];
+  
+  let displayValue;
+  let valueClass = '';
+
+  if (Array.isArray(value)) {
+    displayValue = `[${value.slice(0, 3).map(v => fmtGenericValue(v)[0].replace(/<span.*span>/g, '').trim()).join(', ')}${value.length > 3 ? ',…' : ''}] (${value.length})`;
+    valueClass = 'array';
+  } else if (typeof value === 'boolean') {
+    displayValue = value ? 'Sim' : 'Não';
+    valueClass = value ? 'bool-true' : 'bool-false';
+  } else if (typeof value === 'number') {
+    if (Number.isInteger(value)) displayValue = value.toString();
+    else if (Math.abs(value) < 0.0005 && value !== 0) displayValue = value.toExponential(2);
+    else displayValue = value.toFixed(3); 
+  } else {
+    displayValue = String(value);
+  }
+  
+  const unitSpan = unit ? `<span class="value unit">${unit}</span>` : '';
+  return [`${displayValue}${unitSpan}`, valueClass];
+};
+
+const fmtTime = s => {
+  if (typeof s !== 'number' || !isFinite(s) || s < 0) return ['—', 'miss'];
+  const h = Math.floor(s / 3600).toString().padStart(2, '0');
+  const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+  const secs = Math.floor(s % 60).toString().padStart(2, '0');
+  const hundreths = Math.floor((s * 100) % 100).toString().padStart(2,'0');
+  if (h === '00' && m === '00' && secs === '00' && s < 1 && s !== 0) return [`0.${(s*1000).toFixed(0).padStart(3,'0')}`, ''];
+  if (h === '00') return [`${m}:${secs}.${hundreths}`, '']; 
+  return [`${h}:${m}:${secs}`, '']; 
+};
+
+const decodeSessionState = (state) => {
+    const states = ["Invalid", "GetInCar", "Warmup", "Practice", "Qualify", "Race", "CoolDown"];
+    return states[state] || `Raw: ${state}`;
+};
+
+const decodePaceMode = (mode) => {
+    const modes = ["SingleFileStart", "DoubleFileStart", "SingleFileRestart", "DoubleFileRestart", "NotPacing", "Pacing", "CautionLap", "LastLap"];
+    if (mode === 4 || mode === 5) return "Not Pacing"; 
+    return modes[mode] || `Raw: ${mode}`;
+};
+
+const IR_ENGINE_WARNINGS = {
+    WaterTemp: 0x01, FuelPressure: 0x02, OilPressure: 0x04, EngineStalled: 0x08,
+    PitSpeedLimiter: 0x10, RevLimiterActive: 0x20, OilTempWarning: 0x40 
+};
+
+const decodeEngineWarnings = (warnings) => {
+    if (warnings === undefined || warnings === null || warnings === 0) return ['OK', ''];
+    let activeWarnings = [];
+    if (warnings & IR_ENGINE_WARNINGS.WaterTemp) activeWarnings.push("Água Quente!");
+    if (warnings & IR_ENGINE_WARNINGS.FuelPressure) activeWarnings.push("Press. Comb. Baixa!");
+    if (warnings & IR_ENGINE_WARNINGS.OilPressure) activeWarnings.push("Press. Óleo Baixa!");
+    if (warnings & IR_ENGINE_WARNINGS.EngineStalled) activeWarnings.push("Motor Parado!");
+    if (warnings & IR_ENGINE_WARNINGS.PitSpeedLimiter) activeWarnings.push("Limitador Pits");
+    if (warnings & IR_ENGINE_WARNINGS.RevLimiterActive) activeWarnings.push("Corte Giro");
+    if (warnings & IR_ENGINE_WARNINGS.OilTempWarning) activeWarnings.push("Óleo Quente!");
+
+    if (activeWarnings.length === 0) return ['OK', '']; 
+    return [activeWarnings.join(', '), 'miss']; 
+};
+
+
+const IR_SESSION_FLAGS = {
+    Checkered: 0x00000001, White: 0x00000002, Green: 0x00000004, Yellow: 0x00000008,
+    Red: 0x00000010, Blue: 0x00000020, Debris: 0x00000040, Crossed: 0x00000080,
+    Black: 0x00000100, Disqualify: 0x00000200, Servicible: 0x00000400, 
+    Furled: 0x00000800, Repair: 0x00001000, 
+    StartHidden: 0x00010000, StartReady: 0x00020000, StartSet: 0x00040000, StartGo: 0x00080000,
+    Caution: 0x01000000, CautionWaving: 0x02000000,
+    OneLapToGreen: 0x10000000, GreenHeld: 0x20000000, TenToGo: 0x40000000, FiveToGo: 0x80000000,
+    RandomWaving: 0x00100000, 
+    OneToGo: 0x00000800, 
+    TrackOpen: 0x00800000, 
+};
+
+function formatSessionFlags(flags) {
+    if (flags === undefined || flags === null) return ['—', 'miss'];
+    let html = '<div class="flags-container">';
+    let activeFlagsCount = 0;
+
+    if (flags & IR_SESSION_FLAGS.Checkered) { html += '<span class="flag-indicator flag-checkered">🏁</span>'; activeFlagsCount++; }
+    else if (flags & IR_SESSION_FLAGS.White) { html += '<span class="flag-indicator flag-white">🏳️</span>'; activeFlagsCount++; }
+    else if (flags & IR_SESSION_FLAGS.Green || flags & IR_SESSION_FLAGS.StartGo || flags & IR_SESSION_FLAGS.GreenHeld) { html += '<span class="flag-indicator flag-green">🟢</span>'; activeFlagsCount++; }
+    
+    if (flags & IR_SESSION_FLAGS.Yellow || flags & IR_SESSION_FLAGS.Caution || flags & IR_SESSION_FLAGS.CautionWaving) { html += '<span class="flag-indicator flag-yellow">🟡</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Red) { html += '<span class="flag-indicator flag-red">🔴</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Blue) { html += '<span class="flag-indicator flag-blue">🔵</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Debris) { html += '<span class="flag-indicator flag-yellow">⚠️ Debris</span>'; activeFlagsCount++; } 
+    
+    if (flags & IR_SESSION_FLAGS.Black) { html += '<span class="flag-indicator flag-black">⚫</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Disqualify) { html += '<span class="flag-indicator flag-black">❌ DQ</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Repair) { html += '<span class="flag-indicator flag-meatball">🛠️</span>'; activeFlagsCount++; } 
+    
+    if (flags & IR_SESSION_FLAGS.OneLapToGreen) { html += '<span class="flag-indicator flag-furled">1 to Green</span>'; activeFlagsCount++;}
+    
+    if (activeFlagsCount === 0 && flags !== 0) { 
+      html += `<span class="flag-indicator flag-furled">Raw: ${flags.toString(16)}</span>`; 
+    } else if (activeFlagsCount === 0 && flags === 0) { 
+         html += '<span class="flag-indicator flag-green">🟢 Clear</span>'; 
+    }
+    html += '</div>';
+    return [html, 'decoded'];
+}
+
+
+function addSection(title) {
+  if (!rootElement) return;
+  const sectionEl = document.createElement('div');
+  sectionEl.className = 'section';
+  sectionEl.textContent = title;
+  rootElement.appendChild(sectionEl);
+}
+
+function addRow(labelText, valueContent, formatter = fmtGenericValue, unit = '') {
+    if (!rootElement) return;
+    const itemContainer = document.createElement('div');
+    itemContainer.className = 'data-item-container';
+    
+    const labelEl = document.createElement('span');
+    labelEl.className = 'label';
+    labelEl.textContent = labelText + ":";
+    itemContainer.appendChild(labelEl);
+
+    const valueEl = document.createElement('span');
+    valueEl.className = 'value';
+    
+    let formattedResult;
+    let valueClass = '';
+
+    try {
+        if (formatter === fmtGenericValue || formatter === fmtTime || formatter === formatSessionFlags || formatter === decodeEngineWarnings) {
+            [formattedResult, valueClass] = formatter(valueContent, unit);
+        } else { 
+            formattedResult = formatter(valueContent); 
+            if (unit && typeof formattedResult === 'string') formattedResult += `<span class="value unit">${unit}</span>`;
+        }
+    } catch (e) {
+        console.error(`Formatter error for "${labelText}" with value "${valueContent}":`, e);
+        formattedResult = 'ERR';
+        valueClass = 'miss';
+    }
+    
+    valueEl.innerHTML = (formattedResult === undefined || formattedResult === null || String(formattedResult).trim() === '') ? '—' : formattedResult;
+
+    if (valueClass) valueEl.classList.add(valueClass);
+    if (valueEl.textContent === '—' || valueEl.textContent === 'ERR') {
+        valueEl.classList.add('miss');
+    }
+    itemContainer.appendChild(valueEl);
+    rootElement.appendChild(itemContainer);
+}
+
+function render(data) {
+  if (!rootElement || !data) {
+    if(rootElement) rootElement.innerHTML = '<div class="section" style="color: #f87171; grid-column: 1 / -1;">Erro: Dados ausentes.</div>';
+    return;
+  }
+  rootElement.innerHTML = ''; 
+
+  if (data.SessionInfoYaml && data.SessionInfoYaml !== globalState.rawYaml) {
+    globalState.rawYaml = data.SessionInfoYaml;
+    try { globalState.yamlData = jsyaml.load(data.SessionInfoYaml) || {}; } 
+    catch (e) { console.error("Error parsing YAML:", e); globalState.yamlData = {}; }
+  }
+
+  const wInfo = globalState.yamlData?.WeekendInfo || {};
+  const weather = wInfo.Weather || {};
+  const driverInfo = globalState.yamlData?.DriverInfo || {};
+  const drivers = driverInfo.Drivers || [];
+  const currentSessionInfo = globalState.yamlData?.SessionInfo || {};
+  const currentSessionArr = currentSessionInfo.Sessions || [];
+  const currentSessionNum = data.SessionNum;
+  const session = currentSessionArr.find(s => s.SessionNum === currentSessionNum) || {};
+  const playerDriver = Array.isArray(drivers) ? drivers.find(d => d.CarIdx === data.PlayerCarIdx) : null;
+  const carSetup = playerDriver?.CarSetup || {}; 
+  const weekendOptions = wInfo.WeekendOptions || {};
+  const incidentLimit = weekendOptions.IncidentLimit || session?.ResultsPenalty?.IncidentLimit || 'N/A';
+
+  if (globalState.wasOnPitRoad === true && data.OnPitRoad === false) {
+    globalState.lapAtLastPitStop = data.LapCompleted !== undefined ? data.LapCompleted : data.Lap -1; 
+  }
+  globalState.wasOnPitRoad = data.OnPitRoad;
+  let lapsInStint = "—";
+  if (data.Lap !== undefined && globalState.lapAtLastPitStop !== undefined) {
+      if (data.Lap > globalState.lapAtLastPitStop) {
+          lapsInStint = data.Lap - globalState.lapAtLastPitStop;
+      } else if (!data.OnPitRoad && data.Lap >=1) { 
+          lapsInStint = data.Lap - globalState.lapAtLastPitStop <= 0 ? data.Lap : (data.Lap - globalState.lapAtLastPitStop);
+      }
+  }
+  if (globalState.lapAtLastPitStop === 0 && data.Lap > 0 && !data.OnPitRoad) lapsInStint = data.Lap;
+
+  // --- Render Sections ---
+  addSection('🏁 Pista & Sessão');
+  addRow('Track', wInfo.TrackDisplayName);
+  addRow('Layout', wInfo.TrackConfigName);
+  addRow('Pista Declarada', wInfo.TrackStatus); 
+  addRow('Comprimento', parseFloat(wInfo.TrackLength), fmtGenericValue, 'km');
+  addRow('Tipo de Sessão', session.SessionType || session.SessionName);
+  addRow('Temp. Ambiente', weather.TempValue, fmtGenericValue, weather.TempUnits === 1 ? '°F' : '°C');
+  addRow('Temp. Pista (Live)', data.TrackSurfaceTemp, fmtGenericValue, '°C');
+  addRow('Temp. Pista (Oficial)', data.TrackTempCrew, fmtGenericValue, '°C');
+  addRow('Céu', weather.Skies);
+  addRow('Vento', weather.WindSpeed);
+  addRow('Condição Pista', (weather.RainIntensity > 0.01 || data.TrackSurfaceMaterial === 2) ? 'Molhada' : 'Seca');
+  addRow('Aderência Pista', data.TrackGripStatus); 
+  addRow('Hora na Simulação', data.SessionTimeOfDay, fmtTime);
+  addRow('Previsão Chuva', weather.ForecastOptions?.ChanceOfRain, v => (v*100).toFixed(0), '%'); 
+  addRow('Previsão Tipo', weather.ForecastOptions?.ForecastType); 
+
+
+  addSection('👤 Piloto & Stint');
+  addRow('Piloto', playerDriver?.UserName);
+  addRow('Equipe', playerDriver?.TeamName);
+  addRow('Carro #', playerDriver?.CarNumberRaw !== undefined ? playerDriver.CarNumberRaw : playerDriver?.CarNumber);
+  const carClassID = playerDriver?.CarClassID !== undefined ? playerDriver.CarClassID : data.PlayerCarClassID;
+  const carClassDetails = globalState.yamlData?.CarClasses?.find(c => c.CarClassID === carClassID);
+  addRow('Classe Categoria', carClassDetails?.Name || carClassDetails?.ShortName || `ID: ${carClassID}`);
+  addRow('Licença', playerDriver?.LicString || `${playerDriver?.LicLevel || ''} ${playerDriver?.LicSubLevel || ''}`);
+  addRow('iRating', playerDriver?.IRating !== undefined ? playerDriver.IRating : data.PlayerCarIdxIRating);
+  addRow('Safety Rating', typeof data.PlayerCarIdxSafetyRating === 'number' ? data.PlayerCarIdxSafetyRating.toFixed(2) : (playerDriver?.LicSafetyRating?.toFixed(2) || '—'));
+  const currentIncidents = data.PlayerCarTeamIncidentCount !== undefined ? data.PlayerCarTeamIncidentCount : playerDriver?.TeamIncidentCount;
+  addRow('Incidentes', `${currentIncidents} / ${incidentLimit}`);
+  addRow('Acelerador', data.Throttle, v => (v * 100).toFixed(0), '%');
+  addRow('Freio', data.Brake, v => (v * 100).toFixed(0), '%');
+  addRow('Direção', data.SteeringWheelAngle, v => (v * (180 / Math.PI)).toFixed(1), '°');
+  addRow('Embreagem', data.Clutch, v => (v * 100).toFixed(0), '%');
+  addRow('Voltas no Stint', lapsInStint, fmtGenericValue);
+  addRow('Tempo Último Pit', data.PlayerCarLastPitTime, fmtTime);
+  addRow('Pit Stops', data.PlayerCarPitStopCount);
+  
+
+  addSection('⏱️ Volta & Delta');
+  addRow('Volta Atual', data.Lap);
+  addRow('Dist. Volta %', data.LapDistPct, v => (v * 100).toFixed(1), '%');
+  addRow('Dist. Percorrida', data.LapDistPct, v => (v * parseFloat(wInfo.TrackLength) * 1000).toFixed(0), 'm');
+  addRow('Tempo Volta Atual', data.LapCurrentLapTime, fmtTime);
+  addRow('Última Volta', data.LapLastLapTime, fmtTime);
+  addRow('Melhor Volta (Sessão)', data.LapBestLapTime, fmtTime);
+  addRow('Delta Melhor (Sessão)', data.LapDeltaToSessionBestLap, fmtGenericValue);
+  addRow('Delta Ótima (Sessão)', data.LapDeltaToSessionOptimalLap, fmtGenericValue);
+  addRow('Delta Melhor Pessoal', data.LapDeltaToDriverBestLap, fmtGenericValue);
+  
+  addSection('📊 Setores da Pista');
+  const sectorTimes = data.LapAllSectorTimes || data.LapLastSectorTimes || [];
+  const bestSectorTimesDeltas = data.LapDeltaToSessionBestSectorTimes || []; 
+  const sessionBestSectorsAbsolute = data.SessionBestSectorTimes || []; 
+
+  const numSectorsToDisplay = Math.max(sectorTimes.length, sessionBestSectorsAbsolute.length, bestSectorTimesDeltas.length, (wInfo.NumTrackSectors || 3));
+
+  for (let i = 0; i < numSectorsToDisplay; i++) {
+      const currentSectorTime = sectorTimes[i];
+      const sessionBestSectorTime = sessionBestSectorsAbsolute[i];
+      let deltaToBestDisplay = '—';
+
+      if (currentSectorTime !== undefined && sessionBestSectorTime !== undefined && currentSectorTime > 0 && sessionBestSectorTime > 0) {
+          const delta = currentSectorTime - sessionBestSectorTime;
+          deltaToBestDisplay = (delta > 0 ? '+' : '') + delta.toFixed(3);
+      } else if (bestSectorTimesDeltas[i] !== undefined) { 
+          const delta = bestSectorTimesDeltas[i];
+          deltaToBestDisplay = (delta > 0 ? '+' : '') + delta.toFixed(3);
+      }
+      addRow(`Setor ${i + 1} (Atual)`, currentSectorTime, fmtTime);
+      addRow(`Setor ${i + 1} Δ (vs Melhor Sess)`, deltaToBestDisplay, v => [v, parseFloat(v.replace('+','')) > 0 ? 'miss' : (parseFloat(v.replace('+','')) < 0 ? 'ok' : '')]);
+  }
+
+
+  addSection('⏳ Tempo de Sessão');
+  addRow('Tempo de Sessão', data.SessionTime, fmtTime);
+  addRow('Tempo Restante', data.SessionTimeRemain, fmtTime);
+  addRow('Voltas Totais', data.SessionLapsTotal === -1 ? 'Ilimitado' : data.SessionLapsTotal);
+  addRow('Voltas Restantes', data.SessionLapsRemain === -1 ? 'Ilimitado' : data.SessionLapsRemain);
+
+  addSection('🛞 Pneus – Temp, Pressão & Desgaste');
+  const tires = ['LF', 'RF', 'LR', 'RR'];
+  const tireSetup = carSetup?.Tires || {};
+  const frontTireCompound = tireSetup.Front?.CompoundName || data.PlayerCarTireCompound || 'Desconhecido';
+  const rearTireCompound = tireSetup.Rear?.CompoundName || data.PlayerCarTireCompound || 'Desconhecido';
+  addRow('Composto Pneus (F)', frontTireCompound);
+  if (frontTireCompound !== rearTireCompound && rearTireCompound !== 'Desconhecido') addRow('Composto Pneus (R)', rearTireCompound);
+  addRow('Sets Usados', tireSetup.TireSetsUsed); 
+  addRow('Sets Disponíveis', tireSetup.TireSetsAvailable); 
+
+  tires.forEach(tire => {
+    addRow(`${tire} Temp CL`, data[`${tire}tempCL`], fmtGenericValue, '°C');
+    addRow(`${tire} Temp CM`, data[`${tire}tempCM`], fmtGenericValue, '°C');
+    addRow(`${tire} Temp CR`, data[`${tire}tempCR`], fmtGenericValue, '°C');
+    addRow(`${tire} Pressão`, data[`${tire}press`], fmtGenericValue, 'kPa');
+    const wearArray = data[`${tire}Wear`]; 
+    let wearText = "— / — / —";
+    if(Array.isArray(wearArray) && wearArray.length === 3){
+        wearText = wearArray.map(w => (typeof w === 'number' && isFinite(w)) ? (w * 100).toFixed(1) + '%' : '—').join(' / ');
+    }
+    addRow(`${tire} Desgaste (I/M/O)`, wearText, v => [v, 'array']); 
+  });
+
+  addSection('🛑 Freios, Pit & Ajustes (DC)');
+  tires.forEach(corner => addRow(`Temp. Freio ${corner}`, data.BrakeTemp ? data.BrakeTemp[tires.indexOf(corner)] : undefined, fmtGenericValue, '°C'));
+  tires.forEach(corner => addRow(`Pressão Linha Freio ${corner}`, data[`BrakeLinePress${corner}`], fmtGenericValue, 'kPa'));
+  addRow('Balanço Freio', data.dcBrakeBias, v => (v * 100).toFixed(1), '%');
+  addRow('Nos Pits', data.OnPitRoad, fmtGenericValue);
+  addRow('Reparo Restante (Obrig.)', data.PitRepairLeft, fmtTime);
+  addRow('Reparo Restante (Opc.)', data.PitOptRepairLeft, fmtTime);
+  addRow('ABS (DC)', data.dcABS !== undefined ? data.dcABS : data.DriverCarDcABS, fmtGenericValue);
+  addRow('TC (DC)', data.dcTractionControl !== undefined ? data.dcTractionControl : data.DriverCarDcTractionControl, fmtGenericValue);
+  addRow('Asa Diant. (DC)', data.dcFrontWing); 
+  addRow('Asa Tras. (DC)', data.dcRearWing); 
+  addRow('Dif. Entrada (DC)', data.dcDiffEntry); 
+  addRow('Dif. Meio (DC)', data.dcDiffMiddle); 
+  addRow('Dif. Saída (DC)', data.dcDiffExit); 
+
+
+  addSection('⚙️ Motor & Combustível');
+  addRow('Pressão Óleo', data.OilPress, fmtGenericValue, 'kPa');
+  addRow('Temp. Óleo', data.OilTemp, fmtGenericValue, '°C');
+  addRow('Temp. Água', data.WaterTemp, fmtGenericValue, '°C');
+  addRow('Nível Água', data.WaterLevel, v => (v * 100).toFixed(1), '%');
+  addRow('Pressão Combustível', data.FuelPress, fmtGenericValue, 'kPa');
+  addRow('Pressão Manifold', data.ManifoldPress, fmtGenericValue, 'kPa');
+  addRow('Avisos Motor', data.EngineWarnings, decodeEngineWarnings); 
+  addRow('Nível Combustível', data.FuelLevel, fmtGenericValue, 'L');
+  addRow('Nível Combustível %', data.FuelLevelPct, v => (v * 100).toFixed(1), '%');
+  addRow('Uso Combustível/Hora', data.FuelUsePerHour, fmtGenericValue, 'L/h');
+  addRow('Uso Combustível/Volta', data.FuelPerLap, fmtGenericValue, 'L');
+  addRow('Tempo Est. (Comb.)', data.EstLapTime, fmtTime); 
+  addRow('Voltas Est. (Comb.)', data.FuelLevel / (data.FuelPerLap > 0 ? data.FuelPerLap : 999), v => v === Infinity || v > 990 || isNaN(v) ? '∞' : v.toFixed(1), 'voltas');
+
+  addSection('🏎️ Dinâmica & Suspensão');
+  tires.forEach(corner => addRow(`Pos. Susp. ${corner}`, data[`${corner}SuspPos`], fmtGenericValue, 'rad'));
+  tires.forEach(corner => addRow(`Vel. Susp. ${corner}`, data[`${corner}SuspVel`], fmtGenericValue, 'rad/s'));
+  tires.forEach(corner => addRow(`Alt. Monoposto ${corner}`, data[`${corner}RideHeight`], fmtGenericValue, 'm'));
+
+  addSection('🛠️ Danos no Carro'); 
+  const damageKeys = ['LFDamage', 'RFDamage', 'LRDamage', 'RRDamage', 'FrontWingDamage', 'RearWingDamage', 'EngineDamage', 'GearboxDamage', 'ChassisDamage', 'SuspensionDamage']; 
+  let hasDamage = false;
+  damageKeys.forEach(key => {
+      if (data[key] !== undefined && data[key] > 0) { 
+          addRow(key.replace('Damage',' Dano'), data[key], v => (v*100).toFixed(0), '%');
+          hasDamage = true;
+      }
+  });
+  if (!hasDamage) { addRow('Status Dano', 'Nenhum Dano Detectado'); }
+
+
+  addSection('⚡ Sistemas Especiais'); 
+  addRow('DRS Status', data.DRS_Status); 
+  addRow('P2P Contagem', data.CarIdxP2P_Count); 
+  addRow('P2P Status', data.CarIdxP2P_Status); 
+  addRow('Modo Motor ERS (DC)', data.DCEnginePower); 
+
+  addSection('📊 Forças G & Orientação');
+  addRow('Acel. Lateral', data.LatAccel, fmtGenericValue, 'G');
+  addRow('Acel. Longitudinal', data.LonAccel, fmtGenericValue, 'G');
+  addRow('Acel. Vertical', data.VertAccel, fmtGenericValue, 'G');
+  addRow('Yaw (Guinada)', data.Yaw, v => (v * 180/Math.PI).toFixed(1), '°');
+  addRow('Pitch (Arfagem)', data.Pitch, v => (v * 180/Math.PI).toFixed(1), '°');
+  addRow('Roll (Rolagem)', data.Roll, v => (v * 180/Math.PI).toFixed(1), '°');
+
+  addSection('🚩 Controle & Estado Avançado');
+  addRow('Estado da Sessão', data.SessionState, decodeSessionState);
+  addRow('Modo Pace Car', data.PaceMode, decodePaceMode);
+  addRow('Bandeiras Ativas', data.SessionFlags, formatSessionFlags);
+  addRow('Garagem Aberta', data.IsGarageOpen, fmtGenericValue);
+  addRow('Densidade do Ar', data.AirDensity, fmtGenericValue, 'kg/m³');
+  addRow('Pressão Atmosférica', weather.AirPressure); 
+  addRow('Umidade Relativa', weather.RelativeHumidity, v => (v * 100).toFixed(1), '%');
+}
+
+function connect() {
+  const ws = new WebSocket(WS_URL);
+  ws.onopen = () => { 
+    console.log(`Connected to ${WS_URL}`);
+    if(rootElement.innerHTML.includes('Desconectado')) rootElement.innerHTML = ''; 
+  };
+  ws.onmessage = event => {
+    try {
+      const parsedData = JSON.parse(event.data);
+      if (parsedData) render(parsedData);
+    } catch (e) { console.error("Error processing WebSocket message:", e, "Raw data:", event.data); }
+  };
+  ws.onclose = () => { 
+    console.log(`Disconnected. Reconnecting in 3s...`); 
+    if(rootElement) rootElement.innerHTML = '<div class="section" style="color: #f87171; grid-column: 1 / -1;">Desconectado... Tentando reconectar.</div>'; 
+    setTimeout(connect, 3000); 
+  };
+  ws.onerror = error => { console.error("WebSocket error:", error); ws.close(); };
+}
+
+if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)' ||
+    window.getComputedStyle(document.body).backgroundColor === 'transparent') {
+} else {
+    document.body.classList.add('opaque-fallback');
+}
+
+(async () => {
+    const settings = await overlayAPI.loadSettings?.();
+    if (settings) {
+        if (settings.locked !== undefined) {
+            locked = settings.locked;
+            iconLock.classList.toggle('fa-lock-open', locked);
+            iconLock.classList.toggle('fa-lock', !locked);
+            iconLock.classList.toggle('text-emerald-400', locked);
+        }
+        if (settings.pinned !== undefined) {
+            pinned = settings.pinned;
+            iconPin.classList.toggle('-rotate-45', !pinned);
+            iconPin.classList.toggle('rotate-0', pinned);
+            iconPin.classList.toggle('text-emerald-400', pinned);
+        }
+    }
+})();
+
+connect();
+</script>
+</body>
+</html>

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora de Combustível</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    /* Estilos globais para o corpo */
+    body {
+      margin: 0;
+      background: transparent; /* Fundo transparente para a overlay */
+      overflow: hidden; /* Esconde barras de rolagem */
+      font-family: 'Poppins', sans-serif;
+      -webkit-user-select: none; /* Desabilita seleção de texto */
+    }
+
+    /* Estilo do wrapper principal da overlay redimensionável */
+    .resizable-overlay-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 360px; /* Largura inicial da sua overlay original */
+      height: auto; /* Altura automática para se ajustar ao conteúdo */
+      background: rgba(20,25,35,0.95); /* Fundo da sua overlay original */
+      border-radius: 8px; /* Borda arredondada da sua overlay original */
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6); /* Sombra da sua overlay original */
+      color: #eee; /* Cor do texto padrão da sua overlay original */
+      font-size: 0.875rem; /* Tamanho da fonte padrão da sua overlay original */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- ESTILOS PARA MODO DE EDIÇÃO GLOBAL --- */
+    .resizable-overlay-wrapper.global-edit-mode-active {
+      outline: 2px dashed rgba(0, 123, 255, 0.7) !important;
+      outline-offset: -2px;
+    }
+
+    /* Estilo dos manipuladores de redimensionamento */
+    .resize-handle {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      z-index: 1001; /* Acima de outros elementos */
+      background: transparent; /* Transparente para não bloquear o conteúdo */
+      -webkit-app-region: no-drag; /* Desabilita arrasto da janela nos manipuladores */
+      display: none; /* Escondido por padrão */
+    }
+
+    .global-edit-mode-active .resize-handle {
+      display: block !important; /* Mostra apenas em modo de edição global */
+    }
+
+    /* Posição e cursor para cada manipulador */
+    .resize-handle.top-left    { top: 0; left: 0; cursor: nwse-resize; }
+    .resize-handle.top-center  { top: 0; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .resize-handle.top-right   { top: 0; right: 0; cursor: nesw-resize; }
+    .resize-handle.right-center{ top: 50%; right: 0; transform: translateY(-50%); cursor: ew-resize; }
+    .resize-handle.bottom-right{ bottom: 0; right: 0; cursor: se-resize; }
+    .resize-handle.bottom-center{ bottom: 0; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .resize-handle.bottom-left { bottom: 0; left: 0; cursor: sw-resize; }
+    .resize-handle.left-center { top: 50%; left: 0; transform: translateY(-50%); cursor: ew-resize; }
+
+    /* Estilo do cabeçalho da overlay (para arrastar e controles) */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px; /* Mais fino como no original */
+      background: rgba(30,35,45,1); /* Fundo do titlebar original */
+      border-top-left-radius: 8px; /* Borda arredondada do titlebar original */
+      border-top-right-radius: 8px; /* Borda arredondada do titlebar original */
+      cursor: default; /* Cursor padrão, muda para 'move' em modo de edição */
+      -webkit-app-region: drag; /* Permite arrastar a janela no Electron */
+    }
+    .global-edit-mode-active .header {
+        cursor: move;
+    }
+
+    /* Estilo do título no cabeçalho */
+    .header .title {
+      font-size: 13px; /* Tamanho da fonte do title original */
+      font-weight: 600;
+      white-space: nowrap;
+      color: #eee; /* Cor do texto do title original */
+    }
+
+    /* Estilo dos controles (botões) no cabeçalho */
+    .controls {
+      display: flex;
+      gap: 4px; /* Espaçamento entre os botões */
+      -webkit-app-region: no-drag; /* Desabilita arrasto da janela nos controles */
+    }
+
+    /* Estilo dos botões de controle */
+    .controls button {
+      background: #334155; /* Cor de fundo padrão */
+      border: none;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: background 0.2s; /* Transição suave no hover */
+      color: #ccc; /* Cor padrão dos ícones */
+    }
+    .controls button:hover {
+      background: #475569; /* Cor de fundo no hover */
+    }
+    #closeBtn { background: #dc2626; } /* Cor do botão de fechar */
+    #closeBtn:hover { background: #ef4444; } /* Cor do botão de fechar no hover */
+
+    /* Cores dos botões de controle (adaptadas dos estilos originais) */
+    #pin.active { background: #60a5fa; color: #fff; }
+    #lock.active { background: #22d3ee; color: #fff; }
+    #click.active { background: #6366f1; color: #fff; }
+    #gear.active { background: #475569; color: #fff; }
+
+    /* Estilo do popover de ajustes */
+    #settings-popover {
+      position:absolute;
+      top:40px;
+      right:10px;
+      display:none;
+      background-color:rgba(30,41,59,0.95);
+      border:1px solid #3b82f6;
+      border-radius:0.5rem;
+      padding:0.6rem;
+      z-index:1000;
+    }
+    #settings-popover label {
+      color:#cbd5e1;
+      font-size:0.7rem;
+    }
+
+    /* Estilos do conteúdo da calculadora (mantidos do original) */
+    .content.overlay-combustivel {
+      padding: 8px; /* Padding do content original */
+      width: 100%;
+      box-sizing: border-box;
+      background: inherit; /* Herda o fundo do wrapper */
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .overlay-combustivel > div.text-center { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; } /* Tailwind default, mantido */
+    .text-center { text-align: center; }
+    .text-xl { font-size: 1.25rem; }
+    .font-semibold { font-weight: 600; }
+    .text-blue-400 { color: #60a5fa; }
+    .mb-2 { margin-bottom: 0.5rem; }
+
+    .flex { display: flex; }
+    .justify-between { justify-content: space-between; }
+    .text-green-300 { color: #86efac; }
+    .text-xs { font-size: 0.75rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+
+    .w-full { width: 100%; }
+    .h-4 { height: 1rem; }
+    .bg-green-950 { background-color: #052e16; }
+    .rounded { border-radius: 0.25rem; }
+    /* .h-4 { height: 1rem; }  Duplicado, removido */
+    .bg-gradient-to-r { background-image: linear-gradient(to right, var(--tw-gradient-stops)); }
+    .from-green-600 { --tw-gradient-from: #16a34a; --tw-gradient-to: rgba(22,163,74,0); }
+    .to-yellow-400 { --tw-gradient-to: #facc15; } /* Adicionado para completar o gradiente da barra */
+    .to-red-500 { --tw-gradient-to: #ef4444; } /* Adicionado para gradiente perigoso */
+
+
+    .grid { display: grid; }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gap-4 { gap: 1rem; }
+    .text-green-400 { color: #4ade80; }
+    .text-lg { font-size: 1.125rem; }
+    .font-bold { font-weight: 700; }
+    /* .text-blue-400 { color: #60a5fa; } Duplicado, removido */
+    .text-gray-300 { color: #d1d5db; }
+
+    .text-red-600 { color: #dc2626; }
+    .text-green-600 { color: #16a34a; }
+    .status-ok { color: #16a34a; } /* Verde */
+    .status-warning { color: #fbbf24; } /* Amarelo/Laranja */
+    .status-danger { color: #dc2626; } /* Vermelho */
+
+
+    .border-t { border-top-width: 1px; }
+    .border-gray-700 { border-color: #374151; }
+    .pt-2 { padding-top: 0.5rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .text-white { color: #fff; }
+    .text-sm { font-size: 0.875rem; }
+    .text-blue-500 { color: #3b82f6; }
+    .text-gray-400 { color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <div class="resizable-overlay-wrapper" id="wrapper">
+    <div class="resize-handle top-left"    id="h-tl"></div>
+    <div class="resize-handle top-center"  id="h-tc"></div>
+    <div class="resize-handle top-right"   id="h-tr"></div>
+    <div class="resize-handle right-center"id="h-rc"></div>
+    <div class="resize-handle bottom-right"id="h-br"></div>
+    <div class="resize-handle bottom-center"id="h-bc"></div>
+    <div class="resize-handle bottom-left" id="h-bl"></div>
+    <div class="resize-handle left-center" id="h-lc"></div>
+    <div class="header" id="overlay-header">
+      <div class="title">Calculadora de Combustível</div>
+      <div class="controls">
+        <button id="pin"   title="Sempre visível">📌</button>
+        <button id="lock"  title="Travar/Destravar posição">🔒</button>
+        <button id="click" title="Ignorar cliques">🖱️</button>
+        <button id="gear"  title="Ajustes">⚙️</button>
+        <button id="closeBtn" title="Fechar overlay">✖</button>
+      </div>
+    </div>
+
+    <div class="content overlay-combustivel">
+      <div class="text-center text-xl font-semibold text-blue-400 mb-2">Fuel Calculator</div>
+
+      <div class="mb-3">
+        <div class="flex justify-between text-green-300 text-xs mb-1">
+          <span>Tanque Atual</span>
+          <span id="tanqueAtualValor">0.0L</span>
+        </div>
+        <div class="w-full h-4 bg-gray-700 rounded"> <div id="barraTanque" class="h-4 bg-gradient-to-r from-green-500 to-green-700 rounded" style="width: 0%;"></div> </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div class="text-center">
+          <div id="consumoPorVoltaValor" class="text-green-400 text-lg font-bold">0.00L</div>
+          <div class="text-xs text-gray-300">Consumo p/ Volta</div>
+        </div>
+        <div class="text-center">
+          <div id="voltasRestantesAtualValor" class="text-blue-400 text-lg font-bold">0</div>
+          <div class="text-xs text-gray-300">Voltas Restantes</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div class="text-center">
+          <div id="consumoMedioValor" class="text-green-300 text-lg font-bold">0.00L</div>
+          <div class="text-xs text-gray-300">Consumo Médio</div>
+        </div>
+        <div class="text-center">
+          <div id="voltasRestantesMedioValor" class="text-blue-400 text-lg font-bold">0</div>
+          <div class="text-xs text-gray-300">Voltas (Médio)</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div class="text-center">
+          <div id="necessarioFimValor" class="text-red-600 text-lg font-bold">0.0L</div>
+          <div class="text-xs text-gray-300">Necessário p/ Fim</div>
+        </div>
+        <div class="text-center">
+          <div id="statusValor" class="text-lg font-bold status-ok">--</div> <div class="text-xs text-gray-300">Status</div>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-700 pt-2 mt-2 text-center">
+        <div class="text-white text-sm mb-1">Recomendação de Abastecimento</div>
+        <div id="recomendacaoAbastecimentoValor" class="text-lg font-bold text-blue-500">+0.0L</div> <div class="text-xs text-gray-400">Para terminar a corrida</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-popover">
+    <div style="margin-bottom:0.4rem;">
+      <label for="rangeOpacity">Opacidade</label>
+      <input type="range" id="rangeOpacity" min="0.1" max="1" step="0.01" value="0.98" style="width:100%;">
+    </div>
+    <div>
+      <label for="rangeContrast">Contraste</label>
+      <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1" style="width:100%;">
+    </div>
+  </div>
+
+  <script>
+    // --- Constantes e Variáveis de Estado ---
+    const OVERLAY_NAME = 'overlay-tanque';
+    const resizableOverlayWrapper = document.getElementById('wrapper');
+    const overlayHeader = document.getElementById('overlay-header');
+    const settingsPopover = document.getElementById('settings-popover');
+    const rangeOpacity = document.getElementById('rangeOpacity');
+    const rangeContrast = document.getElementById('rangeContrast');
+    const pinButton = document.getElementById('pin');
+    const lockButton = document.getElementById('lock');
+    const clickButton = document.getElementById('click');
+    const gearButton = document.getElementById('gear');
+    const closeButton = document.getElementById('closeBtn');
+
+    let isResizing = false;
+    let resizeHandleType = '';
+    let initialX, initialY, initialWidth, initialHeight, initialLeft, initialTop;
+
+    let isDragging = false;
+    let dragStartX, dragStartY, windowStartX, windowStartY;
+
+    let isCurrentlyInGlobalEditMode = false;
+    let localPinned = false;
+    let localLocked = true; // Começa travado por padrão
+    let localIgnoreClicks = true; // Começa ignorando cliques por padrão
+
+    // --- Lógica de Redimensionamento e Arraste (mantida como no original) ---
+    function getCursorForHandle(handleType) { /* ... */ }
+    document.querySelectorAll('.resize-handle').forEach(handle => { /* ... */ });
+    function resize(e, handleType) { /* ... */ }
+    overlayHeader.addEventListener('mousedown', (e) => { /* ... */ });
+    function dragMove(e) { /* ... */ }
+    document.addEventListener('mousemove', (e) => { /* ... */ });
+    document.addEventListener('mouseup', () => { /* ... */ });
+    if (window.electronAPI && window.electronAPI.onUpdateBounds) { /* ... */ }
+    if (window.electronAPI && window.electronAPI.onEditMode) { /* ... */ }
+    // (Funções de redimensionamento e arraste omitidas para brevidade, mas devem ser as mesmas do seu original)
+    function getCursorForHandle(handleType) {
+      const cursors = { tl: 'nwse-resize', tc: 'ns-resize', tr: 'nesw-resize', rc: 'ew-resize', br: 'se-resize', bc: 'ns-resize', bl: 'sw-resize', lc: 'ew-resize' };
+      return cursors[handleType] || 'default';
+    }
+
+    document.querySelectorAll('.resize-handle').forEach(handle => {
+      handle.addEventListener('mousedown', (e) => {
+        if (!isCurrentlyInGlobalEditMode) return;
+        e.preventDefault(); e.stopPropagation();
+        isResizing = true;
+        resizeHandleType = handle.id.replace('h-', '');
+        initialX = e.clientX; initialY = e.clientY;
+        const rect = resizableOverlayWrapper.getBoundingClientRect();
+        initialWidth = rect.width; initialHeight = rect.height;
+        initialLeft = rect.left; initialTop = rect.top;
+        document.body.style.cursor = getCursorForHandle(resizeHandleType);
+      });
+    });
+
+    function resize(e, handleType) {
+      if (!isResizing || !isCurrentlyInGlobalEditMode) return;
+      const aspectRatio = initialWidth / initialHeight;
+      const shiftPressed = e.shiftKey;
+      let newWidth = initialWidth, newHeight = initialHeight, newLeft = initialLeft, newTop = initialTop;
+      const deltaX = e.clientX - initialX, deltaY = e.clientY - initialY;
+
+      switch (handleType) {
+        case 'br': newWidth = initialWidth + deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY; break;
+        case 'bl': newWidth = initialWidth - deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY; newLeft = initialLeft + deltaX; break;
+        case 'tr': newWidth = initialWidth + deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY; newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY); break;
+        case 'tl': newWidth = initialWidth - deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY; newLeft = initialLeft + deltaX; newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY); break;
+        case 'rc': newWidth = initialWidth + deltaX; break;
+        case 'lc': newWidth = initialWidth - deltaX; newLeft = initialLeft + deltaX; break;
+        case 'bc': newHeight = initialHeight + deltaY; break;
+        case 'tc': newHeight = initialHeight - deltaY; newTop = initialTop + deltaY; break;
+      }
+
+      const minWidth = 200, minHeight = 250;
+      newWidth = Math.max(newWidth, minWidth); newHeight = Math.max(newHeight, minHeight);
+      
+      const screenWidth = window.electronAPI?.setBounds ? window.screen.width : window.innerWidth;
+      const screenHeight = window.electronAPI?.setBounds ? window.screen.height : window.innerHeight;
+
+      if (newLeft + newWidth > screenWidth) newWidth = screenWidth - newLeft;
+      if (newTop + newHeight > screenHeight) newHeight = screenHeight - newTop;
+      newLeft = Math.max(newLeft, 0); newTop = Math.max(newTop, 0);
+
+      if (window.electronAPI?.setBounds) {
+        window.electronAPI.setBounds(OVERLAY_NAME, {
+          x: Math.round(newLeft), y: Math.round(newTop),
+          width: Math.round(newWidth), height: Math.round(newHeight)
+        });
+      } else {
+        resizableOverlayWrapper.style.width = newWidth + 'px'; resizableOverlayWrapper.style.height = newHeight + 'px';
+        resizableOverlayWrapper.style.left = newLeft + 'px'; resizableOverlayWrapper.style.top = newTop + 'px';
+      }
+    }
+
+    overlayHeader.addEventListener('mousedown', (e) => {
+      if (!isCurrentlyInGlobalEditMode || e.target.closest('.controls')) return;
+      isDragging = true;
+      dragStartX = e.clientX; dragStartY = e.clientY;
+      const rect = resizableOverlayWrapper.getBoundingClientRect();
+      windowStartX = rect.left; windowStartY = rect.top;
+      document.body.style.cursor = 'grabbing';
+    });
+
+    function dragMove(e) {
+      if (!isDragging || !isCurrentlyInGlobalEditMode) return;
+      const deltaX = e.clientX - dragStartX, deltaY = e.clientY - dragStartY;
+      
+      const screenWidth = window.electronAPI?.setBounds ? window.screen.width : window.innerWidth;
+      const screenHeight = window.electronAPI?.setBounds ? window.screen.height : window.innerHeight;
+
+      const maxX = screenWidth - resizableOverlayWrapper.offsetWidth;
+      const maxY = screenHeight - resizableOverlayWrapper.offsetHeight;
+      const newX = Math.min(Math.max(windowStartX + deltaX, 0), maxX);
+      const newY = Math.min(Math.max(windowStartY + deltaY, 0), maxY);
+
+      if (window.electronAPI?.setBounds) {
+        window.electronAPI.setBounds(OVERLAY_NAME, {
+          x: Math.round(newX), y: Math.round(newY),
+          width: Math.round(resizableOverlayWrapper.offsetWidth),
+          height: Math.round(resizableOverlayWrapper.offsetHeight)
+        });
+      } else {
+        resizableOverlayWrapper.style.left = newX + 'px'; resizableOverlayWrapper.style.top = newY + 'px';
+      }
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      if (isResizing) resize(e, resizeHandleType);
+      else if (isDragging) dragMove(e);
+    });
+
+    document.addEventListener('mouseup', () => {
+      isResizing = false; isDragging = false;
+      document.body.style.cursor = '';
+    });
+
+    if (window.electronAPI && window.electronAPI.onUpdateBounds) {
+        window.electronAPI.onUpdateBounds((bounds) => {
+            if (bounds && typeof bounds.x === 'number') {
+                resizableOverlayWrapper.style.left = `${bounds.x}px`;
+                resizableOverlayWrapper.style.top = `${bounds.y}px`;
+                resizableOverlayWrapper.style.width = `${bounds.width}px`;
+                resizableOverlayWrapper.style.height = `${bounds.height}px`;
+            }
+        });
+    }
+     if (window.electronAPI && window.electronAPI.onEditMode) {
+      window.electronAPI.onEditMode((isGlobalEditModeActive) => {
+        console.log(`${OVERLAY_NAME} - Modo de Edição Global: ${isGlobalEditModeActive}`);
+        isCurrentlyInGlobalEditMode = isGlobalEditModeActive;
+        resizableOverlayWrapper.classList.toggle('global-edit-mode-active', isGlobalEditModeActive);
+        overlayHeader.style.cursor = isGlobalEditModeActive ? 'move' : 'default';
+        updateVisualLockButtonState(!isGlobalEditModeActive && localLocked);
+        updateVisualClickButtonState(!isGlobalEditModeActive && localIgnoreClicks);
+
+        // Se saindo do modo de edição, restaura o estado de "movable" e "ignoreMouseEvents"
+        // para o que estava salvo (localLocked, localIgnoreClicks)
+        if (!isGlobalEditModeActive) {
+            if (window.electronAPI?.toggleMovable) {
+                window.electronAPI.toggleMovable(OVERLAY_NAME, !localLocked);
+            }
+            if (window.electronAPI?.setIgnoreMouseEvents) {
+                window.electronAPI.setIgnoreMouseEvents(OVERLAY_NAME, localIgnoreClicks, { forward: true });
+            }
+        } else { // Entrando no modo de edição
+            if (window.electronAPI?.toggleMovable) {
+                window.electronAPI.toggleMovable(OVERLAY_NAME, true); // Sempre móvel no modo edição
+            }
+            if (window.electronAPI?.setIgnoreMouseEvents) {
+                window.electronAPI.setIgnoreMouseEvents(OVERLAY_NAME, false, { forward: true }); // Nunca ignora cliques no modo edição
+            }
+        }
+      });
+    }
+
+
+    // --- Lógica dos Botões de Controle (mantida como no original) ---
+    closeButton.onclick = () => window.electronAPI?.closeOverlay?.(OVERLAY_NAME);
+    gearButton.onclick = (e) => { /* ... */ };
+    document.addEventListener('mousedown', (e) => { /* ... */ });
+    rangeOpacity.oninput = (e) => { /* ... */ };
+    rangeContrast.oninput = (e) => { /* ... */ };
+    function updateVisualPinButtonState(isPinned) { /* ... */ }
+    function updateVisualLockButtonState(isLocked) { /* ... */ }
+    function updateVisualClickButtonState(shouldIgnoreClicks) { /* ... */ }
+    pinButton.onclick = () => { /* ... */ };
+    lockButton.onclick = () => { /* ... */ };
+    clickButton.onclick = () => { /* ... */ };
+    // (Funções dos botões omitidas para brevidade, mas devem ser as mesmas do seu original)
+    gearButton.onclick = (e) => {
+      settingsPopover.style.display = settingsPopover.style.display === 'none' ? 'block' : 'none';
+      settingsPopover.style.right = (resizableOverlayWrapper.offsetWidth - e.target.offsetLeft - e.target.offsetWidth + 0) + 'px'; // Ajustado
+      settingsPopover.style.top = (e.target.offsetTop + e.target.offsetHeight + 5) + 'px';
+    };
+    document.addEventListener('mousedown', (e) => {
+      if (settingsPopover.style.display === 'block' && !settingsPopover.contains(e.target) && e.target !== gearButton) {
+        settingsPopover.style.display = 'none';
+      }
+    });
+    rangeOpacity.oninput = (e) => {
+      const opacity = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.opacity = opacity;
+      saveSetting('opacity', opacity);
+      window.electronAPI?.setOpacity?.(OVERLAY_NAME, opacity);
+    };
+    rangeContrast.oninput = (e) => {
+      const contrast = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.filter = `contrast(${contrast})`; // Corrigido para usar filter
+      saveSetting('contrast', contrast);
+    };
+
+    function updateVisualPinButtonState(isPinned) {
+        localPinned = isPinned;
+        pinButton.classList.toggle('active', isPinned);
+        pinButton.innerHTML = isPinned ? '📍' : '📌';
+    }
+    function updateVisualLockButtonState(isLocked) {
+        localLocked = isLocked;
+        lockButton.classList.toggle('active', isLocked);
+        lockButton.innerHTML = isLocked ? '🔓' : '🔒';
+        // A lógica de pointer-events é gerenciada pelo onEditMode e estado inicial
+    }
+    function updateVisualClickButtonState(shouldIgnoreClicks) {
+        localIgnoreClicks = shouldIgnoreClicks;
+        clickButton.classList.toggle('active', shouldIgnoreClicks);
+        clickButton.innerHTML = shouldIgnoreClicks ? '🚫🖱️' : '🖱️';
+        // A lógica de setIgnoreMouseEvents é gerenciada pelo onEditMode e estado inicial
+    }
+
+    pinButton.onclick = () => {
+      const preferredPinnedState = !localPinned;
+      saveSetting('pinned', preferredPinnedState);
+      updateVisualPinButtonState(preferredPinnedState);
+      window.electronAPI?.setAlwaysOnTop?.(OVERLAY_NAME, preferredPinnedState);
+    };
+
+    lockButton.onclick = () => {
+      if (isCurrentlyInGlobalEditMode) return; // Não permite alterar se estiver em modo de edição global
+      const preferredLockedState = !localLocked;
+      saveSetting('locked', preferredLockedState);
+      updateVisualLockButtonState(preferredLockedState);
+      window.electronAPI?.toggleMovable?.(OVERLAY_NAME, !preferredLockedState);
+    };
+
+    clickButton.onclick = () => {
+      if (isCurrentlyInGlobalEditMode) return; // Não permite alterar se estiver em modo de edição global
+      const preferredIgnoreState = !localIgnoreClicks;
+      saveSetting('ignoreClicks', preferredIgnoreState);
+      updateVisualClickButtonState(preferredIgnoreState);
+      window.electronAPI?.setIgnoreMouseEvents?.(OVERLAY_NAME, preferredIgnoreState, { forward: true });
+    };
+
+
+    // --- Salvar e Carregar Configurações (mantida como no original) ---
+    const SETTINGS_PREFIX = `settings-${OVERLAY_NAME}-`;
+    function saveSetting(key, value) { /* ... */ }
+    function loadSetting(key, defaultValue) { /* ... */ }
+    function loadAllSettings() { /* ... */ }
+    // (Funções de settings omitidas para brevidade, mas devem ser as mesmas do seu original)
+    function saveSetting(key, value) {
+      try { localStorage.setItem(SETTINGS_PREFIX + key, JSON.stringify(value)); } catch (e) { console.error("Erro ao salvar setting:", e); }
+    }
+    function loadSetting(key, defaultValue) {
+      try { const value = localStorage.getItem(SETTINGS_PREFIX + key); return value === null ? defaultValue : JSON.parse(value); } catch (e) { console.error("Erro ao carregar setting:", e); return defaultValue; }
+    }
+     function loadAllSettings() {
+      const opacity = loadSetting('opacity', 0.95); // Valor padrão do seu CSS
+      rangeOpacity.value = opacity;
+      resizableOverlayWrapper.style.opacity = opacity;
+      window.electronAPI?.setOpacity?.(OVERLAY_NAME, opacity);
+
+      const contrast = loadSetting('contrast', 1);
+      rangeContrast.value = contrast;
+      resizableOverlayWrapper.style.filter = `contrast(${contrast})`;
+
+      localPinned = loadSetting('pinned', false);
+      updateVisualPinButtonState(localPinned);
+      window.electronAPI?.setAlwaysOnTop?.(OVERLAY_NAME, localPinned);
+
+      // Carrega preferências de lock e click-through
+      const savedLocked = loadSetting('locked', true);
+      const savedIgnoreClicks = loadSetting('ignoreClicks', true);
+
+      // Aplica o estado visual e de API baseado no modo de edição global
+      if (isCurrentlyInGlobalEditMode) {
+          updateVisualLockButtonState(false); // Desbloqueado visualmente
+          updateVisualClickButtonState(false); // Não ignora cliques visualmente
+          window.electronAPI?.toggleMovable?.(OVERLAY_NAME, true);
+          window.electronAPI?.setIgnoreMouseEvents?.(OVERLAY_NAME, false, { forward: true });
+      } else {
+          localLocked = savedLocked; // Atualiza variável local
+          localIgnoreClicks = savedIgnoreClicks; // Atualiza variável local
+          updateVisualLockButtonState(localLocked);
+          updateVisualClickButtonState(localIgnoreClicks);
+          window.electronAPI?.toggleMovable?.(OVERLAY_NAME, !localLocked);
+          window.electronAPI?.setIgnoreMouseEvents?.(OVERLAY_NAME, localIgnoreClicks, { forward: true });
+      }
+
+      if (window.electronAPI && window.electronAPI.getBounds) {
+          window.electronAPI.getBounds(OVERLAY_NAME).then(bounds => {
+              if (bounds && typeof bounds.x === 'number') {
+                  resizableOverlayWrapper.style.left = `${bounds.x}px`;
+                  resizableOverlayWrapper.style.top = `${bounds.y}px`;
+                  resizableOverlayWrapper.style.width = `${bounds.width}px`;
+                  resizableOverlayWrapper.style.height = `${bounds.height}px`;
+              }
+          }).catch(err => console.error("Erro ao carregar bounds:", err));
+      }
+    }
+
+
+    // --- Lógica de Dados da Overlay (WebSocket) ---
+    const tanqueAtualValor          = document.getElementById('tanqueAtualValor');
+    const barraTanque              = document.getElementById('barraTanque');
+    const consumoPorVoltaValor     = document.getElementById('consumoPorVoltaValor');
+    const voltasRestantesAtualValor= document.getElementById('voltasRestantesAtualValor');
+    const consumoMedioValor        = document.getElementById('consumoMedioValor');
+    const voltasRestantesMedioValor= document.getElementById('voltasRestantesMedioValor');
+    const necessarioFimValor       = document.getElementById('necessarioFimValor');
+    const statusValor              = document.getElementById('statusValor');
+    const recomendacaoAbastecimentoValor = document.getElementById('recomendacaoAbastecimentoValor'); // Corrigido o ID
+    const capacidadeTotalTanque    = 80; // Exemplo, idealmente viria do YAML ou config
+
+    function updateFuelCalculator(model) {
+        // Tanque Atual e Barra
+        const atual = model.fuelLevel ?? 0; // Nome da propriedade no backend é fuelLevel (camelCase no JSON)
+        tanqueAtualValor.textContent = `${atual.toFixed(1)}L`;
+        const pct = Math.max(0, Math.min(100, (atual / capacidadeTotalTanque) * 100));
+        barraTanque.style.width = `${pct}%`;
+
+        // Ajustar cor da barra de combustível
+        barraTanque.classList.remove('from-green-500', 'to-green-700', 'from-yellow-400', 'to-yellow-600', 'from-red-500', 'to-red-700');
+        if (pct > 50) {
+            barraTanque.classList.add('from-green-500', 'to-green-700');
+        } else if (pct > 20) {
+            barraTanque.classList.add('from-yellow-400', 'to-yellow-600');
+        } else {
+            barraTanque.classList.add('from-red-500', 'to-red-700');
+        }
+
+
+        // Consumo por Volta (instantâneo/recente do SDK)
+        consumoPorVoltaValor.textContent = `${(model.fuelUsePerLap ?? 0).toFixed(2)}L`; // fuelUsePerLap
+
+        // Voltas Restantes (com base no consumo atual/instantâneo)
+        voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? 0); // lapsRemaining
+
+        // Consumo Médio
+        consumoMedioValor.textContent = `${(model.consumoMedio ?? 0).toFixed(2)}L`; // consumoMedio
+
+        // Voltas Restantes (com base no consumo médio)
+        voltasRestantesMedioValor.textContent = Math.floor(model.voltasRestantesMedio ?? 0); // voltasRestantesMedio
+
+        // Necessário para o Fim
+        necessarioFimValor.textContent = `${(model.necessarioFim ?? 0).toFixed(1)}L`; // necessarioFim
+
+        // Status do Combustível
+        const status = model.fuelStatus ?? {}; // fuelStatus
+        statusValor.textContent = status.text || '--';
+        // Remove todas as classes de status antes de adicionar a nova
+        statusValor.className = 'text-lg font-bold'; // Reseta para classes base
+        if (status.class) {
+            statusValor.classList.add(status.class);
+        } else {
+            statusValor.classList.add('status-ok'); // Fallback
+        }
+
+        // Recomendação de Abastecimento
+        const rec = model.recomendacaoAbastecimento ?? 0; // recomendacaoAbastecimento
+        recomendacaoAbastecimentoValor.textContent = `${rec >= 0 ? '+' : ''}${rec.toFixed(1)}L`;
+        recomendacaoAbastecimentoValor.className = `text-lg font-bold ${rec > 0 ? 'text-blue-500' : 'text-green-600'}`;
+    }
+
+
+    const WS_URL = window.OVERLAY_WS_URL || "ws://localhost:5221/ws";
+    let ws;
+    function connectWebSocket() {
+        ws = new WebSocket(WS_URL);
+        ws.onopen = () => console.log(`${OVERLAY_NAME} - WS Conectado a ${WS_URL}`);
+
+        ws.onmessage = ({data}) => {
+            try {
+                const d = JSON.parse(data);
+                // console.log("Dados recebidos:", d); // Para depuração
+                updateFuelCalculator(d);
+            } catch (err) {
+                 console.error(`${OVERLAY_NAME} - Erro ao processar mensagem WS: ${err.message}. Dados recebidos:`, data, "Objeto de erro:", err);
+            }
+        };
+
+        ws.onclose = (event) => {
+            console.log(`${OVERLAY_NAME} - WS Desconectado. Código: ${event.code}, Motivo: ${event.reason}. Tentando reconectar...`);
+            setTimeout(connectWebSocket, 3000);
+        };
+
+        ws.onerror = (event) => {
+            console.error(`${OVERLAY_NAME} - Falha na conexão WebSocket com ${WS_URL}. Verifique se o servidor WebSocket está em execução e acessível. Evento:`, event);
+            // O onclose será chamado após o onerror, então a reconexão será tentada lá.
+        };
+    }
+
+    // --- Inicialização ---
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAllSettings(); // Carrega configurações primeiro
+      connectWebSocket(); // Depois conecta ao WebSocket
+
+      // Estado inicial da UI baseado no modo de edição global (se a API Electron estiver presente)
+      // Isso é importante para que a UI reflita o estado correto na inicialização.
+      if (window.electronAPI) {
+          // Se não estiver no modo de edição global, aplica as preferências salvas de lock/click-through
+          if (!isCurrentlyInGlobalEditMode) {
+              window.electronAPI.toggleMovable?.(OVERLAY_NAME, !localLocked);
+              window.electronAPI.setIgnoreMouseEvents?.(OVERLAY_NAME, localIgnoreClicks, { forward: true });
+          } else {
+              // Se estiver no modo de edição global, a janela é móvel e não ignora cliques
+              window.electronAPI.toggleMovable?.(OVERLAY_NAME, true);
+              window.electronAPI.setIgnoreMouseEvents?.(OVERLAY_NAME, false, { forward: true });
+          }
+      } else {
+          // Fallback para ambiente não-Electron (ex: navegador para desenvolvimento)
+          // Apenas atualiza o visual dos botões, sem chamar APIs Electron
+          updateVisualLockButtonState(localLocked);
+          updateVisualClickButtonState(localIgnoreClicks);
+      }
+    });
+  </script>
+</body>
+</html>

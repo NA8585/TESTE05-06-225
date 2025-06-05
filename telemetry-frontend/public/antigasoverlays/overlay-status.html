@@ -1,0 +1,403 @@
+<!--
+  Overlay Diagnóstico Full Definitiva – MEGA OVERLAY
+  • Incorporados dados de diagnóstico backend avançado
+  • Mantido layout de 3 colunas e funcionalidades existentes
+  • Formatadores de dados aprimorados e mais abrangentes
+-->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Diagnóstico Full Definitiva - MEGA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html,body {
+      width:100%;
+      height:100%;
+      margin:0;
+      padding:0;
+      font-family:'Poppins',sans-serif;
+      overflow: hidden; 
+      position: relative; 
+    }
+    body {
+      background:#0f172a;
+      background-image:radial-gradient(rgba(255,255,255,0.08) 1px,transparent 1px);
+      background-size:4px 4px; 
+    }
+    .drag{-webkit-app-region:drag;} .no-drag{-webkit-app-region:no-drag;}
+    
+    .section{
+      background:#1e293b; /* slate-800 */
+      border-left:4px solid #3b82f6; /* blue-500 */
+      border-radius:0.25rem;
+      padding:0.25rem 0.65rem; /* Aumentado padding horizontal */
+      font-weight:600;
+      color:#93c5fd; /* blue-300 */
+      margin-top: 0.65rem; 
+      margin-bottom: 0.5rem;
+      font-size: 0.9em; /* Um pouco menor para caber mais */
+    }
+    
+    .label {
+      color: #a1a1aa; /* zinc-400 */
+      font-weight: 500; /* medium */
+      font-size: 0.8em;
+    }
+    .value {
+      color: #22c55e; /* emerald-500 - default ok */
+      white-space: pre-wrap;
+      margin-left: 0.45rem;
+      font-size: 0.8em;
+      font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+    }
+    .value.miss { color: #f87171; } /* red-400 */
+    .value.array { color: #a5b4fc; font-style: italic; } /* indigo-300 */
+    .value.bool-true { color: #34d399; } /* emerald-400 */
+    .value.bool-false { color: #fbbf24; } /* amber-400 */
+
+
+    .data-item-container {
+      padding: 0.05rem 0.2rem; /* Mais compacto */
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-all; 
+      line-height: 1.3; /* Mais compacto */
+    }
+
+    #root {
+      position: absolute;
+      top: 1.75rem; 
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: scroll; 
+      padding: 0.5rem; 
+      display: grid;
+      gap: 0.1rem 0.5rem; /* Reduzido gap vertical */
+      grid-template-columns: repeat(3, 1fr);
+      align-content: start; 
+    }
+
+    ::-webkit-scrollbar { width: 7px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+    ::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 3px; } /* gray-600 */
+    ::-webkit-scrollbar-thumb:hover { background-color: #6b7280; } /* gray-500 */
+  </style>
+</head>
+<body class="text-slate-300">
+  <header class="drag flex items-center justify-between h-7 px-2 bg-slate-800 text-xs text-slate-300" style="position: fixed; top: 0; left: 0; right: 0; z-index: 10;">
+    <span>Diagnóstico Full Definitiva - MEGA</span>
+    <div class="no-drag space-x-3">
+      <i id="lock"  class="fa-solid fa-lock cursor-pointer hover:text-emerald-400"></i>
+      <i id="pin"   class="fa-solid fa-thumbtack -rotate-45 cursor-pointer hover:text-emerald-400"></i>
+      <i id="close" class="fa-solid fa-xmark cursor-pointer hover:text-red-500"></i>
+    </div>
+  </header>
+
+  <div id="root"></div>
+
+<script>
+const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
+const api = window.overlayAPI || {};
+let locked = false, pinned = false;
+const $ = id => document.getElementById(id);
+
+// Botões do Cabeçalho (sem alterações, mantidos como antes)
+if ($('close')) $('close').onclick = () => api.close ? api.close() : console.log("Attempted to close.");
+if ($('lock')) $('lock').onclick = e => { locked = !locked; if(api.lock) api.lock(locked); e.target.classList.toggle('fa-lock-open'); e.target.classList.toggle('fa-lock'); console.log(locked ? "Overlay locked" : "Overlay unlocked"); };
+if ($('pin')) $('pin').onclick = e => { pinned = !pinned; if(api.pin) api.pin(pinned); e.target.classList.toggle('-rotate-45'); e.target.classList.toggle('rotate-0'); console.log(pinned ? "Overlay pinned" : "Overlay unpinned"); };
+
+const root = $('root');
+const globalState = { rawYaml: null, yamlData: {} }; // Renomeado para evitar conflito com 'state' do novo HTML
+
+// Função de formatação genérica (inspirada no fmtValue do novo HTML)
+const fmtGenericValue = (value, unit = '') => {
+  if (value === undefined || value === null || (typeof value === 'number' && !isFinite(value))) return '—';
+  if (Array.isArray(value)) return `[${value.slice(0, 3).map(v => fmtGenericValue(v)).join(', ')}${value.length > 3 ? ',…' : ''}] (${value.length})`;
+  if (typeof value === 'boolean') return value ? 'Sim' : 'Não';
+  if (typeof value === 'number') {
+    if (Number.isInteger(value)) return `${value}${unit}`;
+    if (Math.abs(value) < 0.0005 && value !== 0) return `${value.toExponential(2)}${unit}`;
+    return `${value.toFixed(3)}${unit}`; // Default to 3 decimal places for floats
+  }
+  return `${String(value)}${unit}`;
+};
+
+const fmtTime = s => { // Mantido o formatador de tempo existente
+  if (typeof s !== 'number' || !isFinite(s) || s < 0) return '—'; 
+  const h = Math.floor(s / 3600).toString().padStart(2, '0');
+  const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+  const secs = Math.floor(s % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${secs}`;
+};
+
+function addSection(title) {
+  if (!root) return;
+  const sectionEl = document.createElement('div');
+  sectionEl.className = 'col-span-full section';
+  sectionEl.textContent = title;
+  root.appendChild(sectionEl);
+}
+
+function addRow(labelText, valueContent, formatter = fmtGenericValue, unit = '') {
+    if (!root) return;
+    const itemContainer = document.createElement('div');
+    itemContainer.className = 'data-item-container';
+    const labelEl = document.createElement('span');
+    labelEl.className = 'label';
+    labelEl.textContent = labelText + ":";
+    itemContainer.appendChild(labelEl);
+
+    const valueEl = document.createElement('span');
+    valueEl.className = 'value';
+    let formattedText;
+    try {
+        formattedText = formatter(valueContent, unit); // Pass unit to formatter if it accepts
+    } catch (e) {
+        console.error(`Formatter error for "${labelText}" with value "${valueContent}":`, e);
+        formattedText = 'ERR';
+    }
+    
+    valueEl.textContent = (formattedText === undefined || formattedText === null || formattedText === '') ? '—' : formattedText;
+
+    // Add specific classes for styling based on value type or content
+    if (typeof valueContent === 'boolean') {
+        valueEl.classList.add(valueContent ? 'bool-true' : 'bool-false');
+    } else if (Array.isArray(valueContent)) {
+        valueEl.classList.add('array');
+    } else if (valueEl.textContent === '—' || valueEl.textContent === 'ERR') {
+        valueEl.classList.add('miss');
+    }
+    itemContainer.appendChild(valueEl);
+    root.appendChild(itemContainer);
+}
+
+
+function render(data) {
+  if (!root || !data) {
+    console.error("Root element or data missing for render.");
+    if(root) root.innerHTML = '<div class="col-span-full section" style="color: #f87171;">Erro: Dados ou elemento raiz ausentes.</div>';
+    return;
+  }
+  root.innerHTML = ''; 
+
+  if (data.SessionInfoYaml && data.SessionInfoYaml !== globalState.rawYaml) {
+    globalState.rawYaml = data.SessionInfoYaml;
+    try {
+      globalState.yamlData = jsyaml.load(data.SessionInfoYaml) || {}; 
+    } catch (e) {
+      console.error("Error parsing YAML:", e);
+      globalState.yamlData = {}; 
+    }
+  }
+
+  const wInfo = globalState.yamlData?.WeekendInfo || {};
+  const weather = wInfo.Weather || {};
+  const driverInfo = globalState.yamlData?.DriverInfo || {};
+  const drivers = driverInfo.Drivers || [];
+  const currentSessionInfo = globalState.yamlData?.SessionInfo || {};
+  const currentSessionArr = currentSessionInfo.Sessions || [];
+  const currentSessionNum = currentSessionInfo.SessionNum; // Corrected: SessionNum for current session index
+  const session = currentSessionArr.find(s => s.SessionNum === currentSessionNum) || {};
+
+
+  // --- COLUNA 1 ---
+  addSection('🏁 Pista & Sessão');
+  addRow('Track', wInfo.TrackDisplayName);
+  addRow('Layout', wInfo.TrackConfigName);
+  addRow('Length', parseFloat(wInfo.TrackLength), fmtGenericValue, ' km');
+  addRow('Session Type', session.SessionType || session.SessionName); // SessionName from new, SessionType as fallback
+  addRow('Air Temp', weather.TempValue, fmtGenericValue, weather.TempUnits === 1 ? ' °F' : ' °C'); // TempUnits: 0=C, 1=F
+  addRow('Track Temp (Live)', data.TrackTemp, fmtGenericValue, ' °C');
+  addRow('Skies', weather.Skies);
+  addRow('Wind', weather.WindSpeed); // WindSpeed from YAML often more detailed (e.g., "10 mph N")
+  addRow('Condition', (weather.RainIntensity > 0 || data.TrackWetness > 0) ? 'Molhada' : 'Seca'); // TrackWetness from live data
+
+  addSection('🎮 Jogador');
+  addRow('Speed', data.Speed, v => (v * 3.6).toFixed(1), ' km/h');
+  addRow('RPM', data.RPM, v => Math.round(v));
+  addRow('Gear', data.Gear, v => (v < 0 ? 'R' : (v === 0 ? 'N' : v)));
+  addRow('Throttle', data.Throttle, v => (v * 100).toFixed(0), '%');
+  addRow('Brake', data.Brake, v => (v * 100).toFixed(0), '%');
+  addRow('Steering', data.SteeringWheelAngle, v => (v * (180 / Math.PI)).toFixed(1), '°');
+  addRow('iRating', data.PlayerCarIdxIRating);
+  addRow('Safety Rating', data.PlayerCarIdxSafetyRating, v => typeof v === 'number' ? v.toFixed(2) : '—');
+  addRow('Penalties', data.PlayerCarTeamIncidentCount);
+  
+  addSection('⏱️ Volta & Delta');
+  addRow('Lap', data.Lap);
+  addRow('Lap %', data.LapDistPct, v => (v * 100).toFixed(1), '%');
+  addRow('Meters Driven', data.LapDistPct, v => (v * parseFloat(wInfo.TrackLength) * 1000).toFixed(0), ' m');
+  addRow('Current Lap Time', data.LapCurrentLapTime, fmtTime);
+  addRow('Last Lap Time', data.LapLastLapTime, fmtTime); // SDK uses LapLastLapTime
+  addRow('Best Lap Time (Sess)', data.LapBestLapTime, fmtTime); // SDK uses LapBestLapTime
+  addRow('Delta to Best', data.LapDeltaToSessionBestLap, fmtGenericValue); // SDK uses LapDeltaToSessionBestLap
+
+  addSection('⏳ Tempo de Sessão');
+  addRow('Session Time', data.SessionTime, fmtTime);
+  addRow('Time Remaining', data.SessionTimeRemain, fmtTime);
+  addRow('Time of Day', data.SessionTimeOfDay, fmtTime);
+  addRow('Laps Total', data.SessionLapsTotal);
+  addRow('Laps Remaining', data.SessionLapsRemaining);
+  
+  // --- COLUNA 2 ---
+  addSection('🛞 Pneus – Temp & Pressão');
+  const tires = ['LF', 'RF', 'LR', 'RR'];
+  tires.forEach(tire => addRow(`${tire} Temp CL`, data[`${tire}tempCL`], fmtGenericValue, '°C'));
+  tires.forEach(tire => addRow(`${tire} Temp CM`, data[`${tire}tempCM`], fmtGenericValue, '°C'));
+  tires.forEach(tire => addRow(`${tire} Temp CR`, data[`${tire}tempCR`], fmtGenericValue, '°C'));
+  tires.forEach(tire => addRow(`${tire} Press`, data[`${tire}press`], fmtGenericValue, ' kPa'));
+  tires.forEach(tire => { // Wear from SDK is an array [L,M,R]
+      const wearArray = data[`${tire}Wear`];
+      let avgWear = '—';
+      if(Array.isArray(wearArray) && wearArray.length > 0){
+          const validWears = wearArray.filter(w => typeof w === 'number' && isFinite(w));
+          if(validWears.length > 0) {
+              avgWear = (validWears.reduce((a,b) => a+b, 0) / validWears.length * 100).toFixed(1);
+          }
+      }
+      addRow(`${tire} Wear`, avgWear, fmtGenericValue, '%');
+  });
+
+  addSection('🛑 Freios & Pit');
+  tires.forEach(corner => addRow(`Brake Line Press ${corner}`, data[`BrakeLinePress${corner}`], fmtGenericValue, ' kPa'));
+  addRow('Brake Bias', data.dcBrakeBias, v => (v * 100).toFixed(1), '%'); // dcBrakeBias is from setup
+  addRow('On Pit Road', data.OnPitRoad, fmtGenericValue);
+  addRow('Player Pit Stops', data.PlayerCarPitStopCount);
+  addRow('Fast Repairs Used', data.PlayerCarFastRepairsUsed); // From YAML DriverInfo usually
+  addRow('Pit Repair Left', data.PitRepairLeft, fmtTime);
+  addRow('Pit Opt Repair Left', data.PitOptRepairLeft, fmtTime);
+
+  addSection('👤 Piloto Atual & Classe');
+  let playerDriver = null;
+  if (Array.isArray(drivers) && drivers.length > 0 && data.PlayerCarIdx !== undefined) {
+    playerDriver = drivers.find(d => d.CarIdx === data.PlayerCarIdx);
+  }
+  addRow('Name', playerDriver?.UserName);
+  addRow('Team Name', playerDriver?.TeamName);
+  addRow('Car #', playerDriver?.CarNumberRaw !== undefined ? playerDriver.CarNumberRaw : playerDriver?.CarNumber);
+  addRow('License', playerDriver?.LicString || `${playerDriver?.LicLevel || ''} ${playerDriver?.LicSubLevel || ''}`);
+  addRow('Player Class', data.PlayerCarClass, v => (v === 0 || v === undefined) ? 'N/A' : v); // Class ID, might need mapping
+  addRow('Player Class Pos', data.PlayerCarClassPosition, v => (v === 0 || v === undefined) ? 'N/A' : v);
+  
+  // --- COLUNA 3 ---
+  addSection('⚙️ Motor & Combustível');
+  addRow('Oil Pressure', data.OilPress, fmtGenericValue, ' kPa');
+  addRow('Oil Temp', data.OilTemp, fmtGenericValue, '°C');
+  addRow('Water Temp', data.WaterTemp, fmtGenericValue, '°C');
+  addRow('Water Level', data.WaterLevel, v => (v * 100).toFixed(1), '%');
+  addRow('Fuel Pressure', data.FuelPress, fmtGenericValue, ' kPa');
+  addRow('Manifold Pressure', data.ManifoldPress, fmtGenericValue, ' kPa');
+  addRow('Fuel Level', data.FuelLevel, fmtGenericValue, ' L');
+  addRow('Fuel Level %', data.FuelLevelPct, v => (v * 100).toFixed(1), '%');
+  addRow('Fuel Use/Hour', data.FuelUsePerHour, fmtGenericValue, ' L/h');
+  addRow('Fuel Usage/Lap', data.FuelPerLap, fmtGenericValue, ' L'); // FuelPerLap from SDK
+  addRow('Est Lap Time (Fuel)', data.EstLapTime, fmtTime); // Estimated lap time based on current fuel usage
+
+  addSection('🏎️ Dinâmica & Suspensão');
+  tires.forEach(corner => addRow(`Susp Pos ${corner}`, data[`${corner}SuspPos`], fmtGenericValue, ' rad')); // SDK often in radians
+  tires.forEach(corner => addRow(`Susp Vel ${corner}`, data[`${corner}SuspVel`], fmtGenericValue, ' rad/s'));
+  tires.forEach(corner => addRow(`Ride Height ${corner}`, data[`${corner}RideHeight`], fmtGenericValue, ' m')); // SDK often in meters
+
+  addSection('📊 Forças G & Orientação');
+  addRow('Lat Accel', data.LatAccel, fmtGenericValue, ' G');
+  addRow('Lon Accel', data.LonAccel, fmtGenericValue, ' G');
+  addRow('Vert Accel', data.VertAccel, fmtGenericValue, ' G');
+  addRow('Yaw', data.Yaw, v => (v * 180/Math.PI).toFixed(1), '°');
+  addRow('Pitch', data.Pitch, v => (v * 180/Math.PI).toFixed(1), '°');
+  addRow('Roll', data.Roll, v => (v * 180/Math.PI).toFixed(1), '°');
+
+  addSection('🚩 Controle & Estado Sessão');
+  addRow('Session Flags', data.SessionFlags); // Needs decoding for human readable flags
+  addRow('Session State', data.SessionState); // Needs decoding
+  addRow('Pace Mode', data.PaceMode); // Needs decoding
+  addRow('Is Garage Open', data.IsGarageOpen, fmtGenericValue);
+  addRow('Track Temp Crew', data.TrackTempCrew, fmtGenericValue, '°C');
+  addRow('Air Density', data.AirDensity, fmtGenericValue, ' kg/m³');
+  
+  // console.log("Render finished.");
+}
+
+
+function connect() {
+  const ws = new WebSocket(WS_URL);
+  ws.onopen = () => { console.log(`Connected to ${WS_URL}`); if(root.innerHTML.includes('Disconnected')) root.innerHTML = ''; };
+  ws.onmessage = event => {
+    try {
+      const parsedData = JSON.parse(event.data);
+      if (parsedData) render(parsedData);
+      else console.error("Parsed WebSocket data is null/undefined. Raw:", event.data);
+    } catch (e) { console.error("Error processing WebSocket message:", e, "Raw data:", event.data); }
+  };
+  ws.onclose = () => { console.log(`Disconnected. Reconnecting in 3s...`); if(root) root.innerHTML = '<div class="col-span-full section" style="color: #f87171;">Desconectado...</div>'; setTimeout(connect, 3000); };
+  ws.onerror = error => { console.error("WebSocket error:", error); ws.close(); };
+}
+connect();
+
+// --- Mock Data --- (Extremamente expandido para cobrir novos campos)
+/*
+const mockData = {
+  SessionInfoYaml: `
+WeekendInfo:
+  TrackDisplayName: "Circuit de Spa-Francorchamps", TrackConfigName: "Grand Prix", TrackLength: "7.004", 
+  Weather: { Skies: "Overcast", TempValue: "18.5", TempUnits: 0, WindSpeed: "5 km/h NW", RainIntensity: 0.0 },
+DriverInfo:
+  Drivers:
+    - {CarIdx: 0, UserName: "Mega Piloto", TeamName: "Equipe Suprema", CarNumber: "1", CarNumberRaw: 1, IRating: 3500, LicString: "P 5.00", LicLevel: 25, LicSubLevel: 500, PlayerCarFastRepairsUsed: 0}
+SessionInfo:
+  SessionNum: 2,
+  Sessions: 
+    - {SessionNum: 0, SessionName: "Practice", SessionType: "Practice"}
+    - {SessionNum: 1, SessionName: "Qualifying", SessionType: "Qualifying"}
+    - {SessionNum: 2, SessionName: "Race", SessionType: "Race", SessionLapsTotal: 25} 
+`,
+  PlayerCarIdx: 0,
+  Speed: 280.5 / 3.6, RPM: 11500, Gear: 7, Throttle: 1.0, Brake: 0.05, SteeringWheelAngle: 0.02,
+  PlayerCarIdxIRating: 3500, PlayerCarIdxSafetyRating: 4.88, PlayerCarTeamIncidentCount: 1, PlayerCarClass: 1, PlayerCarClassPosition: 3,
+  Lap: 5, LapDistPct: 0.65, LapCurrentLapTime: 55.321, LapLastLapTime: 103.456, LapBestLapTime: 102.987, LapDeltaToSessionBestLap: 0.334,
+  SessionTime: 1850.0, SessionTimeRemain: 3750.0, SessionTimeOfDay: 50400.0, SessionLapsRemaining: 20, SessionLapsTotal: 25, // SessionLapsTotal from YAML if available
+  SessionFlags: "(1<<2)", SessionState: "Racing", PaceMode: 0, IsGarageOpen: false,
+  AirTemp: 18.5, TrackTemp: 25.2, TrackTempCrew: 24.8, RelativeHumidity: 0.65, AirPressure: 980.0, WindVel: 1.38, WindDir: Math.PI * 1.75, TrackWetness: 0, AirDensity: 1.18,
+  LFtempCL: 92.1, LFtempCM: 94.5, LFtempCR: 93.3, LFpress: 210.5, LFwear: [0.08,0.09,0.085],
+  RFtempCL: 91.8, RFtempCM: 93.9, RFtempCR: 92.7, RFpress: 208.0, RFwear: [0.07,0.08,0.075],
+  LRtempCL: 105.3, LRtempCM: 107.0, LRtempCR: 106.5, LRpress: 198.2, LRwear: [0.10,0.11,0.105],
+  RRtempCL: 104.8, RRtempCM: 106.5, RRtempCR: 105.9, RRpress: 196.0, RRwear: [0.11,0.12,0.115],
+  BrakeLinePressLF: 8000, BrakeLinePressRF: 8000, BrakeLinePressLR: 6000, BrakeLinePressRR: 6000, dcBrakeBias: 0.58,
+  OnPitRoad: false, PlayerCarPitStopCount: 0, PitRepairLeft: 0, PitOptRepairLeft: 0,
+  OilPress: 650.0, OilTemp: 108.2, WaterTemp: 95.3, WaterLevel: 0.98, FuelPress: 380.0, ManifoldPress: 101.3,
+  FuelLevel: 35.5, FuelLevelPct: 0.55, FuelUsePerHour: 60.2, FuelPerLap: 2.8, EstLapTime: 103.0,
+  LFSuspPos: -0.02, RFSuspPos: -0.022, LRSuspPos: -0.03, RRSuspPos: -0.032,
+  LFSuspVel: 0.05, RFSuspVel: -0.03, LRSuspVel: 0.1, RRSuspVel: -0.08,
+  LFRideHeight: 0.050, RFRideHeight: 0.051, LRRideHeight: 0.070, RRRideHeight: 0.071,
+  LatAccel: 1.5, LonAccel: 0.8, VertAccel: 1.1, Yaw: 0.01, Pitch: 0.005, Roll: -0.008
+};
+function startMockUpdates() {
+  render(mockData); 
+  setInterval(() => {
+    mockData.Speed += (Math.random() - 0.5) * 10 / 3.6; mockData.RPM += (Math.random() - 0.5) * 500;
+    mockData.Throttle = Math.random(); mockData.Brake = Math.random() < 0.1 ? Math.random() * 0.5 : 0;
+    mockData.LFtempCL += (Math.random() - 0.5); mockData.RFtempCM += (Math.random() - 0.5);
+    mockData.SessionTime += 1; mockData.SessionTimeRemain = Math.max(0, mockData.SessionTimeRemain -1);
+    mockData.LapCurrentLapTime +=1; mockData.LapDistPct = (mockData.LapCurrentLapTime / mockData.LapLastLapTime) % 1;
+    if(mockData.LapDistPct < 0.01 && mockData.LapCurrentLapTime > 10) { // Simulate new lap
+        mockData.LapLastLapTime = mockData.LapCurrentLapTime;
+        mockData.LapCurrentLapTime = 0;
+        mockData.Lap++;
+        mockData.FuelLevel = Math.max(0, mockData.FuelLevel - mockData.FuelPerLap);
+        mockData.FuelLevelPct = mockData.FuelLevel / 70; // Assuming 70L tank
+    }
+    render(mockData);
+  }, 1000); 
+}
+// startMockUpdates(); // Descomente para testar com dados mock
+*/
+</script>
+</body>
+</html>

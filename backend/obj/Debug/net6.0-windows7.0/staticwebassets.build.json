@@ -1,0 +1,125 @@
+{
+  "Version": 1,
+  "Hash": "gz1ez1M5o0nCUMf+YjFinHLi73GLuVgPcLswX9mMjIY=",
+  "Source": "SuperBackendNR85IA",
+  "BasePath": "_content/SuperBackendNR85IA",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "SuperBackendNR85IA\\wwwroot",
+      "Source": "SuperBackendNR85IA",
+      "ContentRoot": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\wwwroot\\",
+      "BasePath": "_content/SuperBackendNR85IA",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\wwwroot\\diagnostico.html",
+      "SourceId": "SuperBackendNR85IA",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\wwwroot\\",
+      "BasePath": "_content/SuperBackendNR85IA",
+      "RelativePath": "diagnostico#[.{fingerprint}]?.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "mmwhivkzwf",
+      "Integrity": "khJA31mBMmihKHLukYiDvH7BetuPu2Clb7Tu8HcitPk=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\diagnostico.html"
+    }
+  ],
+  "Endpoints": [
+    {
+      "Route": "diagnostico.html",
+      "AssetFile": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\wwwroot\\diagnostico.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "5791"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"khJA31mBMmihKHLukYiDvH7BetuPu2Clb7Tu8HcitPk=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 18 May 2025 01:10:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-khJA31mBMmihKHLukYiDvH7BetuPu2Clb7Tu8HcitPk="
+        }
+      ]
+    },
+    {
+      "Route": "diagnostico.mmwhivkzwf.html",
+      "AssetFile": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\wwwroot\\diagnostico.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "5791"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"khJA31mBMmihKHLukYiDvH7BetuPu2Clb7Tu8HcitPk=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 18 May 2025 01:10:42 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "mmwhivkzwf"
+        },
+        {
+          "Name": "label",
+          "Value": "diagnostico.html"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-khJA31mBMmihKHLukYiDvH7BetuPu2Clb7Tu8HcitPk="
+        }
+      ]
+    }
+  ]
+}

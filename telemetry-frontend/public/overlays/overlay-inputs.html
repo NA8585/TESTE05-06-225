@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Overlay de Inputs do Piloto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    <style>
+        /* CSS para o corpo e a overlay */
+        html, body {
+            margin:0;
+            padding:0;
+            width:100vw;
+            height:100vh;
+            background:transparent; /* Fundo transparente para a overlay */
+            color:#fff; /* Cor do texto padrão */
+            font-family:'Poppins',sans-serif; /* Fonte principal */
+            -webkit-user-select:none; /* Desabilita seleção de texto */
+            overflow:hidden; /* Esconde overflow */
+        }
+
+        /* Estilo do wrapper da overlay redimensionável */
+        .resizable-overlay-wrapper {
+            position:absolute;
+            top:0;
+            left:0;
+            width:400px; /* Largura inicial */
+            height:230px; /* Altura inicial ajustada para a marcha */
+            min-width:300px; /* Largura mínima */
+            min-height:150px; /* Altura mínima ajustada */
+            background:rgb(17,24,39); /* Cor de fundo escura */
+            border:2px solid #3b82f6; /* Borda azul */
+            border-radius:1rem; /* Cantos arredondados */
+            box-shadow:0 4px 10px rgba(0,0,0,0.5); /* Sombra */
+            display:flex;
+            flex-direction:column;
+            overflow:hidden;
+            -webkit-app-region:drag; /* Permite arrastar a janela no Electron */
+        }
+
+        /* Estilo dos manipuladores de redimensionamento */
+        .resize-handle {
+            position:absolute;
+            width:15px;
+            height:15px;
+            z-index:1001; /* Acima de outros elementos */
+            background:transparent; /* Transparente para não bloquear o conteúdo */
+            -webkit-app-region:no-drag; /* Desabilita arrasto da janela nos manipuladores */
+            pointer-events: auto; /* Garante que as alças sejam clicáveis mesmo com click-through */
+        }
+
+        /* Posição e cursor para cada manipulador */
+        .resize-handle.top-left    { top:0; left:0; cursor:nwse-resize; }
+        .resize-handle.top-center  { top:0; left:50%; transform:translateX(-50%); cursor:ns-resize; }
+        .resize-handle.top-right   { top:0; right:0; cursor:nesw-resize; }
+        .resize-handle.right-center{ top:50%; right:0; transform:translateY(-50%); cursor:ew-resize; }
+        .resize-handle.bottom-right{ bottom:0; right:0; cursor:se-resize; }
+        .resize-handle.bottom-center{ bottom:0; left:50%; transform:translateX(-50%); cursor:ns-resize; }
+        .resize-handle.bottom-left { bottom:0; left:0; cursor:sw-resize; }
+        .resize-handle.left-center { top:50%; left:0; transform:translateY(-50%); cursor:ew-resize; }
+
+        /* Container principal do conteúdo da overlay */
+        .overlay-container {
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            overflow:hidden;
+        }
+
+        /* Cabeçalho da overlay */
+        .header {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:4px 8px;
+            background:inherit; /* Herda o fundo do pai */
+            cursor:move; /* Cursor de movimento */
+            -webkit-app-region:drag; /* Permite arrastar a janela no cabeçalho */
+            border-top-left-radius:0.875rem; /* Ajustado para corresponder ao wrapper */
+            border-top-right-radius:0.875rem; /* Ajustado para corresponder ao wrapper */
+            pointer-events: auto; /* Garante que o cabeçalho seja clicável mesmo com click-through */
+        }
+
+        /* Logo no cabeçalho */
+        .header .logo {
+            display:flex;
+            align-items:center;
+            gap:4px;
+            font-size:0.75rem;
+            -webkit-app-region:no-drag; /* Desabilita arrasto da janela na logo */
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        .pulsing-headset {
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .header .title {
+            font-size:0.75rem;
+            font-weight:600;
+            white-space:nowrap;
+        }
+
+        .controls {
+            display:flex;
+            gap:4px;
+            -webkit-app-region:no-drag; /* Desabilita arrasto da janela nos controles */
+        }
+
+        .controls button {
+            background:#334155; 
+            border:none;
+            padding:2px 4px;
+            border-radius:4px;
+            font-size:0.6rem; 
+            line-height: 1; 
+            cursor:pointer;
+            transition:background 0.2s;
+            pointer-events: auto; 
+            color: white; 
+        }
+        .controls button:hover {
+            background:#475569; 
+        }
+        #closeBtn { background:#dc2626;} 
+        #closeBtn:hover { background:#ef4444;} 
+
+        .overlay-inputs-content {
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            justify-content:flex-start; 
+            padding:4px 8px; 
+            background:inherit;
+            box-sizing:border-box;
+            overflow:hidden;
+            pointer-events: auto; 
+            padding-top: 0px; 
+        }
+        
+        .inputs-and-gear-container {
+            display: flex;
+            gap: 8px; 
+            margin-top: 3px; 
+            align-items: flex-start; 
+        }
+
+        .bars-column {
+            flex-grow: 1; 
+        }
+
+        .bar-container {
+            margin-bottom:6px; 
+            position:relative;
+        }
+
+        .bar-bg {
+            width:100%;
+            height:16px; 
+            background:#1e293b; 
+            border-radius:6px;
+            overflow:hidden;
+            position:relative;
+            border: 1px solid #334155; 
+        }
+
+        .bar-fill {
+            height:100%;
+            transition:width 0.1s ease-out; 
+            border-radius:5px; 
+        }
+
+        .bar-label {
+            position:absolute;
+            top:50%;
+            transform:translateY(-50%);
+            font-size:0.65rem; 
+            color:#e2e8f0; 
+            pointer-events:none;
+            white-space: nowrap;
+            padding: 0 4px; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7); 
+        }
+        
+        .gear-display {
+            width: 42px; 
+            height: 60px; 
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background-color: rgba(30, 41, 59, 0.7); 
+            border-radius:8px; 
+            font-size:2.25rem; 
+            font-weight:bold;
+            color:#e2e8f0; 
+        }
+
+        #inputTimelineCanvas {
+            width:100%;
+            height:100px; 
+            margin-top:8px; 
+            border:2px solid #3b82f6; 
+            border-radius:6px;
+            background-color: rgba(30, 41, 59, 0.3); 
+        }
+
+        #settings-popover {
+            position:absolute; top:35px; right:10px; 
+            display:none; 
+            background-color:rgba(30,41,59,0.95); 
+            border:1px solid #3b82f6; border-radius:0.5rem;
+            padding:0.75rem; 
+            z-index:1000;
+            pointer-events: auto; 
+            width: 180px; 
+        }
+        #settings-popover label {
+            color:#cbd5e1;
+            font-size:0.75rem; 
+            display: block;
+            margin-bottom: 2px;
+        }
+        #settings-popover input[type="range"] {
+            width: 100%;
+            margin-bottom: 8px; 
+            accent-color: #3b82f6; 
+        }
+        #settings-popover input[type="range"]:last-child {
+            margin-bottom: 0;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="resizable-overlay-wrapper" id="wrapper">
+        <div class="resize-handle top-left" id="h-tl"></div>
+        <div class="resize-handle top-center" id="h-tc"></div>
+        <div class="resize-handle top-right" id="h-tr"></div>
+        <div class="resize-handle right-center" id="h-rc"></div>
+        <div class="resize-handle bottom-right" id="h-br"></div>
+        <div class="resize-handle bottom-center" id="h-bc"></div>
+        <div class="resize-handle bottom-left" id="h-bl"></div>
+        <div class="resize-handle left-center" id="h-lc"></div>
+
+        <div class="overlay-container">
+            <div class="header">
+                <div class="logo">
+                    <i class="fas fa-headset text-slate-400 pulsing-headset"></i> <span class="text-slate-300">Coaching</span>
+                    <span style="background:linear-gradient(to right,#ff0000,#fff,#00ff00);-webkit-background-clip:text;-webkit-text-fill-color:transparent; font-weight: 600;">NR85</span>
+                    <span style="background:linear-gradient(to right,#00ffff,#00bfff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:'Orbitron';font-weight:700;">IA</span>
+                </div>
+                <div class="title text-slate-200">Inputs do Piloto</div> <div class="controls">
+                    <button id="pin" title="Sempre visível">📌</button>
+                    <button id="lock" title="Travar/Destravar posição">🔒</button>
+                    <button id="click" title="Ignorar cliques">🖱️</button>
+                    <button id="gearBtn" title="Ajustes">⚙️</button> <button id="minimizeBtn" title="Minimizar">🗕</button> <button id="closeBtn" title="Fechar overlay">✖</button>
+                </div>
+            </div>
+            <div class="overlay-inputs-content">
+                <div class="inputs-and-gear-container">
+                    <div class="bars-column">
+                        <div class="bar-container">
+                            <div class="bar-bg">
+                                <div id="input-throttle" class="bar-fill bg-green-500" style="width:0%;"></div>
+                                <div class="bar-label" id="throttle-value">0%</div>
+                            </div>
+                        </div>
+                        <div class="bar-container">
+                               <div class="bar-bg">
+                                <div id="input-brake" class="bar-fill bg-red-500" style="width:0%;"></div>
+                                <div class="bar-label" id="brake-value">0%</div>
+                            </div>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-bg">
+                                <div id="input-steer" class="bar-fill bg-blue-500" style="width:50%;"></div> <div class="bar-label" id="steer-value">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="gear-display" class="gear-display">N</div> </div>
+                <canvas id="inputTimelineCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-popover">
+        <div>
+            <label for="rangeOpacity">Opacidade</label>
+            <input type="range" id="rangeOpacity" min="0.1" max="1" step="0.01" value="0.98">
+        </div>
+        <div>
+            <label for="rangeContrast">Contraste</label>
+            <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1">
+        </div>
+    </div>
+    <script>
+        const OVERLAY_NAME = 'overlay-inputs';
+        const resizableOverlayWrapper = document.getElementById('wrapper');
+        const overlayContent = document.querySelector('.overlay-inputs-content');
+
+        let isResizing = false;
+        let resizeHandleType = '';
+        let initialX, initialY;
+        let initialWidth, initialHeight;
+        let initialLeft, initialTop;
+
+        let isDragging = false;
+        let dragStartX, dragStartY;
+        let windowStartX, windowStartY;
+        
+        let currentGear = "N"; 
+        const gearDisplayElement = document.getElementById('gear-display');
+
+        function getCursorForHandle(handleType) {
+            switch (handleType) {
+                case 'tl': return 'nwse-resize';
+                case 'tc': return 'ns-resize';
+                case 'tr': return 'nesw-resize';
+                case 'rc': return 'ew-resize';
+                case 'br': return 'se-resize';
+                case 'bc': return 'ns-resize';
+                case 'bl': return 'sw-resize';
+                case 'lc': return 'ew-resize';
+                default: return 'default';
+            }
+        }
+
+        document.querySelectorAll('.resize-handle').forEach(handle => {
+            handle.addEventListener('mousedown', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (lockedState) return; 
+                isResizing = true;
+                resizeHandleType = handle.id.replace('h-', '');
+                initialX = e.clientX;
+                initialY = e.clientY;
+                const bounds = await getWindowBounds();
+                initialWidth = bounds.width;
+                initialHeight = bounds.height;
+                initialLeft = bounds.x;
+                initialTop = bounds.y;
+                document.body.style.cursor = getCursorForHandle(resizeHandleType);
+            });
+        });
+
+        async function getWindowBounds() {
+            if (window.electronAPI && window.electronAPI.getBounds) {
+                return await window.electronAPI.getBounds(OVERLAY_NAME);
+            } else {
+                const rect = resizableOverlayWrapper.getBoundingClientRect();
+                return { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+            }
+        }
+
+        async function setWindowBounds(bounds) {
+            if (window.electronAPI && window.electronAPI.setBounds) {
+                await window.electronAPI.setBounds(OVERLAY_NAME, {
+                    x: Math.round(bounds.x),
+                    y: Math.round(bounds.y),
+                    width: Math.round(bounds.width),
+                    height: Math.round(bounds.height)
+                });
+            } else {
+                resizableOverlayWrapper.style.left = bounds.x + 'px';
+                resizableOverlayWrapper.style.top = bounds.y + 'px';
+                resizableOverlayWrapper.style.width = bounds.width + 'px';
+                resizableOverlayWrapper.style.height = bounds.height + 'px';
+            }
+        }
+
+        function resize(e, handleType) {
+            if (!isResizing) return;
+            const aspectRatio = initialWidth / initialHeight;
+            const shiftPressed = e.shiftKey;
+            let newWidth = initialWidth;
+            let newHeight = initialHeight;
+            let newLeft = initialLeft;
+            let newTop = initialTop;
+            const deltaX = e.clientX - initialX;
+            const deltaY = e.clientY - initialY;
+
+            switch (handleType) {
+                case 'br': newWidth = initialWidth + deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY; break;
+                case 'bl': newWidth = initialWidth - deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY; newLeft = initialLeft + deltaX; break;
+                case 'tr': newWidth = initialWidth + deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY; newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY); break;
+                case 'tl': newWidth = initialWidth - deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY; newLeft = initialLeft + deltaX; newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY); break;
+                case 'rc': newWidth = initialWidth + deltaX; break;
+                case 'lc': newWidth = initialWidth - deltaX; newLeft = initialLeft + deltaX; break;
+                case 'bc': newHeight = initialHeight + deltaY; break;
+                case 'tc': newHeight = initialHeight - deltaY; newTop = initialTop + deltaY; break;
+            }
+
+            const minWidth = parseFloat(getComputedStyle(resizableOverlayWrapper).minWidth);
+            const minHeight = parseFloat(getComputedStyle(resizableOverlayWrapper).minHeight);
+
+            if (newWidth < minWidth) { if (handleType.includes('l')) newLeft = newLeft + (newWidth - minWidth); newWidth = minWidth; }
+            if (newHeight < minHeight) { if (handleType.includes('t')) newTop = newTop + (newHeight - minHeight); newHeight = minHeight; }
+            
+            setWindowBounds({ x: newLeft, y: newTop, width: newWidth, height: newHeight });
+        }
+
+        const header = document.querySelector('.header');
+        header.addEventListener('mousedown', async (e) => {
+            if (e.target.closest('.controls') || e.target.closest('.resize-handle') || lockedState) return;
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            const bounds = await getWindowBounds();
+            windowStartX = bounds.x;
+            windowStartY = bounds.y;
+            document.body.style.cursor = 'grabbing';
+        });
+
+        function dragMove(e) {
+            if (!isDragging) return;
+            const deltaX = e.clientX - dragStartX;
+            const deltaY = e.clientY - dragStartY;
+            const newX = windowStartX + deltaX;
+            const newY = windowStartY + deltaY;
+            setWindowBounds({ x: newX, y: newY, width: resizableOverlayWrapper.offsetWidth, height: resizableOverlayWrapper.offsetHeight });
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (isResizing) resize(e, resizeHandleType);
+            else if (isDragging) dragMove(e);
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing || isDragging) {
+                    if (window.electronAPI && window.electronAPI.saveOverlayBounds) { 
+                        window.electronAPI.saveOverlayBounds(OVERLAY_NAME, {
+                            x: Math.round(resizableOverlayWrapper.offsetLeft),
+                            y: Math.round(resizableOverlayWrapper.offsetTop),
+                            width: Math.round(resizableOverlayWrapper.offsetWidth),
+                            height: Math.round(resizableOverlayWrapper.offsetHeight)
+                        });
+                    }
+            }
+            isResizing = false;
+            isDragging = false;
+            document.body.style.cursor = '';
+        });
+        
+        if (window.electronAPI && window.electronAPI.onUpdateBounds) {
+            window.electronAPI.onUpdateBounds((bounds) => {
+                resizableOverlayWrapper.style.width = `${bounds.width}px`;
+                resizableOverlayWrapper.style.height = `${bounds.height}px`;
+                resizableOverlayWrapper.style.left = `${bounds.x}px`;
+                resizableOverlayWrapper.style.top = `${bounds.y}px`;
+            });
+        }
+
+        document.getElementById('closeBtn').onclick = () => {
+            if (window.electronAPI && window.electronAPI.closeOverlay) window.electronAPI.closeOverlay(OVERLAY_NAME);
+            else console.log("Botão de fechar clicado.");
+        };
+        
+        document.getElementById('minimizeBtn').onclick = () => {
+            if (window.electronAPI && window.electronAPI.minimizeOverlay) window.electronAPI.minimizeOverlay(OVERLAY_NAME);
+            else console.log("Botão de minimizar clicado.");
+        };
+
+        const settingsPopover = document.getElementById('settings-popover');
+        const rangeOpacity = document.getElementById('rangeOpacity');
+        const rangeContrast = document.getElementById('rangeContrast');
+
+        document.getElementById('gearBtn').onclick = (e) => { 
+            settingsPopover.style.display = settingsPopover.style.display === 'none' ? 'block' : 'none';
+            const btnRect = e.target.getBoundingClientRect();
+            const wrapperRect = resizableOverlayWrapper.getBoundingClientRect();
+            settingsPopover.style.top = (btnRect.bottom - wrapperRect.top + 5) + 'px'; 
+            settingsPopover.style.right = (wrapperRect.right - btnRect.right) + 'px'; 
+        };
+
+        rangeOpacity.oninput = async (e) => {
+            const opacityValue = parseFloat(e.target.value);
+            resizableOverlayWrapper.style.opacity = opacityValue;
+            saveSetting('opacity', opacityValue);
+        };
+
+        rangeContrast.oninput = async (e) => {
+            const contrastValue = parseFloat(e.target.value);
+            resizableOverlayWrapper.style.filter = `contrast(${contrastValue})`;
+            saveSetting('contrast', contrastValue);
+        };
+        
+        async function saveSetting(key, value) {
+            if (window.electronAPI && window.electronAPI.saveOverlaySettings) {
+                const currentSettings = await window.electronAPI.loadOverlaySettings(OVERLAY_NAME) || {};
+                currentSettings[key] = value;
+                await window.electronAPI.saveOverlaySettings(OVERLAY_NAME, currentSettings);
+            }
+        }
+
+        async function loadSettings() {
+            if (window.electronAPI && window.electronAPI.loadOverlaySettings) {
+                const savedSettings = await window.electronAPI.loadOverlaySettings(OVERLAY_NAME);
+                if (savedSettings) {
+                    if (typeof savedSettings.opacity !== 'undefined') { rangeOpacity.value = savedSettings.opacity; resizableOverlayWrapper.style.opacity = savedSettings.opacity; } 
+                    else { rangeOpacity.value = 0.98; resizableOverlayWrapper.style.opacity = 0.98; }
+                    if (typeof savedSettings.contrast !== 'undefined') { rangeContrast.value = savedSettings.contrast; resizableOverlayWrapper.style.filter = `contrast(${savedSettings.contrast})`; } 
+                    else { rangeContrast.value = 1; resizableOverlayWrapper.style.filter = `contrast(1)`; }
+                    if (typeof savedSettings.pinned !== 'undefined') updatePinButtonState(savedSettings.pinned);
+                    if (typeof savedSettings.locked !== 'undefined') updateLockButtonState(savedSettings.locked);
+                    if (typeof savedSettings.ignoreClicks !== 'undefined') updateClickButtonState(savedSettings.ignoreClicks);
+                } else { 
+                     rangeOpacity.value = 0.98; resizableOverlayWrapper.style.opacity = 0.98;
+                     rangeContrast.value = 1; resizableOverlayWrapper.style.filter = `contrast(1)`;
+                }
+            } else { 
+                rangeOpacity.value = 0.98; resizableOverlayWrapper.style.opacity = 0.98;
+                rangeContrast.value = 1; resizableOverlayWrapper.style.filter = `contrast(1)`;
+            }
+            if (window.electronAPI && window.electronAPI.loadOverlayBounds) {
+                const savedBounds = await window.electronAPI.loadOverlayBounds(OVERLAY_NAME);
+                if (savedBounds && savedBounds.width && savedBounds.height) { await setWindowBounds(savedBounds); } 
+                else if (window.electronAPI && window.electronAPI.getBounds) { const currentBounds = await window.electronAPI.getBounds(OVERLAY_NAME); await setWindowBounds(currentBounds); }
+            } else { await setWindowBounds({x: 0, y: 0, width: 400, height: 230}); }
+        }
+
+        document.addEventListener('mousedown', (e) => {
+            if (settingsPopover.style.display === 'block' && !settingsPopover.contains(e.target) && e.target.id !== 'gearBtn') {
+                settingsPopover.style.display = 'none';
+            }
+        });
+
+        let pinnedState = false; 
+        const pinButton = document.getElementById('pin');
+        
+        function updatePinButtonState(isPinned) {
+            pinnedState = isPinned;
+            pinButton.style.background = pinnedState ? '#60a5fa' : '#334155'; 
+            pinButton.textContent = pinnedState ? '📍' : '📌';
+        }
+
+        pinButton.addEventListener('click', async () => {
+            const newState = !pinnedState;
+            updatePinButtonState(newState);
+            if (window.electronAPI && window.electronAPI.setAlwaysOnTop) await window.electronAPI.setAlwaysOnTop(OVERLAY_NAME, newState);
+            saveSetting('pinned', newState);
+        });
+
+        let lockedState = false; 
+        const lockButton = document.getElementById('lock');
+        const allHandles = document.querySelectorAll('.resize-handle');
+
+        function updateLockButtonState(isLocked) {
+            lockedState = isLocked;
+            lockButton.style.background = lockedState ? '#22d3ee' : '#334155'; 
+            lockButton.textContent = lockedState ? '🔓' : '🔒';
+            allHandles.forEach(handle => { handle.style.display = lockedState ? 'none' : 'block'; });
+            header.style.cursor = lockedState ? 'default' : 'move'; 
+            if (window.electronAPI && window.electronAPI.toggleMovable) window.electronAPI.toggleMovable(OVERLAY_NAME, !lockedState);
+        }
+
+        lockButton.addEventListener('click', async () => {
+            const newState = !lockedState;
+            updateLockButtonState(newState);
+            saveSetting('locked', newState);
+        });
+
+        let ignoreClicksState = false; 
+        const clickButton = document.getElementById('click');
+
+        function updateClickButtonState(isIgnoringClicks) {
+            ignoreClicksState = isIgnoringClicks;
+            clickButton.style.background = ignoreClicksState ? '#818cf8' : '#334155'; 
+            clickButton.textContent = ignoreClicksState ? '🚫🖱️' : '🖱️';
+            
+            if (ignoreClicksState) {
+                resizableOverlayWrapper.style.pointerEvents = 'none'; 
+                header.style.pointerEvents = 'auto'; 
+                document.querySelectorAll('.controls button').forEach(btn => btn.style.pointerEvents = 'auto');
+                settingsPopover.style.pointerEvents = 'auto'; 
+                allHandles.forEach(handle => handle.style.pointerEvents = 'auto'); 
+            } else {
+                resizableOverlayWrapper.style.pointerEvents = 'auto'; 
+                overlayContent.style.pointerEvents = 'auto'; 
+            }
+            if (window.electronAPI && window.electronAPI.toggleClickThrough) window.electronAPI.toggleClickThrough(OVERLAY_NAME, ignoreClicksState);
+        }
+        
+        clickButton.addEventListener('click', async () => {
+            const newState = !ignoreClicksState;
+            updateClickButtonState(newState);
+            saveSetting('ignoreClicks', newState);
+        });
+
+        const timeline = { throttle: [], brake: [], steer: [], max: 100 };
+        const canvas = document.getElementById('inputTimelineCanvas');
+        const ctx = canvas.getContext('2d');
+        let throttle = 0, brake = 0, steer = 0;
+
+        function drawTimeline(t, b, s) {
+            timeline.throttle.push(t); if (timeline.throttle.length > timeline.max) timeline.throttle.shift();
+            timeline.brake.push(b);    if (timeline.brake.length > timeline.max) timeline.brake.shift();
+            timeline.steer.push(s);    if (timeline.steer.length > timeline.max) timeline.steer.shift();
+
+            const w = canvas.width; 
+            const h = canvas.height; 
+            if (w <= 0 || h <= 0) return; 
+            ctx.clearRect(0, 0, w, h);
+
+            const drawSingleLine = (data, color, fillColor) => {
+                if (data.length === 0) return;
+                ctx.beginPath(); ctx.moveTo(0, h - (data[0] * h)); 
+                data.forEach((v, i) => { ctx.lineTo(i * w / Math.max(1, timeline.max -1) , h - (v * h)); });
+                if (fillColor) {
+                    ctx.lineTo( (data.length -1) * w / Math.max(1, timeline.max -1) , h); 
+                    ctx.lineTo(0, h); ctx.closePath(); ctx.fillStyle = fillColor; ctx.fill();
+                }
+                ctx.beginPath(); ctx.moveTo(0, h - (data[0] * h));
+                data.forEach((v, i) => { ctx.lineTo(i * w / Math.max(1, timeline.max -1) , h - (v * h)); });
+                ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+            };
+            
+            drawSingleLine(timeline.throttle, "#22c55e", "rgba(34, 197, 94, 0.2)");
+            drawSingleLine(timeline.brake, "#ef4444", "rgba(239, 68, 68, 0.2)");
+
+            if (timeline.steer.length > 0) {
+                ctx.beginPath(); ctx.moveTo(0, h / 2 - (timeline.steer[0] * h / 2)); 
+                timeline.steer.forEach((v, i) => { ctx.lineTo(i * w / Math.max(1, timeline.max -1), h / 2 - (v * h / 2)); });
+                ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2; ctx.stroke();
+            }
+        }
+
+        function resizeCanvas() {
+            const style = getComputedStyle(canvas);
+            const newWidth = canvas.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+            const newHeight = canvas.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+            if (canvas.width !== newWidth || canvas.height !== newHeight) { canvas.width = newWidth; canvas.height = newHeight; }
+            drawTimeline(throttle, brake, steer); 
+        }
+        
+        const resizeObserver = new ResizeObserver(() => { resizeCanvas(); });
+        if (resizableOverlayWrapper) { resizeObserver.observe(resizableOverlayWrapper); }
+
+        function updateOverlayData(d) {
+            // Correção para camelCase
+            throttle = Math.min(1, Math.max(0, (parseFloat(d.throttle) || 0))); // d.Throttle -> d.throttle
+            brake = Math.min(1, Math.max(0, (parseFloat(d.brake) || 0)));       // d.Brake -> d.brake
+            steer = Math.min(1, Math.max(-1, (parseFloat(d.steeringWheelAngle) || 0))); // d.SteeringWheelAngle -> d.steeringWheelAngle
+            
+            let newGearDisplay = currentGear;
+            if (typeof d.gear !== 'undefined') { // d.Gear -> d.gear
+                const rawGear = parseInt(d.gear, 10); // d.Gear -> d.gear
+                if (!isNaN(rawGear)) {
+                    if (rawGear === -1 || d.gear.toString().toUpperCase() === 'R') { // d.Gear -> d.gear
+                        newGearDisplay = "R";
+                    } else if (rawGear === 0 || d.gear.toString().toUpperCase() === 'N') { // d.Gear -> d.gear
+                        newGearDisplay = "N";
+                    } else if (rawGear > 0) {
+                        newGearDisplay = rawGear.toString();
+                    }
+                } else if (d.gear.toString().toUpperCase() === 'R') {  // d.Gear -> d.gear
+                     newGearDisplay = "R";
+                } else if (d.gear.toString().toUpperCase() === 'N') {  // d.Gear -> d.gear
+                     newGearDisplay = "N";
+                }
+            }
+            currentGear = newGearDisplay;
+            if (gearDisplayElement) gearDisplayElement.textContent = currentGear;
+
+            const updateBar = (barId, labelId, val, isSteer = false) => {
+                const fill = document.getElementById(barId);
+                const label = document.getElementById(labelId);
+                if (!fill || !label) return;
+                let displayValText; let calculatedWidthPercent;
+                if (isSteer) {
+                    const steerDisplay = (val * 100).toFixed(0); 
+                    displayValText = (val > 0.01 ? '+' : (val < -0.01 ? '' : '')) + steerDisplay; 
+                    calculatedWidthPercent = (val + 1) * 50; 
+                } else {
+                    displayValText = (val * 100).toFixed(0) + '%';
+                    calculatedWidthPercent = val * 100;
+                }
+                fill.style.width = calculatedWidthPercent + "%";
+                label.textContent = displayValText;
+                const labelWidthApproximation = label.offsetWidth; 
+                const barFillWidthPx = (calculatedWidthPercent / 100) * fill.parentElement.clientWidth;
+                if (barFillWidthPx < labelWidthApproximation + 8) { label.style.left = '4px'; label.style.transform = 'translateY(-50%)'; } 
+                else { label.style.left = calculatedWidthPercent + '%'; label.style.transform = 'translate(-100%, -50%) translateX(-4px)'; }
+            };
+
+            updateBar("input-throttle", "throttle-value", throttle);
+            updateBar("input-brake", "brake-value", brake);
+            updateBar("input-steer", "steer-value", steer, true);
+            drawTimeline(throttle, brake, steer);
+        }
+        
+        const WS_URL = window.OVERLAY_WS_URL || "ws://localhost:5221/ws";
+        let socket;
+        function initWebSocket() {
+            socket = new WebSocket(WS_URL);
+            socket.onopen = () => console.log("🟢 Conectado ao WebSocket");
+            socket.onmessage = e => {
+                try {
+                    const msg = JSON.parse(e.data);
+                    // Correção para camelCase na condição
+                    if (msg && typeof msg.throttle !== 'undefined') { // msg.Throttle -> msg.throttle
+                            updateOverlayData(msg);
+                    } else if (msg) { // Se não tem throttle, mas tem msg, loga para ver o que é
+                        console.log("Mensagem recebida sem 'throttle', mas com dados:", msg);
+                        // Você pode querer chamar updateOverlayData(msg) mesmo assim se outros dados forem úteis
+                        // ou adicionar uma lógica para tratar diferentes tipos de mensagens.
+                        // Por enquanto, vamos assumir que queremos os dados de input.
+                    }
+                } catch (err) { console.warn("Falha ao parsear JSON:", e.data, err); }
+            };
+            socket.onclose = (event) => { // Adicionado 'event' para logar detalhes
+                let reason = "";
+                if (event.code) reason += ` Código: ${event.code}`;
+                if (event.reason) reason += ` Motivo: ${event.reason}`;
+                if (!reason && !event.wasClean) reason = " Conexão perdida abruptamente.";
+                console.log(`🔴 Desconectado do WebSocket.${reason} Reconectando em 3s...`);
+                if (!document.hidden && (!socket || socket.readyState === WebSocket.CLOSED)) { 
+                     setTimeout(initWebSocket, 3000);
+                }
+            };
+            socket.onerror = (err) => {
+                console.error("Erro no WebSocket:", err);
+                socket.close(); 
+            };
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) { if (socket && socket.readyState === WebSocket.OPEN) socket.close(); } 
+            else if (!socket || socket.readyState === WebSocket.CLOSED) { initWebSocket(); }
+        });
+        
+        window.addEventListener('load', async () => { 
+            await loadSettings(); 
+            initWebSocket();
+        });
+
+    </script>
+</body>
+</html>

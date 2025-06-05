@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Teste Overlay</h1>
+<p id="status">Conectando...</p>
+<script>
+    const ws = new WebSocket('ws://localhost:5221/ws');
+    ws.onmessage = (e) => document.getElementById('status').textContent = e.data;
+    ws.onerror = () => document.getElementById('status').textContent = "Erro na conexão";
+</script>
+</body>
+</html>

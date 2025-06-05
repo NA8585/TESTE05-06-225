@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico Full Definitiva - ULTRA MEGA v3.1</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script> 
+
+  <style>
+    /* Estilos globais para o corpo e HTML */
+    html,body {
+      width:100%;
+      height:100%;
+      margin:0;
+      padding:0;
+      font-family:'Poppins',sans-serif;
+      overflow: hidden; /* Esconde barras de rolagem desnecessárias */
+      position: relative; 
+    }
+    body {
+      background:#0f172a; /* Cor de fundo escura */
+      background-image:radial-gradient(rgba(255,255,255,0.08) 1px,transparent 1px); /* Padrão de pontos */
+      background-size:4px 4px; 
+      color: #d1d5db; /* Cor do texto padrão */
+    }
+    /* Classes para arrastar e não arrastar a janela (específicas para apps de overlay) */
+    .drag{-webkit-app-region:drag;}
+    .no-drag{-webkit-app-region:no-drag;}
+    
+    /* Estilo do cabeçalho fixo */
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+
+    /* Estilo do contêiner principal de dados */
+    #root {
+      position: absolute;
+      top: 1.75rem; /* Abaixo do cabeçalho */
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto; /* Permite rolagem vertical para o conteúdo */
+      padding: 0.5rem; 
+      display: grid;
+      gap: 0.2rem 0.7rem; /* Espaçamento entre linhas e colunas */
+      grid-template-columns: repeat(4, 1fr); /* 4 colunas de largura igual */
+      align-content: start; /* Alinha o conteúdo ao topo */
+    }
+
+    /* Estilo para as seções (cabeçalhos de categoria) */
+    .section {
+      background:#1e293b; /* Fundo mais escuro */
+      border-left:4px solid #3b82f6; /* Borda azul à esquerda */
+      border-radius:0.25rem; /* Cantos arredondados */
+      padding:0.3rem 0.7rem; 
+      font-weight:600;
+      color:#93c5fd; /* Texto azul claro */
+      margin-top: 0.7rem; 
+      margin-bottom: 0.4rem;
+      font-size: 0.8em; 
+      grid-column: 1 / -1; /* Ocupa todas as 4 colunas */
+    }
+    /* Ajuste para a primeira seção */
+    #root > .section:first-child {
+        margin-top: 0.05rem;
+    }
+    
+    /* Contêiner para cada item de dado (rótulo + valor) */
+    .data-item-container {
+      padding: 0.02rem 0.2rem; 
+      overflow-wrap: break-word; /* Quebra palavras longas */
+      word-wrap: break-word;
+      word-break: break-all; 
+      line-height: 1.3; 
+    }
+
+    /* Estilo do rótulo do dado */
+    .label {
+      color: #a1a1aa; /* Cinza claro */
+      font-weight: 500; 
+      font-size: 0.72em; 
+      margin-right: 0.3rem;
+    }
+    /* Estilo do valor do dado */
+    .value {
+      color: #22c55e; /* Verde padrão */
+      white-space: pre-wrap; /* Preserva espaços e quebras de linha */
+      font-size: 0.72em; 
+      font-family: 'Menlo', 'Monaco', 'Consolas', monospace; /* Fonte monoespaçada para valores */
+    }
+    /* Classes de estado para o valor */
+    .value.miss { color: #f87171 !important; } /* Vermelho para dados ausentes/erro */
+    .value.array { color: #a5b4fc; font-style: italic; } /* Azul claro para arrays */
+    .value.bool-true { color: #34d399; } /* Verde para booleanos true */
+    .value.bool-false { color: #fbbf24; } /* Amarelo para booleanos false */
+    .value.unit { color: #7dd3fc; margin-left: 0.15rem; font-size: 0.9em;} /* Azul claro para unidades */
+    .value.decoded { color: #e5e7eb; } /* Branco para valores decodificados */
+    .value.status-ok { color: #16a34a; }
+    .value.status-warning { color: #fbbf24; }
+    .value.status-danger { color: #dc2626; }
+
+
+    /* Estilos para indicadores de bandeiras */
+    .flags-container { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+    .flag-indicator { padding: 0px 3px; border-radius: 3px; font-size: 0.65em; font-weight: 600; color: white; line-height: 1.2; }
+    .flag-green { background-color: #10b981; }
+    .flag-yellow { background-color: #f59e0b; }
+    .flag-blue { background-color: #3b82f6; }
+    .flag-red { background-color: #ef4444; }
+    .flag-white { background-color: #e5e7eb; color: #1f2937;}
+    .flag-checkered { background-image: linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(-45deg, #000 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #000 75%), linear-gradient(-45deg, transparent 75%, #000 75%); background-size: 8px 8px; background-color: #fff; color: #000; border: 1px solid #000; padding: 0px 2px;}
+    .flag-black { background-color: #1f2937; border: 1px solid #6b7280;}
+    .flag-meatball { background-color: #000; color: #f97316; border:1px solid #f97316; display: inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; font-size:0.7em; line-height:1;} 
+    .flag-furled { background-color: #4b5563; } 
+
+
+    /* Estilos da barra de rolagem (WebKit) */
+    ::-webkit-scrollbar { width: 6px; } 
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+    ::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 3px; } 
+    ::-webkit-scrollbar-thumb:hover { background-color: #6b7280; } 
+
+    /* Fallback para fundo opaco se o corpo for transparente */
+    body.opaque-fallback { background-color: #0f172a; }
+  </style>
+</head>
+<body class="text-slate-300">
+
+  <header class="drag flex items-center justify-between h-7 px-2 bg-slate-800 text-xs text-slate-300">
+    <span>Diagnóstico Full Definitiva - ULTRA MEGA v3.1</span>
+    <div class="no-drag space-x-3">
+      <i id="icon-lock"   class="fa-solid fa-lock cursor-pointer hover:text-emerald-400 transition-colors"></i>
+      <i id="icon-pin"    class="fa-solid fa-thumbtack -rotate-45 cursor-pointer hover:text-emerald-400 transition-colors"></i>
+      <i id="icon-close"  class="fa-solid fa-xmark cursor-pointer hover:text-red-500 transition-colors"></i>
+    </div>
+  </header>
+
+  <div id="root" class="p-2 grid grid-cols-4 gap-x-2 gap-y-1 overflow-y-auto"></div>
+
+<script>
+// Objeto global para interagir com a API da overlay (se houver)
+const overlayAPI = window.overlayAPI || window.api || {};
+// URL do WebSocket para o backend
+const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
+// Elemento raiz onde o conteúdo será renderizado
+const rootElement = document.getElementById('root');
+
+// Variáveis de estado para o cabeçalho (lock/pin)
+let locked = false, pinned = false;
+const iconLock = document.getElementById('icon-lock');
+const iconPin = document.getElementById('icon-pin');
+const iconClose = document.getElementById('icon-close');
+
+// Configuração dos eventos de clique para os ícones do cabeçalho
+if (iconClose) {
+    iconClose.onclick = () => {
+        if (overlayAPI.close) overlayAPI.close();
+        else console.log("Attempted to close. overlayAPI.close not found.");
+    };
+}
+if (iconLock) {
+    iconLock.onclick = (e) => {
+        locked = !locked;
+        if(overlayAPI.lock) overlayAPI.lock(locked);
+        else if(overlayAPI.toggleMovable) overlayAPI.toggleMovable(!locked);
+        
+        e.target.classList.toggle('fa-lock-open', locked);
+        e.target.classList.toggle('fa-lock', !locked);
+        e.target.classList.toggle('text-emerald-400', locked);
+        overlayAPI.saveSettings?.({ locked: locked });
+    };
+}
+if (iconPin) {
+    iconPin.onclick = (e) => {
+        pinned = !pinned;
+        if(overlayAPI.pin) overlayAPI.pin(pinned);
+        else if(overlayAPI.setAlwaysOnTop) overlayAPI.setAlwaysOnTop(pinned);
+
+        e.target.classList.toggle('-rotate-45', !pinned);
+        e.target.classList.toggle('rotate-0', pinned);
+        e.target.classList.toggle('text-emerald-400', pinned);
+        overlayAPI.saveSettings?.({ pinned: pinned });
+    };
+}
+// Define a rotação inicial do ícone de pin
+if (iconPin) iconPin.classList.add('-rotate-45');
+
+// Carrega configurações salvas ao iniciar
+(async () => { 
+    try {
+        const settings = await overlayAPI.loadSettings?.() || {};
+        if (settings.locked !== undefined) {
+            locked = settings.locked;
+            iconLock.classList.toggle('fa-lock-open', locked);
+            iconLock.classList.toggle('fa-lock', !locked);
+            iconLock.classList.toggle('text-emerald-400', locked);
+        }
+        if (settings.pinned !== undefined) {
+            pinned = settings.pinned;
+            iconPin.classList.toggle('-rotate-45', !pinned);
+            iconPin.classList.toggle('rotate-0', pinned);
+            iconPin.classList.toggle('text-emerald-400', pinned);
+        }
+    } catch (e) {
+        console.error("Error loading settings:", e);
+    }
+})();
+
+// Estado global para dados que persistem entre atualizações (como YAML e pit stops)
+const globalState = { 
+    rawYaml: null, // YAML bruto da sessão
+    yamlData: {},  // YAML parseado
+    wasOnPitRoad: false, // Flag para detectar entrada/saída do pit
+    lapAtLastPitStop: 0, // Volta em que ocorreu o último pit stop
+};
+
+// --- Funções Auxiliares de Formatação e Decodificação ---
+
+const addSection = title => {
+  if (!rootElement) return;
+  const sectionEl = document.createElement('div');
+  sectionEl.className = 'section'; 
+  sectionEl.textContent = title;
+  rootElement.appendChild(sectionEl);
+};
+
+const addRow = (labelText, valueContent, formatter = fmtGenericValue, unit = '') => {
+    if (!rootElement) return;
+    const itemContainer = document.createElement('div');
+    itemContainer.className = 'data-item-container';
+    
+    const labelEl = document.createElement('span');
+    labelEl.className = 'label';
+    labelEl.textContent = labelText + ":";
+    itemContainer.appendChild(labelEl);
+
+    const valueEl = document.createElement('span');
+    valueEl.className = 'value';
+    
+    let formattedResult;
+    let valueClass = '';
+
+    try {
+        if (formatter === fmtFuelStatus) { // Tratamento especial para fmtFuelStatus
+            const statusObj = valueContent; // Espera um objeto { text: "...", class: "..." }
+            formattedResult = statusObj && statusObj.text ? statusObj.text : '—';
+            valueClass = statusObj && statusObj.class ? statusObj.class : 'miss';
+        } else if (typeof formatter === 'function') {
+             const result = formatter(valueContent, unit);
+            if (Array.isArray(result) && result.length === 2 && typeof result[1] === 'string') {
+                [formattedResult, valueClass] = result;
+            } else {
+                formattedResult = result; // Assume que o formatador retorna apenas o valor formatado
+                if (unit && typeof formattedResult === 'string' && !formattedResult.includes('value unit')) {
+                     formattedResult += `<span class="value unit">${unit}</span>`;
+                }
+            }
+        } else { // Fallback se formatter não for uma função (improvável com default)
+            [formattedResult, valueClass] = fmtGenericValue(valueContent, unit);
+        }
+    } catch (e) {
+        console.error(`Formatter error for "${labelText}" with value "${valueContent}":`, e);
+        formattedResult = 'ERR';
+        valueClass = 'miss';
+    }
+    
+    valueEl.innerHTML = (formattedResult === undefined || formattedResult === null || String(formattedResult).trim() === '') ? '—' : formattedResult;
+
+    if (valueClass) { // Remove classes antigas de status antes de adicionar a nova, se aplicável
+        if (valueClass.startsWith('status-')) {
+            valueEl.classList.remove('status-ok', 'status-warning', 'status-danger');
+        }
+        valueEl.classList.add(valueClass);
+    }
+    if (valueEl.textContent === '—' || valueEl.textContent === 'ERR') {
+        valueEl.classList.add('miss');
+    }
+    itemContainer.appendChild(valueEl);
+    rootElement.appendChild(itemContainer);
+};
+
+const fmtGenericValue = (value, unit = '') => {
+  if (value === undefined || value === null || (typeof value === 'number' && !isFinite(value))) return ['—', 'miss'];
+  
+  let displayValue;
+  let valueClass = '';
+
+  if (Array.isArray(value)) {
+    displayValue = `[${value.slice(0, 3).map(v => {
+        const fv = fmtGenericValue(v);
+        return typeof fv[0] === 'string' ? fv[0].replace(/<span.*span>/g, '').trim() : fv[0];
+    }).join(', ')}${value.length > 3 ? ',…' : ''}] (${value.length})`;
+    valueClass = 'array';
+  } else if (typeof value === 'boolean') {
+    displayValue = value ? 'Sim' : 'Não';
+    valueClass = value ? 'bool-true' : 'bool-false';
+  } else if (typeof value === 'number') {
+    if (Number.isInteger(value)) displayValue = value.toString();
+    else if (Math.abs(value) < 0.0005 && value !== 0) displayValue = value.toExponential(2);
+    else displayValue = value.toFixed(3); 
+  } else if (typeof value === 'object' && value !== null) { // Tratar objetos (como FuelStatus)
+      if (value.text && value.class) { // Específico para FuelStatus
+          return [value.text, value.class];
+      }
+      displayValue = JSON.stringify(value); // Fallback para outros objetos
+      valueClass = 'array'; // Usar a mesma classe de array para objetos genéricos
+  }
+  else {
+    displayValue = String(value);
+  }
+  
+  const unitSpan = unit ? `<span class="value unit">${unit}</span>` : '';
+  return [`${displayValue}${unitSpan}`, valueClass];
+};
+
+const fmtTime = s => {
+  if (typeof s !== 'number' || !isFinite(s) || s < 0) return ['—', 'miss'];
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const secs = Math.floor(s % 60);
+  const hundreths = Math.floor((s * 100) % 100).toString().padStart(2,'0');
+  
+  if (s < 1 && s !== 0) return [`0.${(s*1000).toFixed(0).padStart(3,'0')}s`, '']; 
+  if (h > 0) return [`${h.toString().padStart(1, '0')}:${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`, '']; 
+  return [`${m.toString().padStart(1, '0')}:${secs.toString().padStart(2, '0')}.${hundreths}`, '']; 
+};
+
+const decodeSessionState = (state) => {
+    const states = {0:"Invalid", 1:"GetInCar", 2:"Warmup", 3:"ParadeLaps", 4:"Racing", 5:"Checkered", 6:"CoolDown"};
+    return [states[state] || `Raw: ${state}`, 'decoded'];
+};
+
+const decodePaceMode = (mode) => {
+    const modes = {0:"SingleFileStart",1:"DoubleFileStart",2:"SingleFileRestart",3:"DoubleFileRestart",4:"NotPacing",5:"Pacing",6:"CautionLap",7:"LastLap"};
+    return [modes[mode] || `Raw: ${mode}`, 'decoded'];
+};
+
+const IR_ENGINE_WARNINGS = {
+    WaterTemp: 0x01, FuelPressure: 0x02, OilPressure: 0x04, EngineStalled: 0x08,
+    PitSpeedLimiter: 0x10, RevLimiterActive: 0x20, OilTempWarning: 0x40 
+};
+
+const decodeEngineWarnings = (warnings) => {
+    if (warnings === undefined || warnings === null || warnings === 0) return ['OK', 'status-ok']; // Retorna status-ok para OK
+    let activeWarnings = [];
+    if (warnings & IR_ENGINE_WARNINGS.WaterTemp) activeWarnings.push("Água Quente!");
+    if (warnings & IR_ENGINE_WARNINGS.FuelPressure) activeWarnings.push("Press. Comb. Baixa!");
+    if (warnings & IR_ENGINE_WARNINGS.OilPressure) activeWarnings.push("Press. Óleo Baixa!");
+    if (warnings & IR_ENGINE_WARNINGS.EngineStalled) activeWarnings.push("Motor Parado!");
+    if (warnings & IR_ENGINE_WARNINGS.PitSpeedLimiter) activeWarnings.push("Limitador Pits");
+    if (warnings & IR_ENGINE_WARNINGS.RevLimiterActive) activeWarnings.push("Corte Giro");
+    if (warnings & IR_ENGINE_WARNINGS.OilTempWarning) activeWarnings.push("Óleo Quente!");
+
+    if (activeWarnings.length === 0) return ['OK', 'status-ok']; 
+    return [activeWarnings.join(', '), 'status-warning']; // Usa status-warning para destacar avisos
+};
+
+const IR_SESSION_FLAGS = {
+    Checkered: 0x00000001, White: 0x00000002, Green: 0x00000004, Yellow: 0x00000008,
+    Red: 0x00000010, Blue: 0x00000020, Debris: 0x00000040, Crossed: 0x00000080,
+    Black: 0x00000100, Disqualify: 0x00000200, Servicible: 0x00000400, 
+    Furled: 0x00000800, Repair: 0x00001000, 
+    StartHidden: 0x00010000, StartReady: 0x00020000, StartSet: 0x00040000, StartGo: 0x00080000,
+    Caution: 0x01000000, CautionWaving: 0x02000000,
+    OneLapToGreen: 0x10000000, GreenHeld: 0x20000000, TenToGo: 0x40000000, FiveToGo: 0x80000000,
+    RandomWaving: 0x00100000, 
+    TrackOpen: 0x00800000, 
+};
+
+function formatSessionFlags(flags) {
+    if (flags === undefined || flags === null) return ['—', 'miss'];
+    let html = '<div class="flags-container">';
+    let activeFlagsCount = 0;
+
+    if (flags & IR_SESSION_FLAGS.Checkered) { html += '<span class="flag-indicator flag-checkered">🏁</span>'; activeFlagsCount++; }
+    else if (flags & IR_SESSION_FLAGS.White) { html += '<span class="flag-indicator flag-white">🏳️</span>'; activeFlagsCount++; }
+    else if (flags & IR_SESSION_FLAGS.Green || flags & IR_SESSION_FLAGS.StartGo || flags & IR_SESSION_FLAGS.GreenHeld) { html += '<span class="flag-indicator flag-green">🟢</span>'; activeFlagsCount++; }
+    
+    if (flags & IR_SESSION_FLAGS.Yellow || flags & IR_SESSION_FLAGS.Caution || flags & IR_SESSION_FLAGS.CautionWaving) { html += '<span class="flag-indicator flag-yellow">🟡</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Red) { html += '<span class="flag-indicator flag-red">🔴</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Blue) { html += '<span class="flag-indicator flag-blue">🔵</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Debris) { html += '<span class="flag-indicator flag-yellow">⚠️Debris</span>'; activeFlagsCount++; } 
+    
+    if (flags & IR_SESSION_FLAGS.Black) { html += '<span class="flag-indicator flag-black">⚫</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Disqualify) { html += '<span class="flag-indicator flag-black">❌DQ</span>'; activeFlagsCount++; }
+    if (flags & IR_SESSION_FLAGS.Repair) { html += '<span class="flag-indicator flag-meatball">MB</span>'; activeFlagsCount++; } 
+    
+    if (flags & IR_SESSION_FLAGS.OneLapToGreen) { html += '<span class="flag-indicator flag-furled">1 To Green</span>'; activeFlagsCount++;}
+    if (flags & IR_SESSION_FLAGS.Furled && !(flags & IR_SESSION_FLAGS.OneLapToGreen)) { html += '<span class="flag-indicator flag-furled">Furled</span>'; activeFlagsCount++;}
+    
+    if (activeFlagsCount === 0 && flags !== 0) { 
+      html += `<span class="flag-indicator flag-furled">Raw: ${flags.toString(16)}</span>`; 
+    } else if (activeFlagsCount === 0 && flags === 0) { 
+         html += '<span class="flag-indicator flag-green">🟢Clear</span>'; 
+    }
+    html += '</div>';
+    return [html, 'decoded'];
+}
+
+const fmtFuelStatus = (statusObj) => { // Formatador específico para o objeto FuelStatus
+    if (statusObj && statusObj.text && statusObj.class) {
+        return [statusObj.text, statusObj.class]; // Retorna [texto, classeCSS]
+    }
+    return ['—', 'miss'];
+};
+
+
+// --- Função Principal de Renderização ---
+function render(data) {
+  if (!rootElement || !data) {
+    if(rootElement) rootElement.innerHTML = '<div class="section" style="color: #f87171; grid-column: 1 / -1;">Erro: Dados ausentes.</div>';
+    return;
+  }
+  rootElement.innerHTML = ''; 
+
+  if (data.sessionInfoYaml && data.sessionInfoYaml !== globalState.rawYaml) { 
+    globalState.rawYaml = data.sessionInfoYaml; 
+    try { globalState.yamlData = jsyaml.load(data.sessionInfoYaml) || {}; } 
+    catch (e) { console.error("Error parsing YAML:", e); globalState.yamlData = {}; }
+  }
+
+  const wInfo = globalState.yamlData?.WeekendInfo || {};
+  const driverInfo = globalState.yamlData?.DriverInfo || {};
+  const drivers = driverInfo.Drivers || []; // Drivers é um array dentro de DriverInfo no YAML
+  const currentSessionInfoFromYaml = globalState.yamlData?.SessionInfo || {}; // Renomeado para evitar conflito
+  const currentSessionArr = currentSessionInfoFromYaml.Sessions || []; // Sessions é um array dentro de SessionInfo no YAML
+  const currentSessionNum = data.sessionNum; 
+  const sessionFromYaml = currentSessionArr.find(s => s.SessionNum === currentSessionNum) || {}; 
+  
+  const playerDriverFromYaml = Array.isArray(drivers) ? drivers.find(d => d.CarIdx === data.playerCarIdx) : {}; 
+  const carSetup = playerDriverFromYaml?.CarSetup || {}; 
+  const weekendOptions = wInfo.WeekendOptions || {};
+  const incidentLimit = data.incidentLimit !== undefined ? data.incidentLimit : (weekendOptions.IncidentLimit || sessionFromYaml?.ResultsPenalty?.IncidentLimit || 'N/A');
+
+
+  if (globalState.wasOnPitRoad === true && data.onPitRoad === false) { 
+    globalState.lapAtLastPitStop = data.lap !== undefined ? data.lap : (globalState.lapAtLastPitStop); 
+  }
+  globalState.wasOnPitRoad = data.onPitRoad; 
+  let lapsInStint = "—";
+  if (data.lap !== undefined) {
+      if (data.onPitRoad) { // Se estiver nos pits, o stint "terminou" ou está para começar
+          lapsInStint = 0; // Ou "PIT"
+      } else if (globalState.lapAtLastPitStop <= data.lap) {
+          lapsInStint = data.lap - globalState.lapAtLastPitStop;
+          if (globalState.lapAtLastPitStop === 0 && data.lap > 0) lapsInStint = data.lap; // Primeiro stint da corrida
+      }
+  }
+
+
+  // --- Renderização das Seções (propriedades de 'data' em camelCase) ---
+
+  addSection('🏁 Pista & Sessão');
+  addRow('Track', data.trackDisplayName); 
+  addRow('Layout', data.trackConfigName);   
+  addRow('Pista Declarada', data.trackStatus); 
+  addRow('Comprimento', data.trackLength, fmtGenericValue, 'km'); 
+  addRow('Tipo de Sessão', data.sessionTypeFromYaml || sessionFromYaml.SessionType || sessionFromYaml.SessionName); 
+  addRow('Temp. Ambiente', data.airTemp, fmtGenericValue, data.tempUnits === 1 ? '°F' : '°C'); 
+  addRow('Temp. Pista (Live)', data.trackSurfaceTemp, fmtGenericValue, '°C');
+  addRow('Temp. Pista (Oficial)', data.trackTempCrew, fmtGenericValue, '°C');
+  addRow('Céu', data.skies); 
+  addRow('Vento', data.windSpeed, fmtGenericValue, "kph"); 
+  addRow('Condição Pista', (data.trackSurfaceWetness > 0.01) ? 'Molhada' : 'Seca'); 
+  addRow('Aderência Pista', data.trackGripStatus); 
+  addRow('Hora na Simulação', data.sessionTimeOfDay, fmtTime);
+  addRow('Previsão Chuva', data.chanceOfRain, v => (v !== undefined && v !== null) ? (v).toFixed(0) : '—', '%');  // ChanceOfRain agora é float direto
+  addRow('Previsão Tipo', data.forecastType ); 
+
+
+  addSection('👤 Piloto & Stint');
+  addRow('Piloto', data.userName); 
+  addRow('Equipe', data.teamName); 
+  addRow('Carro #', data.carNumber); 
+  const carClassID = data.playerCarClassID; 
+  const carClassDetails = globalState.yamlData?.CarClasses?.find(c => c.CarClassID === carClassID); 
+  addRow('Classe Categoria', carClassDetails?.Name || carClassDetails?.CarClassShortName || `ID: ${carClassID}`);
+  addRow('Licença', data.licString || `${playerDriverFromYaml?.LicLevel || ''} ${playerDriverFromYaml?.LicSubLevel || ''}`); 
+  addRow('iRating', data.iRating); 
+  addRow('Safety Rating', typeof data.licSafetyRating === 'number' ? data.licSafetyRating.toFixed(2) : '—'); 
+  const currentIncidents = data.playerCarTeamIncidentCount; 
+  addRow('Incidentes', `${currentIncidents !== undefined ? currentIncidents : '—'} / ${incidentLimit}`); 
+  addRow('Acelerador', data.throttle, v => (v * 100).toFixed(0), '%');
+  addRow('Freio', data.brake, v => (v * 100).toFixed(0), '%');
+  addRow('Direção', data.steeringWheelAngle, v => (v * (180 / Math.PI)).toFixed(1), '°');
+  addRow('Embreagem', data.clutch, v => (v * 100).toFixed(0), '%');
+  addRow('Voltas no Stint', lapsInStint, fmtGenericValue);
+  addRow('Tempo Último Pit', data.playerCarLastPitTime, fmtTime);
+  addRow('Pit Stops', data.playerCarPitStopCount);
+  
+
+  addSection('⏱️ Volta & Delta');
+  addRow('Volta Atual', data.lap);
+  addRow('Dist. Volta %', data.lapDistPct, v => (v * 100).toFixed(1), '%');
+  addRow('Dist. Percorrida', data.lapDistPct, v => (v * (data.trackLength * 1000)).toFixed(0), 'm');
+  addRow('Tempo Volta Atual', data.lapCurrentLapTime, fmtTime);
+  addRow('Última Volta', data.lapLastLapTime, fmtTime);
+  addRow('Melhor Volta (Sessão)', data.lapBestLapTime, fmtTime); 
+  addRow('Delta Melhor (Sessão)', data.lapDeltaToSessionBestLap, fmtGenericValue); 
+  addRow('Delta Ótima (Sessão)', data.lapDeltaToSessionOptimalLap, fmtGenericValue);
+  addRow('Delta Melhor Pessoal', data.lapDeltaToDriverBestLap, fmtGenericValue); 
+  
+  addSection('📊 Setores da Pista');
+  const sectorTimes = data.lapAllSectorTimes || []; 
+  const bestSectorTimesDeltas = data.lapDeltaToSessionBestSectorTimes || []; 
+  const sessionBestSectorsAbsolute = data.sessionBestSectorTimes || []; 
+  const numSectorsToDisplay = Math.max(sectorTimes.length, sessionBestSectorsAbsolute.length, bestSectorTimesDeltas.length, (wInfo.NumTrackSectors || (sectorTimes.length > 0 ? sectorTimes.length : 3) ));
+
+  for (let i = 0; i < numSectorsToDisplay; i++) {
+      const currentSectorTime = sectorTimes[i];
+      const sessionBestSectorTime = sessionBestSectorsAbsolute[i];
+      let deltaToBestDisplay = '—';
+
+      if (currentSectorTime !== undefined && sessionBestSectorTime !== undefined && currentSectorTime > 0 && sessionBestSectorTime > 0) {
+          const delta = currentSectorTime - sessionBestSectorTime;
+          deltaToBestDisplay = (delta > 0 ? '+' : '') + delta.toFixed(3);
+      } else if (bestSectorTimesDeltas[i] !== undefined && bestSectorTimesDeltas[i] !=0) { 
+          const delta = bestSectorTimesDeltas[i];
+          deltaToBestDisplay = (delta > 0 ? '+' : '') + delta.toFixed(3);
+      }
+      addRow(`Setor ${i + 1} (Atual)`, currentSectorTime, fmtTime);
+      addRow(`Setor ${i + 1} Δ (vs Melhor Sess)`, deltaToBestDisplay, v => [v, (v === '—' || v === undefined) ? 'miss' : (parseFloat(v.replace('+','')) > 0.001 ? 'miss' : (parseFloat(v.replace('+','')) < -0.001 ? 'bool-true' : ''))]);
+  }
+
+
+  addSection('⏳ Tempo de Sessão');
+  addRow('Tempo de Sessão', data.sessionTime, fmtTime);
+  addRow('Tempo Restante', data.sessionTimeRemain, fmtTime);
+  addRow('Voltas Totais', data.totalLaps === -1 ? 'Ilimitado' : (data.totalLaps === 0 && (data.sessionTypeFromYaml?.toLowerCase().includes('race')) ? 'Por Tempo' : data.totalLaps) );
+  addRow('Voltas Restantes (Corrida)', data.lapsRemainingRace === -1 ? 'Ilimitado' : data.lapsRemainingRace);
+
+
+  addSection('🛞 Pneus – Temp, Pressão & Desgaste');
+  const tires = ['lf', 'rf', 'lr', 'rr']; 
+  const frontTireCompound = data.playerCarTireCompound || carSetup.Front?.CompoundName || 'Desconhecido';
+  const rearTireCompound = data.playerCarTireCompound || carSetup.Rear?.CompoundName || 'Desconhecido';
+  addRow('Composto Pneus (F)', frontTireCompound);
+  if (frontTireCompound !== rearTireCompound && rearTireCompound !== 'Desconhecido') addRow('Composto Pneus (R)', rearTireCompound);
+  addRow('Sets Usados', data.tireSetsUsed); 
+  addRow('Sets Disponíveis', data.tireSetsAvailable); 
+
+  tires.forEach((tire) => { // tire já é o prefixo em minúsculas
+    addRow(`${tire.toUpperCase()} Temp CL`, data[`${tire}tempCL`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Temp CM`, data[`${tire}tempCM`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Temp CR`, data[`${tire}tempCR`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Pressão`, data[`${tire}press`], fmtGenericValue, 'kPa');
+    const wearArray = data[`${tire}Wear`]; 
+    let wearText = "— / — / —";
+    if(Array.isArray(wearArray) && wearArray.length >= 3){
+        wearText = wearArray.slice(0,3).map(w => (typeof w === 'number' && isFinite(w)) ? (w * 100).toFixed(1) + '%' : '—').join(' / ');
+    }
+    addRow(`${tire.toUpperCase()} Desgaste (I/M/O)`, wearText, v => [v, 'array']); 
+  });
+
+  addSection('🛑 Freios, Pit & Ajustes (DC)');
+  const tireCornersUpper = ['LF', 'RF', 'LR', 'RR'];
+  tireCornersUpper.forEach((corner, index) => addRow(`Temp. Freio ${corner}`, data.brakeTemp ? data.brakeTemp[index] : undefined, fmtGenericValue, '°C'));
+  tireCornersUpper.forEach(corner => addRow(`Pressão Linha Freio ${corner}`, data[`${corner.toLowerCase()}brakeLinePress`], fmtGenericValue, 'kPa'));
+  addRow('Balanço Freio', data.dcBrakeBias, v => (v * 100).toFixed(1), '%');
+  addRow('Nos Pits', data.onPitRoad, fmtGenericValue);
+  addRow('Reparo Restante (Obrig.)', data.pitRepairLeft, fmtTime);
+  addRow('Reparo Restante (Opc.)', data.pitOptRepairLeft, fmtTime);
+  addRow('ABS (DC)', data.dcABS, fmtGenericValue);
+  addRow('TC (DC)', data.dcTractionControl, fmtGenericValue);
+  addRow('Asa Diant. (DC)', data.dcFrontWing); 
+  addRow('Asa Tras. (DC)', data.dcRearWing); 
+  addRow('Dif. Entrada (DC)', data.dcDiffEntry); 
+  addRow('Dif. Meio (DC)', data.dcDiffMiddle); 
+  addRow('Dif. Saída (DC)', data.dcDiffExit); 
+
+
+  addSection('⚙️ Motor & Combustível');
+  addRow('Pressão Óleo', data.oilPress, fmtGenericValue, 'kPa');
+  addRow('Temp. Óleo', data.oilTemp, fmtGenericValue, '°C');
+  addRow('Temp. Água', data.waterTemp, fmtGenericValue, '°C');
+  addRow('Pressão Combustível', data.fuelPress, fmtGenericValue, 'kPa');
+  addRow('Pressão Manifold', data.manifoldPress, fmtGenericValue, 'kPa');
+  addRow('Avisos Motor', data.engineWarnings, decodeEngineWarnings); 
+  addRow('Nível Combustível', data.fuelLevel, fmtGenericValue, 'L');
+  addRow('Nível Combustível %', data.fuelLevelPct, v => (v * 100).toFixed(1), '%');
+  addRow('Uso Combustível/Hora', data.fuelUsePerHour, fmtGenericValue, 'L/h');
+  addRow('Uso Combustível/Volta', data.fuelPerLap, fmtGenericValue, 'L'); 
+  addRow('Tempo Est. Volta (SDK)', data.estLapTime, fmtTime); 
+  addRow('Voltas Rest. Tanque', data.lapsRemaining, v => v > 990 || isNaN(v) ? '∞' : v.toFixed(1));
+  addRow('Status Combustível', data.fuelStatus, fmtFuelStatus); // Usa o formatador específico
+
+
+  addSection('🏎️ Dinâmica & Suspensão');
+  tireCornersUpper.forEach(corner => addRow(`Pos. Susp. ${corner}`, data[`${corner.toLowerCase()}SuspPos`], fmtGenericValue, 'rad'));
+  tireCornersUpper.forEach(corner => addRow(`Vel. Susp. ${corner}`, data[`${corner.toLowerCase()}SuspVel`], fmtGenericValue, 'rad/s'));
+  tireCornersUpper.forEach(corner => addRow(`Alt. Monoposto ${corner}`, data[`${corner.toLowerCase()}RideHeight`], fmtGenericValue, 'm'));
+
+  addSection('🛠️ Danos no Carro'); 
+  const damageKeys = ['lfDamage', 'rfDamage', 'lrDamage', 'rrDamage', 'frontWingDamage', 'rearWingDamage', 'engineDamage', 'gearboxDamage', 'chassisDamage', 'suspensionDamage']; 
+  let hasDamage = false;
+  damageKeys.forEach(key => {
+      if (data[key] !== undefined && data[key] > 0.001) { 
+          const labelKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).replace('Damage',' Dano');
+          addRow(labelKey, data[key], v => (v*100).toFixed(0), '%');
+          hasDamage = true;
+      }
+  });
+  if (!hasDamage) { addRow('Status Dano', 'Nenhum Dano Detectado'); }
+
+
+  addSection('⚡ Sistemas Especiais'); 
+  addRow('DRS Status', data.drs_Status); // Verifique se o backend envia drsStatus ou drs_Status. Ajustado para drs_Status
+  addRow('P2P Contagem', data.carIdxP2P_Count); 
+  addRow('P2P Status', data.carIdxP2P_Status);   
+  addRow('Modo Motor ERS (DC)', data.dcEnginePower); 
+
+  addSection('📊 Forças G & Orientação');
+  addRow('Acel. Lateral', data.latAccel, fmtGenericValue, 'G');
+  addRow('Acel. Longitudinal', data.lonAccel, fmtGenericValue, 'G');
+  addRow('Acel. Vertical', data.vertAccel, fmtGenericValue, 'G');
+  addRow('Yaw (Guinada)', data.yaw, v => (v * 180/Math.PI).toFixed(1), '°');
+  addRow('Pitch (Arfagem)', data.pitch, v => (v * 180/Math.PI).toFixed(1), '°');
+  addRow('Roll (Rolagem)', data.roll, v => (v * 180/Math.PI).toFixed(1), '°');
+
+  addSection('🚩 Controle & Estado Avançado');
+  addRow('Estado da Sessão', data.sessionState, decodeSessionState);
+  addRow('Modo Pace Car', data.paceMode, decodePaceMode);
+  addRow('Bandeiras Ativas', data.sessionFlags, formatSessionFlags);
+  addRow('Pressão Atmosférica', data.airPressure, fmtGenericValue, 'kPa'); 
+  addRow('Umidade Relativa', data.relativeHumidity, v => (v !== undefined && v !== null) ? (v).toFixed(1) : '—', '%'); // RelativeHumidity agora é float direto
+
+
+  addSection('📦 Todos os Dados Brutos');
+  const alias = { // Chaves agora em camelCase para corresponder aos dados
+    lap: 'Volta Atual', rpm: 'Rotações', throttle: 'Acelerador', brake: 'Freio', clutch: 'Embreagem',
+    steeringWheelAngle: 'Ângulo Volante', gear: 'Marcha', speed: 'Velocidade',
+    fuelLevel: 'Combustível (L)', fuelLevelPct: 'Combustível (%)', waterTemp: 'Temp. Água',
+    oilTemp: 'Temp. Óleo', oilPress: 'Pressão Óleo', fuelPress: 'Pressão Combustível',
+    manifoldPress: 'Pressão Manifold', engineWarnings: 'Avisos Motor (Raw)',
+    sessionTime: 'Tempo Sessão', sessionTimeRemain: 'Tempo Restante Sessão',
+    sessionState: 'Estado Sessão (Raw)', paceMode: 'Modo Pace Car (Raw)',
+    sessionFlags: 'Bandeiras Sessão (Raw)', playerCarIdx: 'Índice Carro Jogador',
+    trackSurfaceTemp: 'Temp. Pista (Live)', trackTempCrew: 'Temp. Pista (Oficial)',
+    onPitRoad: 'Nos Pits', playerCarLastPitTime: 'Tempo Último Pit',
+    playerCarPitStopCount: 'Contagem Pit Stops', lapLastLapTime: 'Última Volta',
+    lapBestLapTime: 'Melhor Volta (Piloto)', lapCurrentLapTime: 'Tempo Volta Atual',
+    lapDistPct: 'Dist. Volta (%)', lapDeltaToSessionBestLap: 'Delta Melhor (Sessão)',
+    lapDeltaToSessionOptimalLap: 'Delta Ótima (Sessão)', lapDeltaToDriverBestLap: 'Delta Melhor Pessoal',
+    latAccel: 'Acel. Lateral', lonAccel: 'Acel. Longitudinal', vertAccel: 'Acel. Vertical',
+    yaw: 'Guinada (Raw)', pitch: 'Arfagem (Raw)', roll: 'Rolagem (Raw)',
+    trackGripStatus: 'Aderência Pista', drs_Status: 'Status DRS', // Assumindo drs_Status
+    dcEnginePower: 'Modo Motor ERS (DC)', pitRepairLeft: 'Reparo Obrig. Restante',
+    pitOptRepairLeft: 'Reparo Opc. Restante',
+    lftempCL: 'LF Temp CL', lftempCM: 'LF Temp CM', lftempCR: 'LF Temp CR',
+    rftempCL: 'RF Temp CL', rftempCM: 'RF Temp CM', rftempCR: 'RF Temp CR',
+    lrtempCL: 'LR Temp CL', lrtempCM: 'LR Temp CM', lrtempCR: 'LR Temp CR',
+    rrtempCL: 'RR Temp CL', rrtempCM: 'RR Temp CM', rrtempCR: 'RR Temp CR',
+    lfpress: 'LF Pressão', rfpress: 'RF Pressão', lrpress: 'LR Pressão', rrpress: 'RR Pressão',
+    lfWear: 'LF Desgaste', rfWear: 'RF Desgaste', lrWear: 'LR Desgaste', rrWear: 'RR Desgaste',
+    playerCarTireCompound: 'Composto Pneu Jogador',
+    tireSetsUsed: 'Sets Pneus Usados', tireSetsAvailable: 'Sets Pneus Disponíveis',
+    brakeTemp: 'Temp. Freio (Array)',
+    lfbrakeLinePress: 'LF Pressão Linha Freio', rfbrakeLinePress: 'RF Pressão Linha Freio',
+    lrbrakeLinePress: 'LR Pressão Linha Freio', rrbrakeLinePress: 'RR Pressão Linha Freio',
+    lfsuspPos: 'LF Pos. Susp.', rfsuspPos: 'RF Pos. Susp.', lrsuspPos: 'LR Pos. Susp.', rrsuspPos: 'RR Pos. Susp.',
+    lfsuspVel: 'LF Vel. Susp.', rfsuspVel: 'RF Vel. Susp.', lrsuspVel: 'LR Vel. Susp.', rrsuspVel: 'RR Vel. Susp.',
+    lfrideHeight: 'LF Alt. Monoposto', rfrideHeight: 'RF Alt. Monoposto', 
+    lrrideHeight: 'LR Alt. Monoposto', rrrideHeight: 'RR Alt. Monoposto',
+    lfDamage: 'LF Dano', rfDamage: 'RF Dano', lrDamage: 'LR Dano', rrDamage: 'RR Dano',
+    frontWingDamage: 'Dano Asa Diant.', rearWingDamage: 'Dano Asa Tras.',
+    engineDamage: 'Dano Motor', gearboxDamage: 'Dano Câmbio',
+    chassisDamage: 'Dano Chassi', suspensionDamage: 'Dano Suspensão',
+    userName: 'Piloto (TM)', teamName: 'Equipe (TM)', carNumber: 'Carro # (TM)', iRating: 'iRating (TM)',
+    licString: 'Licença (TM)', licSafetyRating: 'Safety Rating (TM)',
+    playerCarClassID: 'ID Classe Cat. (TM)', playerCarTeamIncidentCount: 'Incidentes Equipe (TM)',
+    trackDisplayName: 'Track (TM)', trackConfigName: 'Layout (TM)', trackLength: 'Comprimento (km, TM)',
+    sessionTypeFromYaml: 'Tipo Sessão YAML (TM)',
+    trackStatus: 'Pista Declarada (TM)', airTemp: 'Temp. Ambiente (TM)', tempUnits: 'Unid. Temp. (TM)',
+    skies: 'Céu (TM)', windSpeed: 'Vento (TM)', airPressure: 'Pressão Atm. (TM)',
+    relativeHumidity: 'Umidade Rel. (TM)', chanceOfRain: 'Previsão Chuva (TM)',
+    forecastType: 'Previsão Tipo (TM)', incidentLimit: 'Limite Incidentes (TM)',
+    totalLaps: 'Voltas Totais (Calc)', lapsRemainingRace: 'Voltas Rest. Corrida (Calc)',
+    lapAllSectorTimes: 'Tempos Todos Setores (TM)', lapDeltaToSessionBestSectorTimes: 'Delta Melhores Setores (TM)',
+    sessionBestSectorTimes: 'Melhores Setores Sessão (TM)',
+    carIdxP2P_Count: 'P2P Contagem (TM)', carIdxP2P_Status: 'P2P Status (TM)',
+    consumoMedio: "Consumo Médio", voltasRestantesMedio: "Voltas (Médio)",
+    necessarioFim: "Necessário p/ Fim", recomendacaoAbastecimento: "Recomendação Abast.",
+    fuelStatus: "Status Combustível", lapsRemaining: "Voltas Rest. Tanque",
+    fuelRemaining: "Comb. Restante", fuelEta: "ETA Combustível",
+    fuelUsePerLapCalc: "Consumo/Volta Usado Calc.", estLapTimeCalc: "Tempo Volta Usado Calc."
+  };
+
+  Object.keys(data)
+    .sort() 
+    .forEach(rawKey => {
+      if (rawKey === 'sessionInfoYaml') return; 
+      const label = alias[rawKey] || rawKey.replace(/([A-Z0-9])/g, ' $1').replace(/^./, str => str.toUpperCase()); 
+      addRow(label, data[rawKey], fmtGenericValue);
+    });
+}
+
+function connect() {
+  const ws = new WebSocket(WS_URL);
+  ws.onopen = () => { 
+    console.log(`Conectado a ${WS_URL}`);
+    if(rootElement.innerHTML.includes('Desconectado')) rootElement.innerHTML = ''; 
+  };
+  ws.onmessage = event => {
+    try {
+      const parsedData = JSON.parse(event.data); 
+      if (parsedData) render(parsedData); 
+    } catch (e) { 
+      console.error("Erro ao processar mensagem WebSocket:", e, "Dados brutos:", event.data); 
+    }
+  };
+  ws.onclose = () => { 
+    console.log(`Desconectado. Reconectando em 3s...`); 
+    if(rootElement) rootElement.innerHTML = '<div class="section" style="color: #f87171; grid-column: 1 / -1;">Desconectado... Tentando reconectar.</div>'; 
+    setTimeout(connect, 3000); 
+  };
+  ws.onerror = error => { 
+    console.error("Erro WebSocket:", error); 
+    ws.close(); 
+  };
+}
+
+if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)' ||
+    window.getComputedStyle(document.body).backgroundColor === 'transparent') {
+} else {
+    document.body.classList.add('opaque-fallback');
+}
+
+connect();
+</script>
+</body>
+</html>

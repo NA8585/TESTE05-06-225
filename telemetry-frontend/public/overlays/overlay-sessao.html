@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Sessão NR85IA (com Setores)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    body, html {
+      font-family: 'Poppins', sans-serif;
+      background-color: transparent;
+      color: #e5e7eb; /* text-gray-200 */
+      margin: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      padding: 10px; /* Padding para visualização do contorno azul */
+      box-sizing: border-box;
+      -webkit-user-select: none;
+       user-select: none;
+    }
+    .resizable-overlay-wrapper {
+      width: 100%;
+      max-width: 900px; /* Mantido de nova tester para acomodar mais dados */
+      margin: 0 auto;
+      height: auto;
+      min-height: 450px; /* Aumentado para o novo card */
+      background-color: rgba(17, 24, 39, var(--overlay-opacity, 0.95)); /* bg-gray-900 com opacidade controlável */
+      border: 2px solid #3b82f6; /* Borda azul (blue-600) */
+      border-radius: 1rem; /* rounded-xl */
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      filter: contrast(var(--overlay-contrast, 1)); /* Contraste controlável */
+    }
+
+    .header {
+      display:flex;
+      align-items:center;
+      padding: 6px 12px;
+      background: rgba(30, 41, 59, 0.85); /* slate-800 com mais opacidade */
+      cursor:move;
+      -webkit-app-region:drag;
+      border-bottom: 1px solid #4b5563; /* slate-600 */
+      pointer-events: auto;
+    }
+    .header .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      -webkit-app-region:no-drag;
+    }
+    .header .logo-container .icon-coaching {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .header .logo-container .icon-coaching i {
+        font-size: 1.1rem;
+        color: #38bdf8; /* text-sky-400 */
+    }
+    .header .logo-container .icon-coaching .coaching-text {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #cbd5e1; /* slate-300 */
+    }
+    .header .logo-container .nr85-text {
+        font-weight: 700;
+        font-size: 0.9rem;
+        background: linear-gradient(to right, #ef4444, #fde047, #86efac);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .header .logo-container .ia-text {
+        font-family:'Orbitron', sans-serif;
+        font-weight:700;
+        font-size: 0.9rem;
+        background: linear-gradient(to right, #22d3ee, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .header .title-wrapper {
+        flex-grow: 1;
+        text-align: center;
+        -webkit-app-region:no-drag;
+    }
+    .header .main-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      white-space:nowrap;
+      display: inline-block;
+    }
+
+    .controls {
+        display:flex;
+        gap:5px;
+        -webkit-app-region:no-drag;
+    }
+    .controls button {
+        background: #4b5563;
+        border: 1px solid #64748b;
+        padding: 5px 8px;
+        border-radius:6px;
+        font-size:0.8rem;
+        line-height: 1;
+        cursor:pointer;
+        transition:all 0.2s;
+        pointer-events: auto;
+        color: #e2e8f0;
+    }
+    .controls button:hover {
+        background:#64748b;
+        border-color: #94a3b8;
+        color: white;
+    }
+    .controls button.active {
+        color: white;
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+    }
+    .controls button#pinBtn.active { background-color: #3b82f6; border-color: #60a5fa;}
+    .controls button#lockBtn.active { background-color: #06b6d4; border-color: #22d3ee;}
+    .controls button#clickThroughBtn.active { background-color: #6366f1; border-color: #818cf8;}
+    .controls button#closeBtn { background:#ef4444; border-color: #f87171;}
+    .controls button#closeBtn:hover { background:#dc2626; border-color: #ef4444;}
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.7; }
+        50% { transform: scale(1.15); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.7; }
+    }
+    .pulsing-headset {
+        animation: pulse 2s infinite ease-in-out;
+    }
+
+    .connection-status-container {
+        padding: 2px 12px 6px 12px;
+        background: rgba(30, 41, 59, 0.85);
+        border-bottom: 1px solid #4b5563;
+        text-align: right;
+    }
+    .connection-status {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      display: inline-block;
+      font-weight: 500;
+    }
+    .status-connected { background-color: #10b981; color: white; }
+    .status-disconnected { background-color: #ef4444; color: white; }
+    .status-connecting { background-color: #f59e0b; color: #1f2937; }
+
+    .content-area {
+        padding: 1rem;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .section-grid-container {
+      display: grid;
+      /* Ajustado para corresponder ao nova tester, permitindo 3 colunas se houver espaço */
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background-color: rgba(30, 41, 59, 0.9);
+      border: 1px solid #4b5563;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      display: flex; /* Adicionado para melhor controle do conteúdo interno */
+      flex-direction: column; /* Adicionado para melhor controle do conteúdo interno */
+    }
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #60a5fa;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid #4b5563;
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+    .card-title i {
+      margin-right: 0.5rem;
+      color: #93c5fd;
+    }
+    .data-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.35rem 0.75rem;
+      align-items: center;
+    }
+    .data-label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .data-value {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      min-height: 1.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .good { color: #4ade80; } .bad { color: #f87171; } .neutral { color: #9ca3af; }
+    .damage-value.none { color: #4ade80; }
+    .damage-value.minor { color: #facc15; }
+    .damage-value.moderate { color: #fb923c; }
+    .damage-value.severe { color: #f87171; }
+
+    .flag-status-span {
+      display: inline-block; padding: 0.1rem 0.4rem; border-radius: 0.25rem;
+      font-size: 0.8rem; text-align: center; min-height: 1.2em; line-height: 1;
+      color: white;
+      text-shadow: 0 0 2px black;
+      font-weight: 500;
+    }
+    .flag-green { background-color: #10b981;} .flag-yellow { background-color: #f59e0b; color: #1f2937;}
+    .flag-blue { background-color: #3b82f6;} .flag-red { background-color: #ef4444;}
+    .flag-white { background-color: #e5e7eb; color: #1f2937;}
+    .flag-checkered { background-image: linear-gradient(45deg, #000 25%, transparent 25%), linear-gradient(-45deg, #000 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #000 75%), linear-gradient(-45deg, transparent 75%, #000 75%); background-size: 8px 8px; background-color: #fff; color: #000; border: 1px solid #000; }
+    .flag-black { background-color: #1f2937; border: 1px solid #6b7280;}
+    .flag-default { background-color: #4b5563;}
+    .flag-default span { visibility: hidden; }
+
+    /* Estilos para a tabela de setores (de nova tester.html) */
+    .sector-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    .sector-table th, .sector-table td { font-size: 0.8rem; padding: 0.2rem 0.4rem; text-align: right; border-bottom: 1px solid rgba(75, 85, 99, 0.5); }
+    .sector-table th { color: #9ca3af; font-weight: 600; text-align: center; }
+    .sector-table td:first-child { text-align: center; font-weight: 600; } /* Número do setor */
+    .sector-table tr:last-child td { border-bottom: none; }
+
+
+    #settings-popover {
+        position:absolute;
+        top:50px;
+        right:10px;
+        display:none;
+        background-color:rgba(23, 30, 44, 0.98);
+        border:1px solid #3b82f6;
+        border-radius:0.5rem;
+        padding:0.75rem;
+        z-index:1000;
+        pointer-events: auto;
+        width: 200px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    #settings-popover label {
+        color:#cbd5e1;
+        font-size:0.75rem;
+        display: block;
+        margin-bottom: 2px;
+    }
+    #settings-popover input[type="range"] {
+        width: 100%;
+        margin-bottom: 8px;
+        accent-color: #3b82f6;
+    }
+    #settings-popover input[type="range"]:last-child {
+        margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="resizable-overlay-wrapper" id="wrapper">
+    <div class="header">
+      <div class="logo-container">
+          <div class="icon-coaching">
+            <i class="fas fa-headset pulsing-headset"></i>
+            <span class="coaching-text">Coaching</span>
+          </div>
+          <span class="nr85-text">NR85</span>
+          <span class="ia-text">IA</span>
+      </div>
+      <div class="title-wrapper">
+          <div class="main-title">Painel de Sessão Detalhado</div> </div>
+      <div class="controls">
+          <button id="pinBtn" title="Sempre visível"><i class="fas fa-thumbtack"></i></button>
+          <button id="lockBtn" title="Travar/Destravar Posição e Redimensionamento"><i class="fas fa-lock-open"></i></button>
+          <button id="clickThroughBtn" title="Ignorar Cliques no Conteúdo"><i class="fas fa-mouse-pointer"></i></button>
+          <button id="settingsBtn" title="Ajustes"><i class="fas fa-cog"></i></button>
+          <button id="closeBtn" title="Fechar Overlay"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+
+    <div class="connection-status-container">
+        <div id="connection-status-display" class="connection-status status-connecting">Conectando...</div>
+    </div>
+
+    <div id="settings-popover">
+        <div>
+            <label for="rangeOpacity">Opacidade Geral</label>
+            <input type="range" id="rangeOpacity" min="0.1" max="1" step="0.01" value="0.95">
+        </div>
+        <div>
+            <label for="rangeContrast">Contraste Geral</label>
+            <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1">
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="section-grid-container">
+          <div class="card">
+            <h2 class="card-title"><i class="fas fa-road"></i> Pista & Sessão</h2>
+            <div class="data-grid">
+              <span class="data-label">Pista:</span><span class="data-value" id="track-name" title="TrackDisplayName / trackDisplayName"> —</span>
+              <span class="data-label">Layout:</span><span class="data-value" id="track-layout" title="TrackConfigName / trackConfigName"> —</span>
+              <span class="data-label">Compr.:</span><span class="data-value" id="track-length" title="TrackLengthKm / trackLength"> —</span>
+              <span class="data-label">Sessão:</span><span class="data-value" id="session-type" title="SessionTypeFromYaml / sessionTypeFromYaml"> —</span>
+              <span class="data-label">Nº Sessão:</span><span class="data-value" id="session-num" title="SessionNum / sessionNum"> —</span>
+              <span class="data-label">Decorrido:</span><span class="data-value" id="session-time-elapsed" title="SessionTime / sessionTime"> —</span>
+              <span class="data-label">Restante:</span><span class="data-value" id="session-time-remaining" title="SessionTimeRemain / sessionTimeRemain"> —</span>
+              <span class="data-label">Estado:</span><span class="data-value" id="session-state-text" title="SessionState / sessionState (traduzido)"> —</span>
+              <span class="data-label">Voltas:</span><span class="data-value" id="session-laps-total" title="TotalLaps / totalLaps"> —</span>
+              <span class="data-label">Faltam:</span><span class="data-value" id="session-laps-remaining" title="LapsRemainingRace / lapsRemainingRace"> —</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title"><i class="fas fa-user"></i> Piloto</h2>
+            <div class="data-grid">
+              <span class="data-label">Nome:</span><span class="data-value" id="driver-name" title="UserName / userName"> —</span>
+              <span class="data-label">Equipe:</span><span class="data-value" id="driver-team-name" title="TeamName / teamName"> —</span>
+              <span class="data-label">Carro #:</span><span class="data-value" id="driver-car-number" title="CarNumber / carNumber"> —</span>
+              <span class="data-label">iRating:</span><span class="data-value" id="driver-irating" title="IRating / iRating"> —</span>
+              <span class="data-label">Licença:</span><span class="data-value" id="driver-license" title="LicString / licString"> —</span>
+              <span class="data-label">SR:</span><span class="data-value" id="driver-safety-rating" title="LicSafetyRating / licSafetyRating"> —</span>
+              <span class="data-label">Classe ID:</span><span class="data-value" id="driver-car-class-id" title="PlayerCarClassID / playerCarClassID"> —</span>
+              <span class="data-label">Incidentes:</span><span class="data-value" id="driver-incidents" title="PlayerCarTeamIncidentCount / playerCarTeamIncidentCount / IncidentLimit / incidentLimit"> —</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title"><i class="fas fa-thermometer-half"></i> Condições da Pista</h2> <div class="data-grid">
+              <span class="data-label">Temp. Ar:</span><span class="data-value" id="air-temp" title="AirTemp / airTemp (YAML)"> —</span>
+              <span class="data-label">Temp. Pista:</span><span class="data-value" id="track-temp-live" title="TrackSurfaceTemp / trackSurfaceTemp (SDK)"> —</span>
+              <span class="data-label">Temp. Pista (Ofic.):</span><span class="data-value" id="track-temp-official" title="TrackTempCrew / trackTempCrew (SDK ou YAML)"> —</span>
+              <span class="data-label">Céu:</span><span class="data-value" id="skies-status" title="Skies / skies (traduzido)"> —</span>
+              <span class="data-label">Vento Vel.:</span><span class="data-value" id="wind-speed" title="WindSpeed / windSpeed (YAML)"> —</span>
+              <span class="data-label">Vento Dir.:</span><span class="data-value" id="wind-direction" title="WindDir / windDir (YAML)"> —</span>
+              <span class="data-label">Umidade Rel.:</span><span class="data-value" id="relative-humidity" title="RelativeHumidity / relativeHumidity (YAML)"> —</span>
+              <span class="data-label">Pressão Ar:</span><span class="data-value" id="air-pressure" title="AirPressure / airPressure (YAML)"> —</span>
+              <span class="data-label">Chuva (%):</span><span class="data-value" id="rain-chance" title="ChanceOfRain / chanceOfRain (YAML)"> —</span> <span class="data-label">Hora Sim.:</span><span class="data-value" id="session-time-of-day" title="SessionTimeOfDay / sessionTimeOfDay (SDK)"> —</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title"><i class="fas fa-stopwatch"></i> Volta & Delta</h2>
+            <div class="data-grid">
+              <span class="data-label">Volta:</span><span class="data-value" id="lap-current" title="Lap / lap"> —</span>
+              <span class="data-label">Dist. %:</span><span class="data-value" id="lap-dist-pct" title="LapDistPct / lapDistPct"> —</span>
+              <span class="data-label">Tempo Atual:</span><span class="data-value" id="lap-time-current" title="LapCurrentLapTime / lapCurrentLapTime"> —</span>
+              <span class="data-label">Última Volta:</span><span class="data-value" id="lap-time-last" title="LapLastLapTime / lapLastLapTime"> —</span>
+              <span class="data-label">Melhor (Sessão):</span><span class="data-value" id="lap-time-best-session" title="LapBestLapTime / lapBestLapTime"> —</span>
+              <span class="data-label">Δ Melhor (Sessão):</span><span class="data-value" id="delta-best-session" title="LapDeltaToSessionBestLap / lapDeltaToSessionBestLap"> —</span>
+              <span class="data-label">Δ Ótima (Sessão):</span><span class="data-value" id="delta-optimal-session" title="LapDeltaToSessionOptimalLap / lapDeltaToSessionOptimalLap"> —</span>
+              <span class="data-label">Δ Melhor Pessoal:</span><span class="data-value" id="delta-driver-best" title="LapDeltaToDriverBestLap / lapDeltaToDriverBestLap"> —</span>
+              <span class="data-label">Tempo Ótimo Est.:</span><span class="data-value" id="lap-time-optimal-est" title="EstLapTimeCalc / estLapTimeCalc"> —</span>
+            </div>
+          </div>
+
+          <div class="card"> <h2 class="card-title"><i class="fas fa-traffic-light"></i> Controle de Pista</h2>
+            <div class="data-grid">
+              <span class="data-label">Bandeira:</span><span class="data-value"><span id="flag-status" class="flag-status-span flag-default" title="SessionFlags / sessionFlags (traduzido)"><span>&nbsp;</span></span></span>
+              <span class="data-label">Modo Pace Car:</span><span class="data-value" id="pace-car-mode" title="PaceMode / paceMode (traduzido)">—</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title"><i class="fas fa-chart-pie"></i> Setores da Pista</h2>
+            <table class="sector-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tempo Atual</th>
+                        <th>Δ Melhor Sessão</th>
+                    </tr>
+                </thead>
+                <tbody id="sector-table-body">
+                    <tr><td colspan="3" style="text-align:center;">Aguardando dados...</td></tr>
+                </tbody>
+            </table>
+            <div class="data-grid" style="margin-top: 0.5rem;">
+                <span class="data-label">Debug Setores:</span><span class="data-value" id="sector-debug-info" title="SectorTimesDebug / sectorTimesDebug" style="white-space: normal; font-size: 0.7rem;">—</span>
+            </div>
+          </div>
+
+        </div> </div> </div> <script>
+    const q = s => document.querySelector(s);
+    const wsUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://localhost:5221/ws';
+    let ws;
+    let lastFullData = null;
+    const OVERLAY_NAME = 'session-overlay-detailed-v2-com-setores'; // Nome único atualizado
+
+    console.log('Overlay de Sessão Detalhada v2.6 (NR85IA com Setores) iniciando...');
+
+    const wrapper = document.getElementById('wrapper');
+    const settingsPopover = document.getElementById('settings-popover');
+    const rangeOpacity = document.getElementById('rangeOpacity');
+    const rangeContrast = document.getElementById('rangeContrast');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const pinBtn = document.getElementById('pinBtn');
+    const lockBtn = document.getElementById('lockBtn');
+    const clickThroughBtn = document.getElementById('clickThroughBtn');
+
+    let pinnedState = false;
+    let lockedState = false;
+    let clickThroughState = false;
+
+    function connectWebSocket() {
+        updateConnectionStatus('Conectando...', 'status-connecting');
+        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+            console.log("WebSocket já está aberto ou conectando.");
+            return;
+        }
+        ws = new WebSocket(wsUrl);
+        ws.onopen = () => updateConnectionStatus('Conectado', 'status-connected');
+        ws.onerror = (error) => console.error('Erro no WebSocket:', error);
+        ws.onclose = (event) => {
+            updateConnectionStatus('Desconectado', 'status-disconnected');
+            console.log('WebSocket desconectado. Código:', event.code, 'Motivo:', event.reason, 'Estava limpo:', event.wasClean);
+            if (!event.wasClean || event.code === 1006) {
+                setTimeout(connectWebSocket, 5000);
+            }
+        };
+        ws.onmessage = (event) => {
+            try {
+                lastFullData = JSON.parse(event.data);
+                updateUI(lastFullData);
+            } catch (e) {
+                console.error('Falha ao parsear JSON:', e, event.data);
+            }
+        };
+    }
+
+    function updateConnectionStatus(text, cssClass) {
+        const el = q('#connection-status-display');
+        if (el) {
+            el.textContent = text;
+            el.className = `connection-status ${cssClass}`;
+        }
+    }
+
+    // Funções utilitárias (combinadas e refinadas de ambos os arquivos)
+    function fmtTime(timeInSeconds, showMilliseconds = true, allowNegative = false, forDuration = false) {
+        if (timeInSeconds == null || isNaN(timeInSeconds) ) {
+             return '—';
+        }
+         if (forDuration && timeInSeconds < 0) timeInSeconds = 0; // Duração não pode ser negativa
+         if (!allowNegative && timeInSeconds < -0.00001 && !forDuration) return '—';
+
+
+        const sign = timeInSeconds < -0.00001 ? '-' : '';
+        const absTime = Math.abs(timeInSeconds);
+        const hours = Math.floor(absTime / 3600);
+        const minutes = Math.floor((absTime % 3600) / 60);
+        const seconds = Math.floor(absTime % 60);
+        const milliseconds = Math.floor((absTime - Math.floor(absTime)) * 1000);
+        let formatted = sign;
+        if (hours > 0) {
+            formatted += `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        } else if (minutes > 0) {
+            formatted += `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        } else {
+            formatted += `${seconds.toString()}`;
+        }
+        if (showMilliseconds) {
+            formatted += `.${milliseconds.toString().padStart(3, '0')}`;
+        }
+        return formatted;
+    }
+    
+    function fmtTimeOfDay(totalSeconds) {
+        if (totalSeconds == null || isNaN(totalSeconds) || totalSeconds < 0) return '—';
+        const hours = Math.floor(totalSeconds / 3600) % 24;
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function fmtDelta(delta) {
+        if (delta == null || isNaN(delta)) return '—';
+        const sign = delta > 0.00001 ? '+' : (delta < -0.00001 ? '' : '±'); // Adicionado ± para zero
+        return `${sign}${Math.abs(delta).toFixed(3)}`;
+    }
+    
+    function fmtPercentage(value, decimals = 1, isFraction = true) {
+        if (value == null || isNaN(value)) return '—%';
+        let displayValue = parseFloat(value);
+        if (isFraction && displayValue >= 0 && displayValue <= 1) {
+             displayValue = displayValue * 100;
+        }
+        return `${displayValue.toFixed(decimals)}%`;
+    }
+
+    // A função updateText de novaDelta é mais completa para tooltips.
+    function updateText(selector, value, formatter) {
+        const el = q(selector);
+        if (el) {
+            let displayValue = '—';
+            if (value !== undefined && value !== null && !(typeof value === 'number' && isNaN(value))) {
+                 displayValue = formatter ? formatter(value) : String(value);
+            }
+            el.textContent = displayValue;
+
+            const propertyNameFromTitle = el.getAttribute('title');
+            let rawValueForTitle = 'N/A';
+            if (value !== undefined && value !== null) {
+                rawValueForTitle = (typeof value === 'object') ? JSON.stringify(value) : String(value);
+            }
+            // Não sobrescrever o title se ele já tiver "Raw:" ou " (traduzido)" para evitar duplicação
+            if (propertyNameFromTitle && !propertyNameFromTitle.includes("Raw:") && !propertyNameFromTitle.includes("(traduzido)")) {
+                 el.setAttribute('title', `${propertyNameFromTitle || el.id} \nRaw: ${rawValueForTitle}`);
+            } else if (!propertyNameFromTitle) {
+                 el.setAttribute('title', `${el.id} \nRaw: ${rawValueForTitle}`);
+            }
+        }
+    }
+
+    function updateDeltaClass(selector, value) {
+        const el = q(selector);
+        if (el) {
+            el.classList.remove('good', 'bad', 'neutral');
+            if (value == null || isNaN(value) || Math.abs(value) < 0.0001) {
+                 el.classList.add('neutral');
+            } else if (value <= 0) {
+                el.classList.add('good');
+            } else {
+                el.classList.add('bad');
+            }
+        }
+    }
+    
+    // Usando a translateSessionState de nova-tester (array) por consistência com seus dados
+    function translateSessionState(state) {
+        const states = ["Invalid", "GetInCar", "Warmup", "ParadeLaps", "Racing", "Checkered", "CoolDown"];
+        return states[state] || `Desconhecido (${state})`;
+    }
+
+    // Usando a translatePaceMode de nova-tester (com objetos e fallback)
+    function translatePaceMode(mode) {
+        const extendedModes = {
+            0: "Single File Start", 1: "Double File Start", 2: "Single File Restart",
+            3: "Double File Restart", 4: "Not Pacing", 5: "Caution Lap Pacing",
+            6: "Caution Lap Pacing" // Pode ser necessário mais detalhes aqui
+        };
+        return extendedModes[mode] || `N/A (${mode})`;
+    }
+    
+    // Usando a getFlagClasses de nova-tester (mais detalhada)
+    function getFlagClasses(sessionFlags, sessionStateTextContent) {
+        if (sessionFlags & 0x00000001) return { text: 'Quadriculada', class: 'flag-checkered'};
+        if (sessionFlags & 0x00000002) return { text: 'Branca', class: 'flag-white'};
+        // Priorizar bandeiras de caution mais específicas primeiro
+        if (sessionFlags & 0x02000000) return { text: 'Caution Agitando', class: 'flag-yellow'}; // irsdk_CautionWaving (de novaDelta)
+        if (sessionFlags & 0x01000000) return { text: 'Caution', class: 'flag-yellow'}; // irsdk_Caution (de novaDelta)
+        if (sessionFlags & 0x00000008) return { text: 'Amarela', class: 'flag-yellow'};
+        if (sessionFlags & 0x00000010) return { text: 'Vermelha', class: 'flag-red'};
+        if (sessionFlags & 0x00000004) return { text: 'Verde', class: 'flag-green'};
+        if (sessionFlags & 0x00000020) return { text: 'Azul', class: 'flag-blue'};
+        if (sessionFlags & 0x00000040) return { text: 'Detritos', class: 'flag-yellow'}; // Debris (geralmente amarela)
+        if (sessionFlags & 0x00000400) return { text: 'Verde Agitada', class: 'flag-green'}; // GreenHeld (ou StartHidden)
+
+        // Se estiver em "Racing" (ou sua tradução) e nenhuma caution, assume verde.
+        // Ajuste "Racing" se sua tradução na UI for diferente
+        if (sessionStateTextContent === 'Racing' && !(sessionFlags & (0x00000008 | 0x01000000 | 0x02000000))) {
+             return { text: 'Verde', class: 'flag-green'};
+        }
+        return { text: 'N/A', class: 'flag-default'};
+    }
+
+    function updateUI(d) {
+        if (!d || typeof d.IsConnected === 'undefined' && typeof d.trackDisplayName === 'undefined' && typeof d.TrackDisplayName === 'undefined') {
+            console.warn("updateUI chamado com dados inválidos ou incompletos.");
+            if (!q('#connection-status-display').classList.contains('status-connecting') &&
+                !q('#connection-status-display').classList.contains('status-disconnected')) {
+                 updateConnectionStatus('Dados Inválidos', 'status-disconnected');
+            }
+            return;
+        }
+        // Se IsConnected existe e é false, tratar desconexão do SDK
+        if (d.IsConnected === false) {
+            if (!q('#connection-status-display').classList.contains('status-disconnected')) {
+                 updateConnectionStatus('Desconectado (SDK)', 'status-disconnected');
+            }
+            document.querySelectorAll('.data-value').forEach(el => el.textContent = '—');
+            const flagEl = q('#flag-status');
+            if (flagEl) {
+                flagEl.className = 'flag-status-span flag-default'; flagEl.textContent = 'N/A';
+            }
+            const sectorTableBody = q('#sector-table-body');
+            if (sectorTableBody) sectorTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Desconectado</td></tr>';
+            return;
+        }
+
+        // Se chegou aqui e estava desconectado/conectando, atualiza para conectado
+        if (q('#connection-status-display').classList.contains('status-disconnected') || q('#connection-status-display').classList.contains('status-connecting')) {
+             updateConnectionStatus('Conectado', 'status-connected');
+        }
+
+        // --- Pista & Sessão (campos de nova-tester) ---
+        updateText('#track-name', d.TrackDisplayName || d.trackDisplayName);
+        updateText('#track-layout', d.TrackConfigName || d.trackConfigName);
+        updateText('#track-length', d.TrackLengthKm || d.trackLength, len => `${(len ?? 0).toFixed(3)} km`);
+        updateText('#session-type', d.SessionTypeFromYaml || d.sessionTypeFromYaml);
+        updateText('#session-num', d.SessionNum || d.sessionNum);
+        updateText('#session-time-elapsed', d.SessionTime || d.sessionTime, t => fmtTime(t, false, true, true));
+        updateText('#session-time-remaining', d.SessionTimeRemain || d.sessionTimeRemain, t => fmtTime(t, false, false, true));
+        const sessionStateTranslated = translateSessionState(d.SessionState || d.sessionState);
+        updateText('#session-state-text', sessionStateTranslated, null); // O title já tem (traduzido)
+        q('#session-state-text').setAttribute('title', `SessionState: ${d.SessionState || d.sessionState} (traduzido)`); // Força tooltip correto
+        
+        const totalLaps = d.TotalLaps || d.totalLaps;
+        const sessionType = d.SessionTypeFromYaml || d.sessionTypeFromYaml || "";
+        updateText('#session-laps-total', (totalLaps === -1 || totalLaps === 0) && (sessionType.toLowerCase().includes('practice') || sessionType.toLowerCase().includes('qualify')) ? 'Ilimitado' : (totalLaps <= 0 ? 'N/A' : totalLaps));
+        updateText('#session-laps-remaining', (d.LapsRemainingRace || d.lapsRemainingRace) < 0 ? 'N/A' : (d.LapsRemainingRace || d.lapsRemainingRace));
+
+        // --- Piloto (campos de nova-tester) ---
+        updateText('#driver-name', d.UserName || d.userName);
+        updateText('#driver-team-name', d.TeamName || d.teamName || 'N/A');
+        updateText('#driver-car-number', d.CarNumber || d.carNumber);
+        updateText('#driver-irating', d.IRating || d.iRating);
+        updateText('#driver-license', d.LicString || d.licString);
+        updateText('#driver-safety-rating', d.LicSafetyRating || d.licSafetyRating, sr => (sr ?? 0).toFixed(2));
+        updateText('#driver-car-class-id', d.PlayerCarClassID || d.playerCarClassID);
+        const playerInc = d.PlayerCarTeamIncidentCount || d.playerCarTeamIncidentCount;
+        const limitInc = d.IncidentLimit || d.incidentLimit;
+        updateText('#driver-incidents', `${playerInc} / ${(limitInc === 0 || limitInc > 500 || limitInc === -1 || limitInc === 255) ? 'N/A' : limitInc}`, null);
+        q('#driver-incidents').setAttribute('title', `Player: ${playerInc}, Limit: ${limitInc}`);
+
+
+        // --- Condições da Pista (campos de nova-tester) ---
+        updateText('#air-temp', d.AirTemp || d.airTemp, temp => `${(temp ?? 0).toFixed(1)}°C`); // YAML AirTemp
+        updateText('#track-temp-live', d.TrackSurfaceTemp || d.trackSurfaceTemp, temp => `${(temp ?? 0).toFixed(1)}°C`); // SDK TrackSurfaceTemp
+        updateText('#track-temp-official', d.TrackTempCrew || d.trackTempCrew, temp => `${(temp ?? 0).toFixed(1)}°C`); // SDK TrackTempCrew
+        updateText('#skies-status', d.Skies || d.skies); // Skies (traduzido no backend ou aqui se necessário)
+        updateText('#wind-speed', d.WindSpeed || d.windSpeed, ws => `${(ws ?? 0).toFixed(1)} m/s`); // YAML WindSpeed
+        updateText('#wind-direction', d.WindDir || d.windDir, wd => `${(wd ?? 0).toFixed(1)} rad`); // YAML WindDir
+        updateText('#relative-humidity', d.RelativeHumidity || d.relativeHumidity, rh => fmtPercentage(rh, 1, false)); // YAML RelativeHumidity (não é fração)
+        updateText('#air-pressure', d.AirPressure || d.airPressure, ap => `${(ap ?? 0).toFixed(2)} kPa`); // YAML AirPressure
+        updateText('#rain-chance', d.ChanceOfRain || d.chanceOfRain, cr => fmtPercentage(cr, 0, false)); // YAML ChanceOfRain (não é fração)
+        updateText('#session-time-of-day', d.SessionTimeOfDay || d.sessionTimeOfDay, fmtTimeOfDay); // SDK SessionTimeOfDay
+
+        // --- Volta & Delta (campos de nova-tester) ---
+        updateText('#lap-current', d.Lap || d.lap);
+        updateText('#lap-dist-pct', d.LapDistPct || d.lapDistPct, pct => fmtPercentage(pct, 1, true));
+        updateText('#lap-time-current', d.LapCurrentLapTime || d.lapCurrentLapTime, t => fmtTime(t, true));
+        updateText('#lap-time-last', d.LapLastLapTime || d.lapLastLapTime, t => fmtTime(t, true));
+        updateText('#lap-time-best-session', d.LapBestLapTime || d.lapBestLapTime, t => fmtTime(t, true));
+        updateText('#delta-best-session', d.LapDeltaToSessionBestLap || d.lapDeltaToSessionBestLap, fmtDelta);
+        updateDeltaClass('#delta-best-session', d.LapDeltaToSessionBestLap || d.lapDeltaToSessionBestLap);
+        updateText('#delta-optimal-session', d.LapDeltaToSessionOptimalLap || d.lapDeltaToSessionOptimalLap, fmtDelta);
+        updateDeltaClass('#delta-optimal-session', d.LapDeltaToSessionOptimalLap || d.lapDeltaToSessionOptimalLap);
+        updateText('#delta-driver-best', d.LapDeltaToDriverBestLap || d.lapDeltaToDriverBestLap, fmtDelta);
+        updateDeltaClass('#delta-driver-best', d.LapDeltaToDriverBestLap || d.lapDeltaToDriverBestLap);
+        updateText('#lap-time-optimal-est', d.EstLapTimeCalc || d.estLapTimeCalc, t => fmtTime(t, true));
+
+        // --- Controle de Pista (campos de nova-tester) ---
+        const sessionFlags = d.SessionFlags || d.sessionFlags;
+        const flagInfo = getFlagClasses(sessionFlags, sessionStateTranslated); // Passa o texto traduzido do estado da sessão
+        const flagStatusEl = q('#flag-status');
+        if (flagStatusEl) {
+            flagStatusEl.innerHTML = `<span>${flagInfo.text === 'N/A' ? '&nbsp;' : flagInfo.text}</span>`; // Garante que o span interno seja atualizado
+            flagStatusEl.className = `flag-status-span ${flagInfo.class}`;
+            flagStatusEl.setAttribute('title', `SessionFlags: ${sessionFlags} (traduzido)`);
+        }
+        const paceModeTranslated = translatePaceMode(d.PaceMode || d.paceMode);
+        updateText('#pace-car-mode', paceModeTranslated, null);
+        q('#pace-car-mode').setAttribute('title', `PaceMode: ${d.PaceMode || d.paceMode} (traduzido)`);
+
+
+        // --- Setores (lógica de nova-tester) ---
+        const sectorTableBody = q('#sector-table-body');
+        if (sectorTableBody) {
+            sectorTableBody.innerHTML = ''; // Limpa a tabela antes de popular
+            // Verifica se os dados dos setores são válidos e existem
+            const areSectorsValid = d.AreSectorsValid || d.areSectorsValid;
+            const currentSectors = d.LapAllSectorTimes || d.lapAllSectorTimes;
+            const deltas = d.LapDeltaToSessionBestSectorTimes || d.lapDeltaToSessionBestSectorTimes || [];
+
+            if (areSectorsValid && currentSectors && currentSectors.length > 0) {
+                for (let i = 0; i < currentSectors.length; i++) {
+                    const row = sectorTableBody.insertRow();
+                    row.insertCell().textContent = i + 1; // Número do setor
+                    row.insertCell().textContent = fmtTime(currentSectors[i]); // Tempo do setor atual
+
+                    const deltaCell = row.insertCell();
+                    // Só mostra delta se o tempo do setor atual for significativo e o delta existir
+                    if (currentSectors[i] > 0.001 && deltas[i] !== undefined && deltas[i] !== null) {
+                        deltaCell.textContent = fmtDelta(deltas[i]);
+                        deltaCell.className = (deltas[i] <= 0.0001) ? 'good' : 'bad'; // Tolerância para "good"
+                    } else {
+                        deltaCell.textContent = '—';
+                    }
+                }
+            } else {
+                const row = sectorTableBody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 3;
+                cell.style.textAlign = 'center';
+                cell.textContent = 'Setores indisponíveis';
+            }
+        }
+        updateText('#sector-debug-info', d.SectorTimesDebug || d.sectorTimesDebug || 'N/A', null);
+        if (d.SectorTimesDebug || d.sectorTimesDebug) {
+            q('#sector-debug-info').setAttribute('title', `SectorTimesDebug Raw: ${d.SectorTimesDebug || d.sectorTimesDebug}`);
+        }
+    }
+    
+    // --- Controles de Janela e Configurações (de novaDelta.html) ---
+    settingsBtn.onclick = (e) => {
+        settingsPopover.style.display = settingsPopover.style.display === 'none' ? 'block' : 'none';
+        const btnRect = e.target.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        settingsPopover.style.top = `${btnRect.bottom - wrapperRect.top + 5}px`;
+        settingsPopover.style.right = `${wrapperRect.right - btnRect.right}px`;
+    };
+    rangeOpacity.oninput = (e) => {
+        const opacityValue = parseFloat(e.target.value);
+        wrapper.style.setProperty('--overlay-opacity', opacityValue);
+        saveSetting('opacity', opacityValue);
+    };
+    rangeContrast.oninput = (e) => {
+        const contrastValue = parseFloat(e.target.value);
+        wrapper.style.setProperty('--overlay-contrast', contrastValue);
+        saveSetting('contrast', contrastValue);
+    };
+    closeBtn.onclick = () => {
+        if (window.electronAPI && window.electronAPI.closeOverlay) window.electronAPI.closeOverlay(OVERLAY_NAME);
+        else wrapper.style.display = 'none';
+    };
+    pinBtn.onclick = async () => {
+        const newState = !pinnedState; updatePinButtonState(newState);
+        if (window.electronAPI && window.electronAPI.setAlwaysOnTop) await window.electronAPI.setAlwaysOnTop(OVERLAY_NAME, newState);
+        saveSetting('pinned', newState);
+    };
+    function updatePinButtonState(isPinned) {
+        pinnedState = isPinned; pinBtn.classList.toggle('active', isPinned);
+        pinBtn.innerHTML = isPinned ? '<i class="fas fa-thumbtack"></i>' : '<i class="fas fa-thumbtack" style="opacity:0.7"></i>';
+    }
+    lockBtn.onclick = async () => {
+        const newState = !lockedState; updateLockButtonState(newState);
+        if (window.electronAPI && window.electronAPI.toggleMovability) window.electronAPI.toggleMovability(OVERLAY_NAME, !newState);
+        saveSetting('locked', newState);
+    };
+    function updateLockButtonState(isLocked) {
+        lockedState = isLocked; lockBtn.classList.toggle('active', isLocked);
+        lockBtn.innerHTML = isLocked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open"></i>';
+        q('.header').style.webkitAppRegion = isLocked ? 'no-drag' : 'drag';
+    }
+    clickThroughBtn.onclick = async () => {
+        const newState = !clickThroughState; updateClickButtonState(newState);
+        if (window.electronAPI && window.electronAPI.toggleClickThrough) await window.electronAPI.toggleClickThrough(OVERLAY_NAME, newState);
+        saveSetting('clickThrough', newState);
+    };
+    function updateClickButtonState(isIgnoringClicks) {
+        clickThroughState = isIgnoringClicks; clickThroughBtn.classList.toggle('active', isIgnoringClicks);
+        clickThroughBtn.innerHTML = isIgnoringClicks ? '<i class="fas fa-ban"></i>' : '<i class="fas fa-mouse-pointer"></i>';
+        document.body.style.pointerEvents = isIgnoringClicks ? 'none' : 'auto';
+        q('.header').style.pointerEvents = 'auto'; // Header sempre clicável para controles
+        if(settingsPopover.style.display === 'block') settingsPopover.style.pointerEvents = 'auto';
+    }
+    async function saveSetting(key, value) {
+        if (window.electronAPI && window.electronAPI.saveOverlaySettings) {
+            const currentSettings = await window.electronAPI.loadOverlaySettings(OVERLAY_NAME) || {};
+            currentSettings[key] = value;
+            await window.electronAPI.saveOverlaySettings(OVERLAY_NAME, currentSettings);
+        } else {
+            try { localStorage.setItem(`${OVERLAY_NAME}_${key}`, JSON.stringify(value)); }
+            catch(e) { console.error("Erro ao salvar no localStorage:", e); }
+        }
+    }
+    async function loadSettings() {
+        let settings = {};
+        if (window.electronAPI && window.electronAPI.loadOverlaySettings) {
+            settings = await window.electronAPI.loadOverlaySettings(OVERLAY_NAME) || {};
+        } else {
+            try {
+                const s = (k) => localStorage.getItem(`${OVERLAY_NAME}_${k}`);
+                if (s('opacity')) settings.opacity = JSON.parse(s('opacity'));
+                if (s('contrast')) settings.contrast = JSON.parse(s('contrast'));
+                if (s('pinned')) settings.pinned = JSON.parse(s('pinned'));
+                if (s('locked')) settings.locked = JSON.parse(s('locked'));
+                if (s('clickThrough')) settings.clickThrough = JSON.parse(s('clickThrough'));
+            } catch(e) { console.error("Erro ao carregar do localStorage:", e); }
+        }
+        rangeOpacity.value = settings.opacity !== undefined ? settings.opacity : 0.95;
+        wrapper.style.setProperty('--overlay-opacity', rangeOpacity.value);
+        rangeContrast.value = settings.contrast !== undefined ? settings.contrast : 1;
+        wrapper.style.setProperty('--overlay-contrast', rangeContrast.value);
+        updatePinButtonState(settings.pinned !== undefined ? settings.pinned : false);
+        updateLockButtonState(settings.locked !== undefined ? settings.locked : false);
+        updateClickButtonState(settings.clickThrough !== undefined ? settings.clickThrough : false);
+    }
+    document.addEventListener('click', (event) => {
+        if (settingsPopover.style.display === 'block' && !settingsPopover.contains(event.target) && !settingsBtn.contains(event.target)) {
+            settingsPopover.style.display = 'none';
+        }
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSettings();
+        connectWebSocket();
+        updatePinButtonState(pinnedState); // Garante estado visual inicial correto
+        updateLockButtonState(lockedState);
+        updateClickButtonState(clickThroughState);
+    });
+  </script>
+</body>
+</html>

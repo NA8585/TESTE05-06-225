@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Overlay Relative</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    /* Base body styles for the overlay background and font */
+    body {
+      margin: 0;
+      background: transparent; /* Allows the background image to show through */
+      overflow: hidden; /* Prevent scrolling */
+      font-family: 'Poppins', sans-serif;
+      color: #e5e7eb; /* Default text color */
+      width: 100vw; /* Full viewport width */
+      height: 100vh; /* Full viewport height */
+    }
+
+    /* Main overlay container styling */
+    .overlay {
+      position: absolute;
+      top: 50px; /* Position from top */
+      left: 50px; /* Position from left */
+      width: 420px; /* Fixed width */
+      background: #1b1e2c; /* Dark background for the overlay content */
+      border-radius: 10px; /* Rounded corners */
+      box-shadow: 0 0 10px rgba(0,0,0,0.6); /* Subtle shadow effect */
+      overflow: hidden; /* Hide any content that overflows */
+    }
+
+    /* Title bar styling */
+    .title-bar {
+      background: #0c0d12; /* Very dark background */
+      padding: 4px 8px; /* Padding */
+      display: flex;
+      justify-content: flex-end; /* Align icons to the right */
+      align-items: center;
+    }
+
+    /* Title bar icon styling */
+    .title-bar i {
+      cursor: pointer; /* Pointer cursor on hover */
+      margin-left: 10px; /* Spacing between icons */
+    }
+
+    /* Specific icon colors */
+    .title-bar i.fa-xmark { color: #f44336; } /* Red for close icon */
+    .title-bar i.fa-sliders { color: #ffc107; } /* Yellow for settings icon */
+
+    /* Header and Footer bar styling */
+    .header, .footer {
+      background: rgba(17,24,39,0.9); /* Semi-transparent dark blue */
+      display: flex;
+      justify-content: space-between; /* Space out content */
+      align-items: center;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Driver list container for scrolling */
+    .driver-list {
+      max-height: 300px; /* Maximum height before scrolling */
+      overflow-y: auto; /* Enable vertical scrolling if content overflows */
+    }
+
+    /* Individual driver row styling */
+    .driver {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(31,41,55,0.85); /* Slightly lighter dark blue */
+      padding: 6px 10px;
+      border-bottom: 1px solid #2c2f3c; /* Separator line between drivers */
+    }
+
+    /* Special styling for the 'you' driver row */
+    .driver.you {
+      background: #222538; /* Darker background */
+      border-left: 4px solid #aaff00; /* Bright green border on the left */
+    }
+
+    /* Prevent elements from shrinking */
+    .driver span, .driver img { flex-shrink: 0; }
+
+    /* Fixed widths and alignment for specific driver info elements */
+    .driver .pos { width: 2rem; text-align: center; }
+    .driver .car { width: 4rem; text-align: left; }
+    .driver .name {
+      flex: 1; /* Takes up remaining space */
+      padding: 0 0.5rem;
+      white-space: nowrap; /* Prevent text from wrapping */
+      overflow: hidden; /* Hide overflowing text */
+      text-overflow: ellipsis; /* Add ellipsis for truncated text */
+    }
+
+    /* Badge styling for Safety Rating (SR) */
+    .driver .badge-sr {
+      background: #334155; /* Dark gray background */
+      color: #e5e7eb; /* Light text color */
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 4px;
+      font-size: 0.75rem; /* Smaller font size */
+      font-weight: bold;
+    }
+
+    /* Badge styling for iRating */
+    .driver .irating {
+      background: #334155; /* Dark gray background */
+      color: #e5e7eb; /* Light text color */
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 8px;
+      font-size: 0.75rem; /* Smaller font size */
+      font-weight: bold;
+    }
+
+    /* Gap column styling */
+    .driver .gap { width: 4rem; text-align: right; }
+
+    /* Gap color classes */
+    .gap-positive { color: #ef4444; } /* Red for positive gap (behind) */
+    .gap-negative { color: #4ade80; } /* Green for negative gap (ahead) */
+    .gap-neutral  { color: #e5e7eb; } /* Default color for neutral gap (self/leader) */
+
+    /* Transparency control panel styling */
+    .transparency-control {
+      display: none; /* Hidden by default */
+      padding: 8px;
+      background: rgba(17,24,39,0.95); /* Semi-transparent dark blue */
+    }
+
+    /* Class to show transparency control */
+    .transparency-control.active { display: block; }
+
+    /* Responsive adjustments for smaller screens */
+    @media (max-width: 640px) {
+      .overlay {
+        width: 95%; /* Make overlay take almost full width */
+        left: 2.5%; /* Center it horizontally */
+        top: 20px; /* Adjust top position */
+      }
+      .header, .footer, .driver {
+        font-size: 12px; /* Smaller font size */
+        padding: 4px 8px; /* Reduced padding */
+      }
+      .driver .pos { width: 1.5rem; }
+      .driver .car { width: 3rem; }
+      .driver .name { padding: 0 0.25rem; }
+      .driver .badge-sr, .driver .irating {
+        padding: 1px 4px;
+        margin-right: 2px;
+        font-size: 0.65rem;
+      }
+      .driver .gap { width: 3.5rem; }
+    }
+  </style>
+</head>
+<body class="bg-[#0a0a0a] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] p-4 flex flex-col items-center text-[#e5e7eb]">
+
+  <div class="overlay" id="overlay">
+    <div class="title-bar">
+      <i class="fas fa-sliders" onclick="toggleSettings()"></i>
+      <i class="fas fa-xmark" onclick="window.electronAPI?.closeOverlay?.('Relative')"></i>
+    </div>
+
+    <div class="header">
+      <div>Corrida: <span id="raceTime">0</span>s</div>
+      <div>Amb: <span id="ambientTemp">0</span>°C</div>
+      <div>Pista: <span id="trackTemp">0</span>°C</div>
+      <div>BB: <span id="brakeBias">0</span>%</div>
+    </div>
+
+    <div class="driver-list" id="driverList"></div>
+
+    <div class="footer">
+      <div>Tempo Sessão: <span id="sessionTime">0</span>s</div>
+      <div>Voltas: <span id="lapsCompleted">0</span>/<span id="totalLaps">0</span></div>
+      <div id="penaltyStatus" class="text-white"></div>
+      <div id="trackStatus" class="text-white"></div>
+    </div>
+
+    <div class="transparency-control" id="transparencyControl">
+      <label for="opacity">Transparência:</label>
+      <input type="range" id="opacity" min="0.1" max="1" step="0.01" value="1" onchange="setOverlayOpacity(this.value)">
+      <label for="contrast">Contraste:</label>
+      <input type="range" id="contrast" min="50" max="150" step="10" value="100" onchange="updateOverlay()">
+      <label for="brightness">Brilho:</label>
+      <input type="range" id="brightness" min="50" max="150" step="10" value="100" onchange="updateOverlay()">
+    </div>
+  </div>
+
+  <script>
+    // --- Mock Electron API for browser environment testing ---
+    // In a real Electron app, these would be provided by the main process.
+    const closeOverlay = window.electronAPI?.closeOverlay || (() => console.log('closeOverlay() called (Electron API not available)'));
+    const saveOverlaySettings = window.electronAPI?.saveOverlaySettings || ((name, settings) => {
+        console.log(`Saving settings for ${name}:`, settings);
+        localStorage.setItem(`overlaySettings-${name}`, JSON.stringify(settings));
+    });
+    const fetchOverlaySettings = window.electronAPI?.fetchOverlaySettings || (async (name) => {
+        console.log(`Fetching settings for ${name}`);
+        return JSON.parse(localStorage.getItem(`overlaySettings-${name}`)) || { opacity: 1, contrast: 100, brightness: 100 }; // Default settings
+    });
+
+    const overlayName = 'Relative'; // Name of this overlay
+
+    // --- DOM Element References ---
+    const overlayEl = document.getElementById('overlay');
+    const driverListEl = document.getElementById('driverList');
+    const transparencyControlEl = document.getElementById('transparencyControl');
+
+    // Settings input elements
+    const opacitySliderEl = document.getElementById('opacity');
+    const contrastSliderEl = document.getElementById('contrast');
+    const brightnessSliderEl = document.getElementById('brightness');
+
+    // Header/Footer data display elements
+    const raceTimeEl = document.getElementById('raceTime');
+    const ambientTempEl = document.getElementById('ambientTemp');
+    const trackTempEl = document.getElementById('trackTemp');
+    const brakeBiasEl = document.getElementById('brakeBias');
+    const sessionTimeEl = document.getElementById('sessionTime');
+    const lapsCompletedEl = document.getElementById('lapsCompleted');
+    const totalLapsEl = document.getElementById('totalLaps');
+    const penaltyStatusEl = document.getElementById('penaltyStatus');
+    const trackStatusEl = document.getElementById('trackStatus');
+
+    // --- Settings Functions ---
+
+    /**
+     * Toggles the visibility of the transparency control panel.
+     */
+    function toggleSettings() {
+      transparencyControlEl.classList.toggle('active');
+    }
+
+    /**
+     * Updates the overlay's opacity, contrast, and brightness based on slider values.
+     * Also saves these settings.
+     */
+    function updateOverlay() {
+      const opacity = parseFloat(opacitySliderEl.value);
+      const contrast = parseFloat(contrastSliderEl.value);
+      const brightness = parseFloat(brightnessSliderEl.value);
+
+      overlayEl.style.opacity = opacity;
+      overlayEl.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+
+      saveOverlaySettings(overlayName, { opacity, contrast, brightness });
+    }
+
+    // Load and apply saved settings on startup
+    (async () => {
+      const config = await fetchOverlaySettings(overlayName);
+      if (config.opacity !== undefined) opacitySliderEl.value = config.opacity;
+      if (config.contrast !== undefined) contrastSliderEl.value = config.contrast;
+      if (config.brightness !== undefined) brightnessSliderEl.value = config.brightness;
+      updateOverlay(); // Apply loaded or default settings
+    })();
+
+    // --- Helpers for Data Simulation ---
+
+    const carModels = ['Alpine', 'AlphaT', 'Sauber', 'AstonM', 'BMW', 'Porsche', 'Ford', 'Lambo', 'Audi', 'Mercedes', 'Ferrari', 'RedBull'];
+    const trackConditions = ['Dry', 'Wet', 'Cloudy'];
+    const penaltyTypes = ['', 'Warning', 'Critical']; // Empty string for no penalty
+
+    /**
+     * Formats total seconds into MM:SS.
+     * @param {number} totalSeconds - The total number of seconds.
+     * @returns {string} Formatted time string (MM:SS).
+     */
+    const formatTime = (totalSeconds) => {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
+
+    /**
+     * Formats gap value into a string with sign and 's'.
+     * @param {number} value - The gap value.
+     * @returns {string} Formatted gap string.
+     */
+    const fmtGap = (value) => {
+        if (value === 0) return '--';
+        return (value > 0 ? '+' : '') + value.toFixed(3) + 's';
+    };
+
+    /**
+     * Returns the CSS class for gap styling based on value.
+     * @param {number} value - The gap value.
+     * @returns {string} CSS class name.
+     */
+    function clsGap(value){
+      if (value === 0) return 'gap-neutral';
+      return value > 0 ? 'gap-positive' : 'gap-negative';
+    }
+
+    /**
+     * Generates a random driver name.
+     * @returns {string} A random driver name.
+     */
+    function generateDriverName() {
+        const firstNames = ['Max', 'Lewis', 'Charles', 'Lando', 'George', 'Carlos', 'Sergio', 'Valtteri', 'Esteban', 'Pierre', 'Yuki', 'Daniel', 'Lance', 'Alex', 'Kevin', 'Nico', 'Guanyu', 'Logan', 'Oscar', 'Nyck'];
+        const lastNames = ['Verstappen', 'Hamilton', 'Leclerc', 'Norris', 'Russell', 'Sainz', 'Perez', 'Bottas', 'Ocon', 'Gasly', 'Tsunoda', 'Ricciardo', 'Stroll', 'Albon', 'Magnussen', 'Hulkenberg', 'Zhou', 'Sargeant', 'Piastri', 'De Vries'];
+        const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+        return `${firstName.charAt(0)}. ${lastName}`;
+    }
+
+    /**
+     * Generates a simulated list of competitor objects.
+     * @returns {Array<Object>} An array of competitor data.
+     */
+    function generateSimulatedDrivers() {
+      const data = [];
+      const numCompetitors = 20; // Total number of competitors in the race
+      const selfPosition = Math.floor(Math.random() * numCompetitors) + 1; // Random position for 'you'
+
+      for (let i = 0; i < numCompetitors; i++) {
+        const pos = i + 1;
+        const isSelf = pos === selfPosition;
+        const driverName = isSelf ? 'VOCÊ' : generateDriverName();
+        const carModel = carModels[Math.floor(Math.random() * carModels.length)];
+        const safetyRating = (Math.random() * 4 + 1); // 1.00 - 5.00
+        const iRating = Math.floor(Math.random() * 3000) + 1000; // 1000-4000
+
+        let gapValue;
+        if (pos === 1) {
+          gapValue = 0; // Leader has 0 gap
+        } else if (isSelf) {
+            // If 'you' are not the leader, calculate a positive gap to the leader
+            gapValue = (Math.random() * 5 + 1);
+        } else {
+            // Calculate gap relative to 'you'
+            const relativePosition = pos - selfPosition;
+            if (relativePosition < 0) { // Driver is ahead of 'you'
+                gapValue = relativePosition * (Math.random() * 2 + 1); // Negative gap
+            } else { // Driver is behind 'you'
+                gapValue = relativePosition * (Math.random() * 2 + 1); // Positive gap
+            }
+        }
+
+        data.push({
+          pos: pos,
+          logoUrl: `https://placehold.co/24x24/cccccc/000000?text=🚗`, // Placeholder car image
+          team: carModel,
+          name: driverName,
+          sr: safetyRating,
+          ir: iRating,
+          gap: gapValue,
+        });
+      }
+      return data;
+    }
+
+    /**
+     * Renders the driver list based on the provided array of driver data.
+     * It filters to show drivers within a certain radius around the 'self' driver.
+     * @param {Array<Object>} allDrivers - The full list of driver data.
+     */
+    function renderDrivers(allDrivers){
+      driverListEl.innerHTML = ''; // Clear existing rows
+
+      const youIdx = allDrivers.findIndex(d => d.name === 'VOCÊ');
+      if (youIdx === -1) return; // Should not happen with current simulation
+
+      const displayRadius = 4; // Show 4 drivers above and 4 drivers below 'you'
+      const start = Math.max(0, youIdx - displayRadius);
+      const end = Math.min(allDrivers.length, youIdx + displayRadius + 1); // +1 because slice end is exclusive
+
+      const view = allDrivers.slice(start, end);
+
+      view.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'driver' + (d.name === 'VOCÊ' ? ' you' : '');
+        div.innerHTML = `
+          <span class="pos">${d.pos ?? '-'}</span>
+          <img src="${d.logoUrl || 'https://placehold.co/24x24/cccccc/000000?text=🚗'}" class="w-6 h-6 object-contain">
+          <span class="car">${d.team || ''}</span>
+          <span class="name">${d.name}</span>
+          <span class="badge-sr">${(d.sr ?? 0).toFixed(2)}</span>
+          <span class="irating">${d.ir ?? 0}</span>
+          <span class="gap ${clsGap(d.gap)}">${d.name === 'VOCÊ' ? '--' : fmtGap(d.gap)}</span>`;
+        driverListEl.appendChild(div);
+      });
+    }
+
+    // --- Mock WebSocket Implementation ---
+    class MockWebSocket {
+        constructor(url) {
+            this.url = url;
+            this.eventListeners = {
+                open: [],
+                message: [],
+                close: [],
+                error: []
+            };
+            // Simulate opening the connection
+            setTimeout(() => this.dispatchEvent('open', {}), 50);
+            // Start sending messages
+            this.startSendingMessages();
+        }
+
+        addEventListener(type, listener) {
+            if (this.eventListeners[type]) {
+                this.eventListeners[type].push(listener);
+            }
+        }
+
+        removeEventListener(type, listener) {
+            if (this.eventListeners[type]) {
+                this.eventListeners[type] = this.eventListeners[type].filter(l => l !== listener);
+            }
+        }
+
+        dispatchEvent(type, event) {
+            this.eventListeners[type].forEach(listener => listener(event));
+        }
+
+        // Simulates sending messages from the server
+        startSendingMessages() {
+            let currentSessionTimeRemain = 1800; // Start with 30 minutes
+            let currentSessionTime = 0;
+            let currentLapsCompleted = 0;
+            let currentTotalLaps = 35;
+            let currentIncidents = 0;
+            let currentIncidentLimit = 25;
+            let currentTrackConditionIndex = 0;
+
+            setInterval(() => {
+                // Simulate header data
+                currentSessionTimeRemain = Math.max(0, currentSessionTimeRemain - 1);
+                const waterTemp = (Math.random() * 10 + 20).toFixed(0); // 20-30°C
+                const oilTemp = (Math.random() * 15 + 30).toFixed(0);   // 30-45°C
+                const brakeBias = (Math.random() * 10 + 55).toFixed(0);    // 55-65%
+
+                // Simulate footer data
+                currentSessionTime = (currentSessionTime + 1) % (60 * 60); // Max 1 hour
+                if (Math.random() < 0.1) { // 10% chance to increment lap
+                    currentLapsCompleted++;
+                    if (currentLapsCompleted > currentTotalLaps) {
+                        currentLapsCompleted = 1; // Reset for new 'race'
+                        currentTotalLaps = Math.floor(Math.random() * 20) + 20;
+                    }
+                }
+                if (Math.random() < 0.05) { // 5% chance of incident
+                    currentIncidents++;
+                }
+                currentTrackConditionIndex = (currentTrackConditionIndex + 1) % trackConditions.length;
+                const trackCondition = trackConditions[currentTrackConditionIndex];
+
+                // Simulate driver list data
+                const simulatedDrivers = generateSimulatedDrivers();
+
+                const data = {
+                    sessionTimeRemain: currentSessionTimeRemain,
+                    waterTemp: parseFloat(waterTemp),
+                    oilTemp: parseFloat(oilTemp),
+                    brakeBias: parseFloat(brakeBias),
+                    sessionTime: currentSessionTime,
+                    lap: currentLapsCompleted,
+                    sessionLaps: currentTotalLaps,
+                    incidents: currentIncidents,
+                    incidentLimit: currentIncidentLimit,
+                    trackCondition: trackCondition,
+                    drivers: simulatedDrivers
+                };
+
+                this.dispatchEvent('message', { data: JSON.stringify(data) });
+            }, 1000); // Send message every 1 second
+        }
+
+        // Mock methods for compatibility, though not used in this simulation
+        send() {}
+        close() {}
+    }
+
+    // Replace the global WebSocket with our mock
+    window.WebSocket = MockWebSocket;
+
+    /* ───────── WebSocket Connection ───────── */
+    const ws = new WebSocket("ws://localhost:5221/ws");
+    ws.addEventListener("open", () => console.log("[Relative] WS OK (Mocked)"));
+    ws.addEventListener("message", ({data})=>{
+      const d = JSON.parse(data);
+
+      // Header fields
+      raceTimeEl.textContent = (d.sessionTimeRemain ?? 0).toFixed(0) + 's';
+      ambientTempEl.textContent = (d.waterTemp ?? 0).toFixed(0);
+      trackTempEl.textContent = (d.oilTemp ?? 0).toFixed(0);
+      brakeBiasEl.textContent = (d.brakeBias ?? 0).toFixed(0);
+
+      // Footer
+      sessionTimeEl.textContent = (d.sessionTime ?? 0).toFixed(0) + 's';
+      lapsCompletedEl.textContent = d.lap ?? 0;
+      totalLapsEl.textContent = d.sessionLaps ?? 0;
+      penaltyStatusEl.textContent = `${d.incidents ?? 0}/${d.incidentLimit ?? 0}`;
+      trackStatusEl.textContent = d.trackCondition ?? '--';
+
+      // Apply specific text color based on track status
+      trackStatusEl.className = ''; // Reset classes
+      if (d.trackCondition === 'Dry') {
+          trackStatusEl.classList.add('text-yellow-300');
+      } else if (d.trackCondition === 'Wet') {
+          trackStatusEl.classList.add('text-blue-300');
+      } else if (d.trackCondition === 'Cloudy') {
+          trackStatusEl.classList.add('text-gray-400');
+      }
+
+      // Render driver list
+      if (Array.isArray(d.drivers)) renderDrivers(d.drivers);
+    });
+  </script>
+</body>
+</html>

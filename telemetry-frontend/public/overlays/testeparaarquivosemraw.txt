@@ -1,0 +1,236 @@
+ // --- Renderização das Seções (propriedades de 'data' em camelCase) ---
+
+  addSection('🏁 Pista & Sessão');
+  addRow('Track', data.trackDisplayName); 
+  addRow('Layout', data.trackConfigName);   
+  addRow('Pista Declarada', data.trackStatus); 
+  addRow('Comprimento', data.trackLength, fmtGenericValue, 'km'); 
+  addRow('Tipo de Sessão', data.sessionTypeFromYaml || sessionFromYaml.SessionType || sessionFromYaml.SessionName); 
+  addRow('Temp. Ambiente', data.airTemp, fmtGenericValue, data.tempUnits === 1 ? '°F' : '°C'); 
+  addRow('Temp. Pista (Live)', data.trackSurfaceTemp, fmtGenericValue, '°C');
+  addRow('Temp. Pista (Oficial)', data.trackTempCrew, fmtGenericValue, '°C');
+  addRow('Céu', data.skies); 
+  addRow('Vento', data.windSpeed, fmtGenericValue, "kph"); 
+  addRow('Condição Pista', (data.trackSurfaceWetness > 0.01) ? 'Molhada' : 'Seca'); 
+  addRow('Aderência Pista', data.trackGripStatus); 
+  addRow('Hora na Simulação', data.sessionTimeOfDay, fmtTime);
+  addRow('Previsão Chuva', data.chanceOfRain, v => (v !== undefined && v !== null) ? (v).toFixed(0) : '—', '%');  // ChanceOfRain agora é float direto
+  addRow('Previsão Tipo', data.forecastType ); 
+
+
+  addSection('👤 Piloto & Stint');
+  addRow('Piloto', data.userName); 
+  addRow('Equipe', data.teamName); 
+  addRow('Carro #', data.carNumber); 
+  const carClassID = data.playerCarClassID; 
+  const carClassDetails = globalState.yamlData?.CarClasses?.find(c => c.CarClassID === carClassID); 
+  addRow('Classe Categoria', carClassDetails?.Name || carClassDetails?.CarClassShortName || `ID: ${carClassID}`);
+  addRow('Licença', data.licString || `${playerDriverFromYaml?.LicLevel || ''} ${playerDriverFromYaml?.LicSubLevel || ''}`); 
+  addRow('iRating', data.iRating); 
+  addRow('Safety Rating', typeof data.licSafetyRating === 'number' ? data.licSafetyRating.toFixed(2) : '—'); 
+  const currentIncidents = data.playerCarTeamIncidentCount; 
+  addRow('Incidentes', `${currentIncidents !== undefined ? currentIncidents : '—'} / ${incidentLimit}`); 
+  addRow('Acelerador', data.throttle, v => (v * 100).toFixed(0), '%');
+  addRow('Freio', data.brake, v => (v * 100).toFixed(0), '%');
+  addRow('Direção', data.steeringWheelAngle, v => (v * (180 / Math.PI)).toFixed(1), '°');
+  addRow('Embreagem', data.clutch, v => (v * 100).toFixed(0), '%');
+  addRow('Voltas no Stint', lapsInStint, fmtGenericValue);
+  addRow('Tempo Último Pit', data.playerCarLastPitTime, fmtTime);
+  addRow('Pit Stops', data.playerCarPitStopCount);
+  
+
+  addSection('⏱️ Volta & Delta');
+  addRow('Volta Atual', data.lap);
+  addRow('Dist. Volta %', data.lapDistPct, v => (v * 100).toFixed(1), '%');
+  addRow('Dist. Percorrida', data.lapDistPct, v => (v * (data.trackLength * 1000)).toFixed(0), 'm');
+  addRow('Tempo Volta Atual', data.lapCurrentLapTime, fmtTime);
+  addRow('Última Volta', data.lapLastLapTime, fmtTime);
+  addRow('Melhor Volta (Sessão)', data.lapBestLapTime, fmtTime); 
+  addRow('Delta Melhor (Sessão)', data.lapDeltaToSessionBestLap, fmtGenericValue); 
+  addRow('Delta Ótima (Sessão)', data.lapDeltaToSessionOptimalLap, fmtGenericValue);
+  addRow('Delta Melhor Pessoal', data.lapDeltaToDriverBestLap, fmtGenericValue); 
+  
+  addSection('📊 Setores da Pista');
+  const sectorTimes = data.lapAllSectorTimes || []; 
+  const bestSectorTimesDeltas = data.lapDeltaToSessionBestSectorTimes || []; 
+  const sessionBestSectorsAbsolute = data.sessionBestSectorTimes || []; 
+  const numSectorsToDisplay = Math.max(sectorTimes.length, sessionBestSectorsAbsolute.length, bestSectorTimesDeltas.length, (wInfo.NumTrackSectors || (sectorTimes.length > 0 ? sectorTimes.length : 3) ));
+
+  for (let i = 0; i < numSectorsToDisplay; i++) {
+      const currentSectorTime = sectorTimes[i];
+      const sessionBestSectorTime = sessionBestSectorsAbsolute[i];
+      let deltaToBestDisplay = '—';
+
+      if (currentSectorTime !== undefined && sessionBestSectorTime !== undefined && currentSectorTime > 0 && sessionBestSectorTime > 0) {
+          const delta = currentSectorTime - sessionBestSectorTime;
+          deltaToBestDisplay = (delta > 0 ? '+' : '') + delta.toFixed(3);
+      } else if (bestSectorTimesDeltas[i] !== undefined && bestSectorTimesDeltas[i] !=0) { 
+          const delta = bestSectorTimesDeltas[i];
+          deltaToBestDisplay = (delta > 0 ? '+' : '') + delta.toFixed(3);
+      }
+      addRow(`Setor ${i + 1} (Atual)`, currentSectorTime, fmtTime);
+      addRow(`Setor ${i + 1} Δ (vs Melhor Sess)`, deltaToBestDisplay, v => [v, (v === '—' || v === undefined) ? 'miss' : (parseFloat(v.replace('+','')) > 0.001 ? 'miss' : (parseFloat(v.replace('+','')) < -0.001 ? 'bool-true' : ''))]);
+  }
+
+
+  addSection('⏳ Tempo de Sessão');
+  addRow('Tempo de Sessão', data.sessionTime, fmtTime);
+  addRow('Tempo Restante', data.sessionTimeRemain, fmtTime);
+  addRow('Voltas Totais', data.totalLaps === -1 ? 'Ilimitado' : (data.totalLaps === 0 && (data.sessionTypeFromYaml?.toLowerCase().includes('race')) ? 'Por Tempo' : data.totalLaps) );
+  addRow('Voltas Restantes (Corrida)', data.lapsRemainingRace === -1 ? 'Ilimitado' : data.lapsRemainingRace);
+
+
+  addSection('🛞 Pneus – Temp, Pressão & Desgaste');
+  const tires = ['lf', 'rf', 'lr', 'rr']; 
+  const frontTireCompound = data.playerCarTireCompound || carSetup.Front?.CompoundName || 'Desconhecido';
+  const rearTireCompound = data.playerCarTireCompound || carSetup.Rear?.CompoundName || 'Desconhecido';
+  addRow('Composto Pneus (F)', frontTireCompound);
+  if (frontTireCompound !== rearTireCompound && rearTireCompound !== 'Desconhecido') addRow('Composto Pneus (R)', rearTireCompound);
+  addRow('Sets Usados', data.tireSetsUsed); 
+  addRow('Sets Disponíveis', data.tireSetsAvailable); 
+
+  tires.forEach((tire) => { // tire já é o prefixo em minúsculas
+    addRow(`${tire.toUpperCase()} Temp CL`, data[`${tire}tempCL`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Temp CM`, data[`${tire}tempCM`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Temp CR`, data[`${tire}tempCR`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Pressão`, data[`${tire}press`], fmtGenericValue, 'kPa');
+    const wearArray = data[`${tire}Wear`]; 
+    let wearText = "— / — / —";
+    if(Array.isArray(wearArray) && wearArray.length >= 3){
+        wearText = wearArray.slice(0,3).map(w => (typeof w === 'number' && isFinite(w)) ? (w * 100).toFixed(1) + '%' : '—').join(' / ');
+    }
+    addRow(`${tire.toUpperCase()} Desgaste (I/M/O)`, wearText, v => [v, 'array']); 
+  });
+
+  addSection('🛑 Freios, Pit & Ajustes (DC)');
+  const tireCornersUpper = ['LF', 'RF', 'LR', 'RR'];
+  tireCornersUpper.forEach((corner, index) => addRow(`Temp. Freio ${corner}`, data.brakeTemp ? data.brakeTemp[index] : undefined, fmtGenericValue, '°C'));
+  tireCornersUpper.forEach(corner => addRow(`Pressão Linha Freio ${corner}`, data[`${corner.toLowerCase()}brakeLinePress`], fmtGenericValue, 'kPa'));
+  addRow('Balanço Freio', data.dcBrakeBias, v => (v * 100).toFixed(1), '%');
+  addRow('Nos Pits', data.onPitRoad, fmtGenericValue);
+  addRow('Reparo Restante (Obrig.)', data.pitRepairLeft, fmtTime);
+  addRow('Reparo Restante (Opc.)', data.pitOptRepairLeft, fmtTime);
+  addRow('ABS (DC)', data.dcABS, fmtGenericValue);
+  addRow('TC (DC)', data.dcTractionControl, fmtGenericValue);
+  addRow('Asa Diant. (DC)', data.dcFrontWing); 
+  addRow('Asa Tras. (DC)', data.dcRearWing); 
+  addRow('Dif. Entrada (DC)', data.dcDiffEntry); 
+  addRow('Dif. Meio (DC)', data.dcDiffMiddle); 
+  addRow('Dif. Saída (DC)', data.dcDiffExit); 
+
+
+  addSection('⚙️ Motor & Combustível');
+  addRow('Pressão Óleo', data.oilPress, fmtGenericValue, 'kPa');
+  addRow('Temp. Óleo', data.oilTemp, fmtGenericValue, '°C');
+  addRow('Temp. Água', data.waterTemp, fmtGenericValue, '°C');
+  addRow('Pressão Combustível', data.fuelPress, fmtGenericValue, 'kPa');
+  addRow('Pressão Manifold', data.manifoldPress, fmtGenericValue, 'kPa');
+  addRow('Avisos Motor', data.engineWarnings, decodeEngineWarnings); 
+  addRow('Nível Combustível', data.fuelLevel, fmtGenericValue, 'L');
+  addRow('Nível Combustível %', data.fuelLevelPct, v => (v * 100).toFixed(1), '%');
+  addRow('Uso Combustível/Hora', data.fuelUsePerHour, fmtGenericValue, 'L/h');
+  addRow('Uso Combustível/Volta', data.fuelPerLap, fmtGenericValue, 'L'); 
+  addRow('Tempo Est. Volta (SDK)', data.estLapTime, fmtTime); 
+  addRow('Voltas Rest. Tanque', data.lapsRemaining, v => v > 990 || isNaN(v) ? '∞' : v.toFixed(1));
+  addRow('Status Combustível', data.fuelStatus, fmtFuelStatus); // Usa o formatador específico
+
+
+  addSection('🏎️ Dinâmica & Suspensão');
+  tireCornersUpper.forEach(corner => addRow(`Pos. Susp. ${corner}`, data[`${corner.toLowerCase()}SuspPos`], fmtGenericValue, 'rad'));
+  tireCornersUpper.forEach(corner => addRow(`Vel. Susp. ${corner}`, data[`${corner.toLowerCase()}SuspVel`], fmtGenericValue, 'rad/s'));
+  tireCornersUpper.forEach(corner => addRow(`Alt. Monoposto ${corner}`, data[`${corner.toLowerCase()}RideHeight`], fmtGenericValue, 'm'));
+
+  addSection('🛠️ Danos no Carro'); 
+  const damageKeys = ['lfDamage', 'rfDamage', 'lrDamage', 'rrDamage', 'frontWingDamage', 'rearWingDamage', 'engineDamage', 'gearboxDamage', 'chassisDamage', 'suspensionDamage']; 
+  let hasDamage = false;
+  damageKeys.forEach(key => {
+      if (data[key] !== undefined && data[key] > 0.001) { 
+          const labelKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).replace('Damage',' Dano');
+          addRow(labelKey, data[key], v => (v*100).toFixed(0), '%');
+          hasDamage = true;
+      }
+  });
+  if (!hasDamage) { addRow('Status Dano', 'Nenhum Dano Detectado'); }
+
+
+  addSection('⚡ Sistemas Especiais'); 
+  addRow('DRS Status', data.drs_Status); // Verifique se o backend envia drsStatus ou drs_Status. Ajustado para drs_Status
+  addRow('P2P Contagem', data.carIdxP2P_Count); 
+  addRow('P2P Status', data.carIdxP2P_Status);   
+  addRow('Modo Motor ERS (DC)', data.dcEnginePower); 
+
+  addSection('📊 Forças G & Orientação');
+  addRow('Acel. Lateral', data.latAccel, fmtGenericValue, 'G');
+  addRow('Acel. Longitudinal', data.lonAccel, fmtGenericValue, 'G');
+  addRow('Acel. Vertical', data.vertAccel, fmtGenericValue, 'G');
+  addRow('Yaw (Guinada)', data.yaw, v => (v * 180/Math.PI).toFixed(1), '°');
+  addRow('Pitch (Arfagem)', data.pitch, v => (v * 180/Math.PI).toFixed(1), '°');
+  addRow('Roll (Rolagem)', data.roll, v => (v * 180/Math.PI).toFixed(1), '°');
+
+  addSection('🚩 Controle & Estado Avançado');
+  addRow('Estado da Sessão', data.sessionState, decodeSessionState);
+  addRow('Modo Pace Car', data.paceMode, decodePaceMode);
+  addRow('Bandeiras Ativas', data.sessionFlags, formatSessionFlags);
+  addRow('Pressão Atmosférica', data.airPressure, fmtGenericValue, 'kPa'); 
+  addRow('Umidade Relativa', data.relativeHumidity, v => (v !== undefined && v !== null) ? (v).toFixed(1) : '—', '%'); // RelativeHumidity agora é float direto
+
+
+  addSection('📦 Todos os Dados Brutos');
+  const alias = { // Chaves agora em camelCase para corresponder aos dados
+    lap: 'Volta Atual', rpm: 'Rotações', throttle: 'Acelerador', brake: 'Freio', clutch: 'Embreagem',
+    steeringWheelAngle: 'Ângulo Volante', gear: 'Marcha', speed: 'Velocidade',
+    fuelLevel: 'Combustível (L)', fuelLevelPct: 'Combustível (%)', waterTemp: 'Temp. Água',
+    oilTemp: 'Temp. Óleo', oilPress: 'Pressão Óleo', fuelPress: 'Pressão Combustível',
+    manifoldPress: 'Pressão Manifold', engineWarnings: 'Avisos Motor (Raw)',
+    sessionTime: 'Tempo Sessão', sessionTimeRemain: 'Tempo Restante Sessão',
+    sessionState: 'Estado Sessão (Raw)', paceMode: 'Modo Pace Car (Raw)',
+    sessionFlags: 'Bandeiras Sessão (Raw)', playerCarIdx: 'Índice Carro Jogador',
+    trackSurfaceTemp: 'Temp. Pista (Live)', trackTempCrew: 'Temp. Pista (Oficial)',
+    onPitRoad: 'Nos Pits', playerCarLastPitTime: 'Tempo Último Pit',
+    playerCarPitStopCount: 'Contagem Pit Stops', lapLastLapTime: 'Última Volta',
+    lapBestLapTime: 'Melhor Volta (Piloto)', lapCurrentLapTime: 'Tempo Volta Atual',
+    lapDistPct: 'Dist. Volta (%)', lapDeltaToSessionBestLap: 'Delta Melhor (Sessão)',
+    lapDeltaToSessionOptimalLap: 'Delta Ótima (Sessão)', lapDeltaToDriverBestLap: 'Delta Melhor Pessoal',
+    latAccel: 'Acel. Lateral', lonAccel: 'Acel. Longitudinal', vertAccel: 'Acel. Vertical',
+    yaw: 'Guinada (Raw)', pitch: 'Arfagem (Raw)', roll: 'Rolagem (Raw)',
+    trackGripStatus: 'Aderência Pista', drs_Status: 'Status DRS', // Assumindo drs_Status
+    dcEnginePower: 'Modo Motor ERS (DC)', pitRepairLeft: 'Reparo Obrig. Restante',
+    pitOptRepairLeft: 'Reparo Opc. Restante',
+    lftempCL: 'LF Temp CL', lftempCM: 'LF Temp CM', lftempCR: 'LF Temp CR',
+    rftempCL: 'RF Temp CL', rftempCM: 'RF Temp CM', rftempCR: 'RF Temp CR',
+    lrtempCL: 'LR Temp CL', lrtempCM: 'LR Temp CM', lrtempCR: 'LR Temp CR',
+    rrtempCL: 'RR Temp CL', rrtempCM: 'RR Temp CM', rrtempCR: 'RR Temp CR',
+    lfpress: 'LF Pressão', rfpress: 'RF Pressão', lrpress: 'LR Pressão', rrpress: 'RR Pressão',
+    lfWear: 'LF Desgaste', rfWear: 'RF Desgaste', lrWear: 'LR Desgaste', rrWear: 'RR Desgaste',
+    playerCarTireCompound: 'Composto Pneu Jogador',
+    tireSetsUsed: 'Sets Pneus Usados', tireSetsAvailable: 'Sets Pneus Disponíveis',
+    brakeTemp: 'Temp. Freio (Array)',
+    lfbrakeLinePress: 'LF Pressão Linha Freio', rfbrakeLinePress: 'RF Pressão Linha Freio',
+    lrbrakeLinePress: 'LR Pressão Linha Freio', rrbrakeLinePress: 'RR Pressão Linha Freio',
+    lfsuspPos: 'LF Pos. Susp.', rfsuspPos: 'RF Pos. Susp.', lrsuspPos: 'LR Pos. Susp.', rrsuspPos: 'RR Pos. Susp.',
+    lfsuspVel: 'LF Vel. Susp.', rfsuspVel: 'RF Vel. Susp.', lrsuspVel: 'LR Vel. Susp.', rrsuspVel: 'RR Vel. Susp.',
+    lfrideHeight: 'LF Alt. Monoposto', rfrideHeight: 'RF Alt. Monoposto', 
+    lrrideHeight: 'LR Alt. Monoposto', rrrideHeight: 'RR Alt. Monoposto',
+    lfDamage: 'LF Dano', rfDamage: 'RF Dano', lrDamage: 'LR Dano', rrDamage: 'RR Dano',
+    frontWingDamage: 'Dano Asa Diant.', rearWingDamage: 'Dano Asa Tras.',
+    engineDamage: 'Dano Motor', gearboxDamage: 'Dano Câmbio',
+    chassisDamage: 'Dano Chassi', suspensionDamage: 'Dano Suspensão',
+    userName: 'Piloto (TM)', teamName: 'Equipe (TM)', carNumber: 'Carro # (TM)', iRating: 'iRating (TM)',
+    licString: 'Licença (TM)', licSafetyRating: 'Safety Rating (TM)',
+    playerCarClassID: 'ID Classe Cat. (TM)', playerCarTeamIncidentCount: 'Incidentes Equipe (TM)',
+    trackDisplayName: 'Track (TM)', trackConfigName: 'Layout (TM)', trackLength: 'Comprimento (km, TM)',
+    sessionTypeFromYaml: 'Tipo Sessão YAML (TM)',
+    trackStatus: 'Pista Declarada (TM)', airTemp: 'Temp. Ambiente (TM)', tempUnits: 'Unid. Temp. (TM)',
+    skies: 'Céu (TM)', windSpeed: 'Vento (TM)', airPressure: 'Pressão Atm. (TM)',
+    relativeHumidity: 'Umidade Rel. (TM)', chanceOfRain: 'Previsão Chuva (TM)',
+    forecastType: 'Previsão Tipo (TM)', incidentLimit: 'Limite Incidentes (TM)',
+    totalLaps: 'Voltas Totais (Calc)', lapsRemainingRace: 'Voltas Rest. Corrida (Calc)',
+    lapAllSectorTimes: 'Tempos Todos Setores (TM)', lapDeltaToSessionBestSectorTimes: 'Delta Melhores Setores (TM)',
+    sessionBestSectorTimes: 'Melhores Setores Sessão (TM)',
+    carIdxP2P_Count: 'P2P Contagem (TM)', carIdxP2P_Status: 'P2P Status (TM)',
+    consumoMedio: "Consumo Médio", voltasRestantesMedio: "Voltas (Médio)",
+    necessarioFim: "Necessário p/ Fim", recomendacaoAbastecimento: "Recomendação Abast.",
+    fuelStatus: "Status Combustível", lapsRemaining: "Voltas Rest. Tanque",
+    fuelRemaining: "Comb. Restante", fuelEta: "ETA Combustível",
+    fuelUsePerLapCalc: "Consumo/Volta Usado Calc.", estLapTimeCalc: "Tempo Volta Usado Calc."
+  

@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Overlay Relative Aprimorada (iRacing Data)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <style>
+        /* Estilos Globais da Overlay (baseado em overlay_inputs_html_v5) */
+        html, body {
+            margin:0;
+            padding:0;
+            width:100vw;
+            height:100vh;
+            background:transparent !important;
+            color:#fff;
+            font-family:'Poppins',sans-serif;
+            -webkit-user-select:none;
+            overflow:hidden;
+        }
+
+        .resizable-overlay-wrapper {
+            position:absolute;
+            top:50px; /* Posição inicial de exemplo */
+            left:50px; /* Posição inicial de exemplo */
+            width:450px; /* Largura inicial ajustada */
+            height:400px; /* Altura inicial ajustada para acomodar o conteúdo */
+            min-width:320px; 
+            min-height:250px;
+            background:rgb(17,24,39);
+            border:2px solid #3b82f6;
+            border-radius:1rem;
+            box-shadow:0 4px 10px rgba(0,0,0,0.5);
+            display:flex;
+            flex-direction:column;
+            overflow:hidden; /* Importante para o conteúdo interno não vazar */
+            -webkit-app-region:drag;
+        }
+
+        .resize-handle {
+            position:absolute;
+            width:15px;
+            height:15px;
+            z-index:1001;
+            background:transparent;
+            -webkit-app-region:no-drag;
+            pointer-events: auto;
+        }
+        .resize-handle.top-left    { top:0; left:0; cursor:nwse-resize; }
+        .resize-handle.top-center  { top:0; left:50%; transform:translateX(-50%); cursor:ns-resize; }
+        .resize-handle.top-right   { top:0; right:0; cursor:nesw-resize; }
+        .resize-handle.right-center{ top:50%; right:0; transform:translateY(-50%); cursor:ew-resize; }
+        .resize-handle.bottom-right{ bottom:0; right:0; cursor:se-resize; }
+        .resize-handle.bottom-center{ bottom:0; left:50%; transform:translateX(-50%); cursor:ns-resize; }
+        .resize-handle.bottom-left { bottom:0; left:0; cursor:sw-resize; }
+        .resize-handle.left-center { top:50%; left:0; transform:translateY(-50%); cursor:ew-resize; }
+
+        .overlay-container {
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            overflow:hidden; /* Garante que o conteúdo interno não ultrapasse */
+        }
+
+        .overlay-header { /* Renomeado para evitar conflito com .header-bar */
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:4px 8px;
+            background:inherit;
+            cursor:move;
+            -webkit-app-region:drag;
+            border-top-left-radius:0.875rem;
+            border-top-right-radius:0.875rem;
+            pointer-events: auto;
+            border-bottom: 1px solid #334155; /* Linha divisória sutil */
+        }
+
+        .overlay-header .logo {
+            display:flex;
+            align-items:center;
+            gap:4px;
+            font-size:0.75rem;
+            -webkit-app-region:no-drag;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        .pulsing-headset {
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .overlay-header .title {
+            font-size:0.75rem;
+            font-weight:600;
+            white-space:nowrap;
+        }
+
+        .overlay-header .controls {
+            display:flex;
+            gap:4px;
+            -webkit-app-region:no-drag;
+        }
+
+        .overlay-header .controls button {
+            background:#334155;
+            border:none;
+            padding:2px 4px;
+            border-radius:4px;
+            font-size:0.6rem;
+            line-height: 1;
+            cursor:pointer;
+            transition:background 0.2s;
+            pointer-events: auto;
+            color: white;
+        }
+        .overlay-header .controls button:hover {
+            background:#475569;
+        }
+        .overlay-header #closeBtn { background:#dc2626;}
+        .overlay-header #closeBtn:hover { background:#ef4444;}
+
+        /* Container para o conteúdo da overlay-relative */
+        .relative-content-pane {
+            flex-grow: 1; /* Ocupa o espaço restante */
+            padding: 8px; /* Espaçamento interno */
+            overflow-y: auto; /* Permite rolagem se o conteúdo for maior */
+            display: flex;
+            flex-direction: column;
+            gap: 8px; /* Espaço entre header-bar, list, footer-bar */
+        }
+
+        /* Estilos da overlay-relative.html (adaptados) */
+        .header-bar, .footer-bar {
+          display: flex;
+          justify-content: space-around;
+          align-items: center; /* Alinha itens verticalmente */
+          padding: 0.5rem 0.75rem; /* Padding ajustado */
+          font-size: 0.7rem; /* Fonte ligeiramente menor */
+          border-radius: 0.5rem;
+          font-weight: 600;
+          background-color: rgba(17, 24, 39, 0.85); 
+          color: #cbd5e1;
+          backdrop-filter: blur(4px); /* Blur sutil */
+          width: 100%; 
+          box-sizing: border-box;
+        }
+        .header-bar div, .footer-bar div {
+          padding: 0 0.4rem; /* Espaçamento horizontal entre itens */
+          white-space: nowrap; /* Evita quebra de linha */
+        }
+
+        #competitor-list-container { 
+          display: flex;
+          flex-direction: column;
+          gap: 3px; /* Espaço entre linhas reduzido */
+          width: 100%;
+          flex-grow: 1; 
+          overflow-y: auto; 
+          min-height: 150px; 
+        }
+
+        .driver-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background-color: rgba(49, 60, 77, 0.8); /* Opacidade levemente reduzida */
+          padding: 0.25rem 0.5rem; /* Padding reduzido */
+          border-radius: 0.3rem; /* Raio da borda reduzido */
+          font-size: 0.75rem; /* Fonte reduzida */
+          color: #e5e7eb;
+          border: 1px solid transparent;
+          transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        .highlight-self {
+          background-color: rgba(26, 43, 91, 0.95) !important; 
+          color: white !important;
+          border-color: #facc15 !important; 
+        }
+        
+        .driver-row.dnf {
+            opacity: 0.5;
+            background-color: rgba(75, 85, 99, 0.5); /* Cinza para DNF */
+        }
+        .driver-row.pit {
+            background-color: rgba(202, 138, 4, 0.3); /* Amarelo sutil para pits */
+        }
+
+
+        /* Cores das classes de carro */
+        .class-color-GT3 { color: #a855f7; font-weight: 500; } 
+        .class-color-LMP2 { color: #60a5fa; font-weight: 500; } 
+        .class-color-GTE { color: #facc15; font-weight: 500; } 
+        .class-color-TCR { color: #10b981; font-weight: 500; } 
+        .class-color-GT4 { color: #fb923c; font-weight: 500; } 
+        .class-color-LMP3 { color: #c084fc; font-weight: 500; }
+        .class-color-DEFAULT { color: #9ca3af; font-weight: 500; } /* Cor padrão para classes não mapeadas */
+
+
+        .badge {
+          display: inline-block;
+          padding: 0.1rem 0.3rem; /* Padding reduzido */
+          border-radius: 0.2rem; /* Raio reduzido */
+          font-size: 0.6rem; /* Fonte reduzida */
+          font-weight: bold;
+          line-height: 1.2; /* Ajuste de altura da linha */
+        }
+
+        .sr-badge {
+          border: 1px solid;
+          margin-right: 3px; /* Espaço reduzido */
+        }
+        .sr-R { border-color: #ef4444; color: #ef4444; } /* Rookie - Red */
+        .sr-D { border-color: #f87171; color: #f87171; } /* D - Light Red */
+        .sr-C { border-color: #facc15; color: #facc15; } /* C - Yellow */
+        .sr-B { border-color: #3b82f6; color: #3b82f6; } /* B - Blue */
+        .sr-A { border-color: #10b981; color: #10b981; } /* A - Green */
+        .sr-P { border-color: #a855f7; color: #a855f7; } /* Pro/WC - Purple */
+        .sr-DEFAULT { border-color: #6b7280; color: #6b7280; } /* Grey for unknown */
+
+
+        .irating-badge {
+          background-color: #374151; 
+          color: #e5e7eb;
+        }
+
+        .car-logo {
+          width: 16px; /* Reduzido */
+          height: 16px; /* Reduzido */
+          margin-right: 3px; /* Espaço reduzido */
+          object-fit: contain;
+          background-color: rgba(255,255,255,0.1); /* Fundo sutil para logos transparentes */
+          border-radius: 2px;
+          vertical-align: middle;
+        }
+
+        .status-dry { color: #facc15; } /* Yellow for Dry/Damp */
+        .status-wet { color: #3b82f6; } /* Blue for Wet */
+        .status-cloudy { color: #9ca3af; } /* Grey for Cloudy/Default */
+        .status-critical { animation: pulseStatus 1s infinite; color: #ef4444; }
+
+        .penalty-warning { color: #facc15; }
+        .penalty-critical { color: #ef4444; animation: pulseStatus 1s infinite; }
+
+        @keyframes pulseStatus { 
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+
+        .driver-row > span, .driver-row > div {
+            white-space: nowrap;
+            flex-shrink: 0; /* Impede que encolham demais */
+            overflow: hidden; /* Garante que texto longo não quebre o layout */
+            text-overflow: ellipsis; /* Adiciona "..." se o texto for muito longo */
+            display: flex;
+            align-items: center;
+        }
+        .driver-row span.pos { width: 2.2rem; text-align: left; justify-content: flex-start;} 
+        .driver-row span.car-name-class { width: 7.5rem; text-align: left; font-size: 0.7rem; justify-content: flex-start;} 
+        .driver-row span.driver-name { flex-grow: 1; margin: 0 0.3rem; text-align: left; min-width: 70px; justify-content: flex-start;} 
+        .driver-row div.rating-container { width: 6rem; text-align: center; display: flex; justify-content: center; align-items: center; } 
+        .driver-row span.gap-time { width: 4rem; text-align: right; font-size: 0.7rem; justify-content: flex-end;}
+        .driver-row span.last-lap-time { width: 4.5rem; text-align: right; font-size: 0.7rem; justify-content: flex-end; color: #a1a1aa;}
+
+
+        .gap-positive { color: #f87171; } 
+        .gap-negative { color: #4ade80; } 
+        .gap-neutral { color: #e5e7eb; } 
+
+        /* Popover de Ajustes */
+        #settings-popover {
+            position:absolute; top:35px; right:10px;
+            display:none;
+            background-color:rgba(30,41,59,0.95);
+            border:1px solid #3b82f6; border-radius:0.5rem;
+            padding:0.75rem;
+            z-index:1000;
+            pointer-events: auto;
+            width: 180px;
+        }
+        #settings-popover label {
+            color:#cbd5e1;
+            font-size:0.75rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+        #settings-popover input[type="range"] {
+            width: 100%;
+            margin-bottom: 8px;
+            accent-color: #3b82f6;
+        }
+        #settings-popover input[type="range"]:last-child {
+            margin-bottom: 0;
+        }
+
+          /* Scrollbar styles */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); border-radius: 0.25rem;}
+        ::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 0.25rem; }
+        ::-webkit-scrollbar-thumb:hover { background-color: #6b7280; }
+
+    </style>
+</head>
+<body>
+    <div class="resizable-overlay-wrapper" id="wrapper">
+        <div class="resize-handle top-left" id="h-tl"></div>
+        <div class="resize-handle top-center" id="h-tc"></div>
+        <div class="resize-handle top-right" id="h-tr"></div>
+        <div class="resize-handle right-center" id="h-rc"></div>
+        <div class="resize-handle bottom-right" id="h-br"></div>
+        <div class="resize-handle bottom-center" id="h-bc"></div>
+        <div class="resize-handle bottom-left" id="h-bl"></div>
+        <div class="resize-handle left-center" id="h-lc"></div>
+
+        <div class="overlay-container">
+            <div class="overlay-header">
+                <div class="logo">
+                    <i class="fas fa-headset text-slate-400 pulsing-headset"></i> 
+                    <span class="text-slate-300">Coaching</span>
+                    <span style="background:linear-gradient(to right,#ff0000,#fff,#00ff00);-webkit-background-clip:text;-webkit-text-fill-color:transparent; font-weight: 600;">NR85</span>
+                    <span style="background:linear-gradient(to right,#00ffff,#00bfff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:'Orbitron';font-weight:700;">IA</span>
+                </div>
+                <div class="title text-slate-200">Relative</div>
+                <div class="controls">
+                    <button id="pinBtn" title="Sempre visível">📌</button>
+                    <button id="lockBtn" title="Travar/Destravar posição">🔒</button>
+                    <button id="clickBtn" title="Ignorar cliques">🖱️</button>
+                    <button id="settingsBtn" title="Ajustes">⚙️</button>
+                    <button id="minimizeBtn" title="Minimizar">🗕</button>
+                    <button id="closeBtn" title="Fechar overlay">✖</button>
+                </div>
+            </div>
+
+            <div class="relative-content-pane">
+                <div class="header-bar">
+                    <div id="raceName" class="text-blue-400">Race: --</div>
+                    <div class="text-white" id="raceTime">Sim: 00:00:00</div>
+                    <div class="text-yellow-300">Amb: <span id="ambientTemp">--</span>°C</div>
+                    <div class="text-sky-400">Track: <span id="trackTemp">--</span>°C</div>
+                    <div class="text-gray-400">BB: <span id="brakeBias">--</span>%</div>
+                </div>
+
+                <div id="competitor-list-container">
+                    </div>
+
+                <div class="footer-bar">
+                    <div class="text-white">Session: <span id="sessionTimeRemaining">00:00:00</span></div>
+                    <div class="text-green-300">Laps: <span id="lapsCompleted">--</span>/<span id="totalLaps">--</span></div>
+                    <div class="text-white" id="penaltyStatus">Inc: --/--</div>
+                    <div class="status-cloudy" id="trackStatus">Track: --</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-popover">
+        <div>
+            <label for="rangeOpacity">Opacidade</label>
+            <input type="range" id="rangeOpacity" min="0.1" max="1" step="0.01" value="0.98">
+        </div>
+        <div>
+            <label for="rangeContrast">Contraste</label>
+            <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1">
+        </div>
+    </div>
+
+    <script>
+const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
+const competitorListContainer = document.getElementById('competitor-list-container');
+const overlayAPI = window.overlayAPI || window.api || {}; // For potential interactions
+
+// --- Helper Functions ---
+function parseYaml(yamlStr) {
+  try {
+    // Note: The backend is now sending parsed YAML data as part of the TelemetryModel,
+    // so direct YAML parsing in the frontend might not be strictly necessary for all fields,
+    // but it's kept here for SessionInfoYaml which is still passed as a string.
+    return jsyaml.load(yamlStr || '');
+  } catch (e) {
+    console.error('Error parsing YAML:', e, "Raw YAML:", yamlStr);
+    return {};
+  }
+}
+
+function fmtTimeSimple(s, showHundredths = true) {
+  if (typeof s !== 'number' || !isFinite(s) || s < 0) return '---';
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const secs = Math.floor(s % 60);
+  const hundreths = Math.floor((s * 100) % 100);
+
+  if (h > 0) {
+    return `${h.toString()}:${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  if (showHundredths) {
+    return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${hundreths.toString().padStart(2, '0')}`;
+  }
+  return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function getSRClass(licString) {
+    if (!licString || typeof licString !== 'string') return 'sr-DEFAULT';
+    const srPart = licString.split(' ')[0]; // "A", "B3.45" -> "A" or "B3.45"
+    const match = srPart?.match(/^([ABCDRPIX])/i); // Added X for potential other classes
+    return match ? `sr-${match[1].toUpperCase()}` : 'sr-DEFAULT';
+}
+
+function getCarClassColorCss(carClassShortName) {
+    if (!carClassShortName) return 'class-color-DEFAULT';
+    const upperClass = carClassShortName.toUpperCase().replace(/[^A-Z0-9]/g, ''); // Sanitize
+    switch (upperClass) {
+        case 'GT3': return 'class-color-GT3';
+        case 'LMP2': return 'class-color-LMP2';
+        case 'GTE': return 'class-color-GTE';
+        case 'TCR': return 'class-color-TCR';
+        case 'GT4': return 'class-color-GT4';
+        case 'LMP3': return 'class-color-LMP3';
+        // Add more common iRacing classes if needed
+        default: return 'class-color-DEFAULT';
+    }
+}
+
+function getCarLogoPath(carScreenName) {
+    // This remains a placeholder. You'd fill this with actual paths based on carScreenName
+    // const logos = { 'Porsche 911 GT3 R (992)': 'logos/porsche_992_gt3r.png', ... };
+    // return logos[carScreenName] || '';
+    return ''; 
+}
+
+// Global cache for YAML data to avoid re-parsing on every tick if session info doesn't change
+let cachedDriverInfo = null;
+let cachedWeekendInfo = null;
+let cachedSessionInfo = null;
+let lastSessionInfoYaml = '';
+
+function renderRelative(data) {
+  if (!data) {
+    console.warn("renderRelative called with no data.");
+    return;
+  }
+
+  // Parse YAML only if it has changed
+  if (data.sessionInfoYaml && data.sessionInfoYaml !== lastSessionInfoYaml) {
+      const parsedYaml = parseYaml(data.sessionInfoYaml);
+      cachedDriverInfo = parsedYaml?.DriverInfo?.Drivers;
+      cachedWeekendInfo = parsedYaml?.WeekendInfo;
+      cachedSessionInfo = parsedYaml?.SessionInfo?.Sessions;
+      lastSessionInfoYaml = data.sessionInfoYaml;
+  }
+
+  const weekendInfo = cachedWeekendInfo || {};
+  const currentSessionYamlData = (cachedSessionInfo || []).find(s => s.SessionNum === data.sessionNum) || {};
+  const playerDriverYaml = (cachedDriverInfo || []).find(d => d.CarIdx === data.playerCarIdx);
+
+
+  // === Update Header and Footer ===
+  document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.TrackDisplayName || '--'}`;
+  document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(data.sessionTime, false) || '00:00'}`;
+  document.getElementById('ambientTemp').textContent = `${typeof data.tempValue === 'number' ? data.tempValue.toFixed(1) : '--'}`; // Assuming tempValue for ambient
+  
+  let trackTempValue = '--';
+  if (typeof data.trackSurfaceTemp === 'number' && data.trackSurfaceTemp > -100) {
+      trackTempValue = data.trackSurfaceTemp.toFixed(1);
+  } else if (typeof data.trackTempCrew === 'number' && data.trackTempCrew > -100) {
+      trackTempValue = data.trackTempCrew.toFixed(1);
+  }
+  document.getElementById('trackTemp').textContent = trackTempValue;
+  document.getElementById('brakeBias').textContent = `${typeof data.dcBrakeBias === 'number' ? (data.dcBrakeBias * 100).toFixed(1) : '--'}`;
+  
+  document.getElementById('sessionTimeRemaining').textContent = `${fmtTimeSimple(data.sessionTimeRemain, false) || '00:00'}`;
+  const playerLap = data.lap ?? '--';
+  const totalLapsSess = currentSessionYamlData?.SessionLapsTotal === -1 ? '∞' : (currentSessionYamlData?.SessionLapsTotal ?? '--'); // Adjust to use SessionLapsTotal from YAML if available and needed
+  document.getElementById('lapsCompleted').textContent = `${playerLap}`;
+  document.getElementById('totalLaps').textContent = `${totalLapsSess}`;
+
+  // Use IncidentLimit from the current session in YAML
+  const incidentLimit = currentSessionYamlData?.IncidentLimit || weekendInfo.IncidentLimit || 'N/A';
+  const playerIncidents = data.playerCarTeamIncidentCount ?? '--';
+  const penaltyEl = document.getElementById('penaltyStatus');
+  penaltyEl.textContent = `Inc: ${playerIncidents}/${incidentLimit}`;
+  penaltyEl.className = 'text-white'; 
+  if (playerDriverYaml?.IsSpectator === 1) { // Check from YAML driver info
+      penaltyEl.textContent = 'Spectator';
+  } else if (typeof playerIncidents === 'number' && typeof incidentLimit === 'number' && incidentLimit > 0) {
+    if (playerIncidents >= incidentLimit) {
+        penaltyEl.classList.remove('penalty-warning');
+        penaltyEl.classList.add('penalty-critical');
+    } else if (playerIncidents >= incidentLimit * 0.75) {
+        penaltyEl.classList.remove('penalty-critical');
+        penaltyEl.classList.add('penalty-warning');
+    } else {
+        penaltyEl.classList.remove('penalty-warning', 'penalty-critical');
+    }
+  }
+
+  // Track Status based on TelemetryModel.TrackGripStatus (calculated in backend)
+  const trackStatusEl = document.getElementById('trackStatus');
+  let trackStatusText = data.trackGripStatus || data.skies || '--'; // Use trackGripStatus first, then skies
+  let trackStatusClass = 'status-cloudy'; 
+
+  // Map backend's TrackGripStatus to frontend classes
+  if (trackStatusText.toLowerCase().includes('very wet') || trackStatusText.toLowerCase().includes('wet')) {
+      trackStatusClass = 'status-wet';
+  } else if (trackStatusText.toLowerCase().includes('damp') || trackStatusText.toLowerCase().includes('dry')) {
+      trackStatusClass = 'status-dry';
+  } else if (trackStatusText.toLowerCase().includes('clear') || trackStatusText.toLowerCase().includes('sunny')) { // Fallback for 'Skies'
+      trackStatusClass = 'status-dry';
+  }
+
+  trackStatusEl.textContent = `Track: ${trackStatusText}`;
+  trackStatusEl.className = ''; // Reset classes
+  trackStatusEl.classList.add(trackStatusClass);
+
+
+  // === Process Driver Data for Relative Display ===
+  const driversFromYaml = cachedDriverInfo || []; // Use cached driver info from YAML
+  const playerCarIdx = data.playerCarIdx;
+
+  // These should come directly from your backend's TelemetryModel, likely as arrays by CarIdx
+  // The backend needs to provide these as arrays indexed by CarIdx, not just the player's info.
+  // Assuming `carIdxPosition` etc. arrays are populated in TelemetryModel (they are not in the provided model, this is a CRITICAL GAP)
+  // For the relative, you would need properties like:
+  // public int[] CarIdxPosition { get; set; } = Array.Empty<int>();
+  // public int[] CarIdxLap { get; set; } = Array.Empty<int>();
+  // public bool[] CarIdxOnPitRoad { get; set; } = Array.Empty<bool>();
+  // public int[] CarIdxTrackSurface { get; set; } = Array.Empty<int>(); // For DNF
+  // public float[] CarIdxLastLapTime { get; set; } = Array.Empty<float>();
+  // public float[] CarIdxF2Time { get; set; } = Array.Empty<float>(); // Time relative to player
+
+  // **IMPORTANT: The following block assumes your TelemetryModel *will be extended*
+  // to include these arrays, or that you'll derive this data from `SessionInfoYaml`
+  // if `IRSDKSharper` provides it in a different way.**
+  // As per your `TelemetryModel.cs`, `carIdxPosition` and others are NOT present.
+  // This is a major discrepancy. For now, I'll use placeholders or limited data.
+  // YOU MUST ADD THESE ARRAYS TO YOUR `TelemetryModel` IN C# AND POPULATE THEM IN `BuildTelemetryModel`!
+
+  // Placeholder/simulated data for demonstration IF backend doesn't send arrays
+  // In a real scenario, these arrays should come directly from 'data' object.
+  const carPositionsFromBackend = data.carIdxPosition || []; // This needs to be populated in backend
+  const carLapsCompletedFromBackend = data.carIdxLap || []; // This needs to be populated in backend
+  const carOnPitRoadFromBackend = data.carIdxOnPitRoad || []; // This needs to be populated in backend
+  const carTrackSurfaceFromBackend = data.carIdxTrackSurface || []; // This needs to be populated in backend (for DNF)
+  const carLastLapTimesFromBackend = data.carIdxLastLapTime || []; // This needs to be populated in backend
+  const carF2TimeFromBackend = data.carIdxF2Time || []; // This needs to be populated in backend
+
+  let carsData = [];
+
+  // Iterate through all drivers found in YAML to build the list
+  // and try to match with real-time data from backend
+  for (let i = 0; i < driversFromYaml.length; i++) {
+    const driverYaml = driversFromYaml[i];
+    const carIdx = driverYaml.CarIdx;
+
+    // We need real-time position for filtering/sorting. If not available, skip.
+    // Assuming carPositionsFromBackend has valid position at carIdx.
+    const pos = carPositionsFromBackend[carIdx];
+    if (pos === undefined || pos < 0) continue; // Skip if no valid real-time position
+
+    carsData.push({
+      idx: carIdx,
+      pos: pos,
+      num: driverYaml.CarNumberRaw !== undefined ? driverYaml.CarNumberRaw.toString() : (driverYaml.CarNumber || '--'),
+      name: driverYaml.UserName || 'Desconhecido',
+      team: driverYaml.TeamName || '',
+      irating: driverYaml.IRating || 0,
+      lic: driverYaml.LicString || 'R ----',
+      carClassShort: driverYaml.CarClassShortName || '',
+      carScreenName: driverYaml.CarScreenName || '',
+      lap: carLapsCompletedFromBackend[carIdx],
+      lastLapTime: carLastLapTimesFromBackend[carIdx],
+      onPit: carOnPitRoadFromBackend[carIdx],
+      isDNF: carTrackSurfaceFromBackend[carIdx] === 4, // irsdk_TrkLoc.irsdk_NotInWorld
+      f2Time: carF2TimeFromBackend[carIdx], // Time relative to player if available
+    });
+  }
+
+  // Sort by actual race position
+  carsData.sort((a, b) => a.pos - b.pos);
+
+  const playerInSortedList = carsData.find(c => c.idx === playerCarIdx);
+  const playerDisplayIndex = playerInSortedList ? carsData.indexOf(playerInSortedList) : -1;
+
+  if (!competitorListContainer) {
+    console.error("#competitor-list-container not found");
+    return;
+  }
+  competitorListContainer.innerHTML = ''; // Clear previous entries
+
+  const N_BEFORE = 4;
+  const N_AFTER = 5; 
+  const displayStartIdx = playerDisplayIndex !== -1 ? Math.max(0, playerDisplayIndex - N_BEFORE) : 0;
+  const displayEndIdx = playerDisplayIndex !== -1 ? Math.min(carsData.length, playerDisplayIndex + N_AFTER + 1) : Math.min(carsData.length, N_BEFORE + N_AFTER + 1);
+
+  for (let i = displayStartIdx; i < displayEndIdx; i++) {
+    const car = carsData[i];
+    if (!car) continue;
+
+    const driverRow = document.createElement('div');
+    driverRow.className = 'driver-row';
+    if (car.idx === playerCarIdx) driverRow.classList.add('highlight-self');
+    if (car.isDNF) driverRow.classList.add('dnf');
+    if (car.onPit && !car.isDNF) driverRow.classList.add('pit');
+    
+    let gapText = '---';
+    let gapClass = 'gap-neutral';
+
+    if (playerInSortedList && car.idx !== playerCarIdx) {
+        if (playerInSortedList.lap === car.lap && car.f2Time !== undefined && car.f2Time !== -1) {
+            const timeDiff = car.f2Time;
+            gapText = (timeDiff > 0 ? '+' : '') + timeDiff.toFixed(2);
+            gapClass = timeDiff > 0 ? 'gap-positive' : (timeDiff < 0 ? 'gap-negative' : 'gap-neutral');
+        } else if (playerInSortedList.lap !== undefined && car.lap !== undefined) {
+            const lapDiff = car.lap - playerInSortedList.lap;
+            if (lapDiff !== 0) {
+                gapText = (lapDiff > 0 ? '+' : '') + `${Math.abs(lapDiff)}L`; // Show absolute lap diff
+                gapClass = lapDiff > 0 ? 'gap-positive' : 'gap-negative';
+            } else {
+                gapText = "<0.1"; 
+                gapClass = car.pos < playerInSortedList.pos ? 'gap-negative' : 'gap-positive';
+            }
+        }
+    } else if (car.idx === playerCarIdx) {
+        gapText = '0.00'; // Player's gap to self
+        gapClass = 'gap-neutral';
+    }
+
+    const carLogoSrc = getCarLogoPath(car.carScreenName);
+    const iRatingDisplay = car.irating > 0 ? `${(car.irating / 1000).toFixed(1)}k` : '---';
+    const srBadgeLetter = (car.lic.split(' ')[0] || 'R').charAt(0).toUpperCase();
+
+    driverRow.innerHTML = `
+      <span class="pos">${car.pos + 1}</span>
+      <span class="car-name-class">
+        ${carLogoSrc ? `<img src="${carLogoSrc}" class="car-logo" alt="Car">` : ''}
+        <span class="${getCarClassColorCss(car.carClassShort)}">${car.carClassShort || 'N/A'}</span>
+      </span>
+      <span class="driver-name">${car.name}</span>
+      <div class="rating-container">
+        <span class="sr-badge badge ${getSRClass(car.lic)}">${srBadgeLetter}</span>
+        <span class="irating-badge badge">${iRatingDisplay}</span>
+      </div>
+      <span class="gap-time ${gapClass}">${gapText}</span>
+      <span class="last-lap-time">${fmtTimeSimple(car.lastLapTime)}</span>
+    `;
+    competitorListContainer.appendChild(driverRow);
+  }
+}
+
+// --- WebSocket Connection ---
+function connectWS() {
+  const ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    console.log('Relative overlay conectada a', WS_URL);
+    const statusEl = document.getElementById('trackStatus');
+    if (statusEl) statusEl.textContent = 'Conectado...';
+  };
+
+  ws.onmessage = e => {
+    try {
+      const data = JSON.parse(e.data); // data is now a TelemetryModel object
+      if (data) {
+        renderRelative(data);
+      }
+    } catch (err) {
+      console.error('Erro processando dados WebSocket:', err, "Raw data:", e.data);
+      const statusEl = document.getElementById('trackStatus');
+      if (statusEl) statusEl.textContent = 'Erro nos dados!';
+    }
+  };
+
+  ws.onclose = (event) => {
+    let reason = `Código: ${event.code}${event.reason ? `, Motivo: ${event.reason}` : ''}${!event.wasClean ? ' (Desconexão abrupta)' : ''}`;
+    console.warn(`Relative overlay desconectada. ${reason}. Reconectando em 3s...`);
+    const statusEl = document.getElementById('trackStatus');
+    if (statusEl) statusEl.textContent = `Desconectado (${event.code || 'N/A'})...`;
+    setTimeout(connectWS, 3000);
+  };
+
+  ws.onerror = (errorEvent) => {
+    console.error('Erro WebSocket (Relative):', errorEvent.type || errorEvent);
+    // The onclose event will handle reconnection attempts.
+  };
+}
+
+// --- UI Interactions (same as before) ---
+document.addEventListener('DOMContentLoaded', () => {
+    const settingsPopover = document.getElementById('settings-popover');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const wrapper = document.getElementById('wrapper');
+    const rangeOpacity = document.getElementById('rangeOpacity');
+    const rangeContrast = document.getElementById('rangeContrast');
+
+    if (settingsBtn && settingsPopover) {
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent click from immediately closing popover
+            settingsPopover.style.display = settingsPopover.style.display === 'block' ? 'none' : 'block';
+        });
+    }
+    // Close popover if clicked outside
+    document.addEventListener('click', (e) => {
+        if (settingsPopover && settingsPopover.style.display === 'block' && 
+            !settingsPopover.contains(e.target) && e.target !== settingsBtn) {
+            settingsPopover.style.display = 'none';
+        }
+    });
+
+    if (rangeOpacity && wrapper) {
+        rangeOpacity.addEventListener('input', (e) => wrapper.style.opacity = e.target.value);
+        wrapper.style.opacity = rangeOpacity.value; // Initialize
+    }
+    if (rangeContrast && wrapper) {
+        rangeContrast.addEventListener('input', (e) => wrapper.style.filter = `contrast(${e.target.value})`);
+        wrapper.style.filter = `contrast(${rangeContrast.value})`; // Initialize
+    }
+    
+    const closeBtn = document.getElementById('closeBtn');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            if (overlayAPI.close) overlayAPI.close();
+            else window.close(); // Fallback for browser testing
+        };
+    }
+    const pinBtn = document.getElementById('pinBtn');
+    let isPinned = false; 
+    if (pinBtn) {
+        pinBtn.onclick = () => {
+            isPinned = !isPinned;
+            if (overlayAPI.pin) overlayAPI.pin(isPinned);
+            else if (overlayAPI.setAlwaysOnTop) overlayAPI.setAlwaysOnTop(isPinned);
+            pinBtn.style.backgroundColor = isPinned ? '#22c55e' : '#334155';
+            pinBtn.title = isPinned ? "Desafixar do topo" : "Sempre visível";
+        };
+    }
+    const lockBtn = document.getElementById('lockBtn');
+    let isLocked = false;
+    if (lockBtn && wrapper) {
+        lockBtn.onclick = () => {
+            isLocked = !isLocked;
+            if (overlayAPI.lock) overlayAPI.lock(isLocked);
+            else {
+                   wrapper.style.webkitAppRegion = isLocked ? 'no-drag' : 'drag';
+                   Array.from(document.querySelectorAll('.resize-handle')).forEach(h => {
+                       h.style.pointerEvents = isLocked ? 'none' : 'auto';
+                   });
+            }
+            lockBtn.innerHTML = isLocked ? '🔓' : '🔒';
+            lockBtn.title = isLocked ? "Destravar movimento/redimensionamento" : "Travar posição/tamanho";
+            lockBtn.style.backgroundColor = isLocked ? '#22c55e' : '#334155';
+        };
+    }
+    const clickBtn = document.getElementById('clickBtn');
+    let isClickThrough = false;
+    if (clickBtn) {
+        clickBtn.onclick = () => {
+            isClickThrough = !isClickThrough;
+            if (overlayAPI.setIgnoreMouseEvents) overlayAPI.setIgnoreMouseEvents(isClickThrough);
+            clickBtn.innerHTML = isClickThrough ? '🖱️<span style="color:red;">🚫</span>' : '🖱️';
+            clickBtn.title = isClickThrough ? "Permitir cliques na overlay" : "Ignorar cliques (click-through)";
+            clickBtn.style.backgroundColor = isClickThrough ? '#ef4444' : '#334155';
+        };
+    }
+    const minimizeBtn = document.getElementById('minimizeBtn');
+    if(minimizeBtn){
+        minimizeBtn.onclick = () => {
+            if(overlayAPI.minimize) overlayAPI.minimize();
+            else console.log("Minimize action requested (no API).");
+        }
+    }
+
+    let resizing = false;
+    let currentHandle = null;
+    let startX, startY, startWidth, startHeight;
+
+    document.querySelectorAll('.resize-handle').forEach(handle => {
+        handle.addEventListener('mousedown', (e) => {
+            if (isLocked) return;
+            resizing = true;
+            currentHandle = handle.id;
+            startX = e.clientX;
+            startY = e.clientY;
+            const rect = wrapper.getBoundingClientRect();
+            startWidth = rect.width;
+            startHeight = rect.height;
+            wrapper.style.webkitAppRegion = 'no-drag';
+            e.preventDefault();
+        });
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!resizing || isLocked) return;
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = parseFloat(wrapper.style.left || getComputedStyle(wrapper).left);
+        let newTop = parseFloat(wrapper.style.top || getComputedStyle(wrapper).top);
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        if (currentHandle.includes('right')) newWidth = startWidth + dx;
+        if (currentHandle.includes('bottom')) newHeight = startHeight + dy;
+        if (currentHandle.includes('left')) {
+            newWidth = startWidth - dx;
+        }
+        if (currentHandle.includes('top')) {
+            newHeight = startHeight - dy;
+        }
+        
+        if (currentHandle.includes('left')) {
+            wrapper.style.left = `${newLeft + dx}px`;
+        }
+        if (currentHandle.includes('top')) {
+            wrapper.style.top = `${newTop + dy}px`;
+        }
+
+        const minWidth = parseFloat(getComputedStyle(wrapper).minWidth);
+        const minHeight = parseFloat(getComputedStyle(wrapper).minHeight);
+        wrapper.style.width = `${Math.max(newWidth, minWidth)}px`;
+        wrapper.style.height = `${Math.max(newHeight, minHeight)}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (resizing) {
+            resizing = false;
+            currentHandle = null;
+            if(!isLocked) wrapper.style.webkitAppRegion = 'drag';
+        }
+    });
+
+    connectWS();
+});
+
+</script>

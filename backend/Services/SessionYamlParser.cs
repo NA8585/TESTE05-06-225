@@ -1,0 +1,214 @@
+// SessionYamlParser.cs
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using YamlDotNet.RepresentationModel;
+using SuperBackendNR85IA.Models; // Assuming SectorInfo will be or is part of Models
+
+namespace SuperBackendNR85IA.Services
+{
+    // Add this class definition (if not already defined elsewhere, e.g., in Models)
+    // If SectorInfo is in SuperBackendNR85IA.Models, this separate definition is not needed here.
+    // For the purpose of this update, I'll assume it might be defined here or you'll move it.
+    public class SectorInfo
+    {
+        public int SectorCount { get; set; }
+        public float[] SectorTimes { get; set; } = Array.Empty<float>();
+    }
+
+    public class SessionYamlParser
+    {
+        public (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?) ParseSessionInfo(string yaml, int playerCarIdx, int currentSessionNum)
+        {
+            if (string.IsNullOrWhiteSpace(yaml))
+                return (null, null, null, null);
+
+            var ys = new YamlStream();
+            ys.Load(new StringReader(yaml));
+            var root = (YamlMappingNode)ys.Documents[0].RootNode;
+
+            var driver = ParsePlayerDriverInfo(root, playerCarIdx);
+            var weekend = ParseWeekendInfo(root);
+            var session = ParseCurrentSessionDetails(root, currentSessionNum);
+            // Novo objeto para setores
+            var sectors = ParseSectorInfo(root, currentSessionNum);
+            
+            return (driver, weekend, session, sectors);
+        }
+
+        private DriverInfo? ParsePlayerDriverInfo(YamlMappingNode root, int idx)
+        {
+            if (!root.Children.ContainsKey(new YamlScalarNode("DriverInfo"))) return null;
+            var driverNode = (YamlMappingNode)root.Children[new YamlScalarNode("DriverInfo")];
+            if (!driverNode.Children.ContainsKey(new YamlScalarNode("Drivers")) || !(driverNode.Children[new YamlScalarNode("Drivers")] is YamlSequenceNode seq)) return null;
+            
+            if (idx < 0 || idx >= seq.Children.Count) return null;
+
+            var node = (YamlMappingNode)seq.Children[idx];
+            return new DriverInfo
+            {
+                CarIdx            = GetInt(node, "CarIdx"),
+                UserName          = GetStr(node, "UserName"),
+                TeamName          = GetStr(node, "TeamName"),
+                UserID            = GetInt(node, "UserID"),
+                TeamID            = GetInt(node, "TeamID"),
+                CarNumber         = GetStr(node, "CarNumberRaw"),
+                IRating           = GetInt(node, "IRating"),
+                LicString         = GetStr(node, "LicString"),
+                LicLevel          = GetInt(node, "LicLevel"),
+                LicSubLevel       = GetInt(node, "LicSubLevel"),
+                CarPath           = GetStr(node, "CarPath"),
+                CarClassID        = GetInt(node, "CarClassID"),
+                CarClassShortName = GetStr(node, "CarClassShortName"),
+                CarClassRelSpeed  = GetFloat(node, "CarClassRelSpeed")
+            };
+        }
+
+        private WeekendInfo? ParseWeekendInfo(YamlMappingNode root)
+        {
+            if (!root.Children.ContainsKey(new YamlScalarNode("WeekendInfo"))) return null;
+            var wNode = (YamlMappingNode)root.Children[new YamlScalarNode("WeekendInfo")];
+            
+            float trackLengthKm = 0;
+            string trackLengthStr = GetStr(wNode, "TrackLength"); // Ex: "5.89 km"
+            if (!string.IsNullOrEmpty(trackLengthStr))
+            {
+                trackLengthStr = trackLengthStr.Replace(" km", "").Replace(" mi", "").Trim();
+                float.TryParse(trackLengthStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out trackLengthKm);
+            }
+
+            return new WeekendInfo
+            {
+                TrackName        = GetStr(wNode, "TrackName"),
+                TrackDisplayName = GetStr(wNode, "TrackDisplayName"),
+                TrackLengthKm    = trackLengthKm,
+                TrackConfigName  = GetStr(wNode, "TrackConfigName"),
+                SessionType      = GetStr(wNode, "SessionType"),
+                Skies            = GetStr(wNode, "Skies"),    
+                WindSpeed        = GetFloatFromSpecialFormat(wNode, "WindSpeed"), // Ex: "12 kph"
+                AirPressure      = GetFloatFromSpecialFormat(wNode, "AirPressure"), // Ex: "29.00 Hg" ou "101.2 kPa"
+                RelativeHumidity = GetFloatFromSpecialFormat(wNode, "RelativeHumidity"), // Ex: "50.0 %"
+                ChanceOfRain     = GetFloatFromSpecialFormat(wNode, "ChanceOfRain"),     // Ex: "0.0 %"
+                ForecastType     = GetStr(wNode, "ForecastType")
+            };
+        }
+
+        private SessionInfo? ParseCurrentSessionDetails(YamlMappingNode root, int curNum)
+        {
+            if (!root.Children.ContainsKey(new YamlScalarNode("SessionInfo"))) return null;
+            var sNode = (YamlMappingNode)root.Children[new YamlScalarNode("SessionInfo")];
+            if (!sNode.Children.ContainsKey(new YamlScalarNode("Sessions")) || !(sNode.Children[new YamlScalarNode("Sessions")] is YamlSequenceNode seq)) return null;
+
+            var list = seq.Children
+                          .OfType<YamlMappingNode>()
+                          .Select(node =>
+                          {
+                              var sd = new SessionDetailFromYaml
+                              {
+                                  SessionNum = GetInt(node, "SessionNum"),
+                                  SessionName = GetStr(node, "SessionName"),
+                                  SessionType = GetStr(node, "SessionType"),
+                                  SessionLaps = GetInt(node, "SessionLaps") // Parse SessionLaps aqui
+                              };
+                              if (node.Children.TryGetValue(new YamlScalarNode("ResultsPenalty"), out var rpNode) && rpNode is YamlMappingNode rpMap)
+                              {
+                                  sd.IncidentLimit = GetInt(rpMap, "IncidentLimit");
+                              }
+                              return sd;
+                          })
+                          .ToList();
+
+            var current = list.FirstOrDefault(x => x.SessionNum == curNum);
+            
+            int incidentLimitFromCurrentSession = current?.IncidentLimit ?? 0;
+            // Fallback para IncidentLimit do WeekendOptions se não encontrado na sessão específica
+            if (incidentLimitFromCurrentSession == 0 && root.Children.TryGetValue(new YamlScalarNode("WeekendInfo"), out var wiNode) && wiNode is YamlMappingNode wim)
+            {
+                 if (wim.Children.TryGetValue(new YamlScalarNode("WeekendOptions"), out var woNode) && woNode is YamlMappingNode wom)
+                 {
+                     incidentLimitFromCurrentSession = GetInt(wom, "IncidentLimit");
+                 }
+            }
+
+            return new SessionInfo
+            {
+                SessionNum              = curNum,
+                SessionName             = current?.SessionName,
+                SessionType             = current?.SessionType,
+                NumTrackSessions        = seq.Children.Count,
+                AllSessionsFromYaml     = list,
+                IncidentLimit           = incidentLimitFromCurrentSession,
+                CurrentSessionTotalLaps = current?.SessionLaps ?? 0 // Popula com SessionLaps da sessão atual
+            };
+        }
+
+        private SectorInfo? ParseSectorInfo(YamlMappingNode root, int sessionNum)
+        {
+            // Use TryGetValue with YamlScalarNode for keys, consistent with other parsing methods
+            if (!root.Children.TryGetValue(new YamlScalarNode("SessionInfo"), out var sessionInfoNode) || !(sessionInfoNode is YamlMappingNode sessionNode)) return null;
+            
+            if (!sessionNode.Children.TryGetValue(new YamlScalarNode("Sessions"), out var sessionsSequenceNode) || !(sessionsSequenceNode is YamlSequenceNode sessionsSeq)) return null;
+            
+            var sessionData = sessionsSeq.Children
+                .OfType<YamlMappingNode>()
+                .FirstOrDefault(s => GetInt(s, "SessionNum") == sessionNum);
+
+            if (sessionData == null) return null;
+
+            return new SectorInfo
+            {
+                SectorCount = GetInt(sessionData, "SectorCount"),
+                SectorTimes = GetFloatArray(sessionData, "SectorTimes")
+            };
+        }
+
+        // Helpers
+        private static string GetStr(YamlMappingNode n, string key) =>
+            n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s ? s.Value ?? "" : "";
+
+        private static int GetInt(YamlMappingNode n, string key) =>
+            n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s && int.TryParse(s.Value, out var r) ? r : 0;
+        
+        private static float GetFloat(YamlMappingNode n, string key) =>
+            n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s && float.TryParse(s.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var r) ? r : 0f;
+
+        private static float GetFloatFromSpecialFormat(YamlMappingNode n, string key)
+        {
+            string rawValue = GetStr(n, key); // Usa GetStr para obter o valor
+            if (!string.IsNullOrEmpty(rawValue))
+            {
+                // Handle cases like "101.2 kPa" or "50.0 %"
+                string numericPart = rawValue.Split(' ')[0].Trim(); 
+                if (float.TryParse(numericPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float result))
+                {
+                    return result;
+                }
+            }
+            return 0f;
+        }
+
+        // New helper method to parse an array of floats
+        private static float[] GetFloatArray(YamlMappingNode n, string key)
+        {
+            if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlSequenceNode seq)
+            {
+                var floatList = new List<float>();
+                foreach (var node in seq.Children)
+                {
+                    if (node is YamlScalarNode s && float.TryParse(s.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var r))
+                    {
+                        floatList.Add(r);
+                    }
+                    else
+                    {
+                        // Optionally handle or log malformed float values within the array
+                        floatList.Add(0f); // Default value if parsing fails for an element
+                    }
+                }
+                return floatList.ToArray();
+            }
+            return Array.Empty<float>(); // Return empty array if key not found or not a sequence
+        }
+    }
+}

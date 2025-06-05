@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pneus & Freios - GARAGEM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    /* Base body styles for the overlay background and font */
+    body {
+      background-color: transparent; /* Fundo transparente para overlay */
+      font-family: 'Poppins', sans-serif;
+      color: #e5e7eb; /* Light text color */
+      margin: 0;
+      overflow: hidden; /* Prevent scrolling */
+      -webkit-user-select: none; /* Prevent text selection */
+    }
+
+    /* Estilo do wrapper principal da overlay redimensionável */
+    .resizable-overlay-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 450px; /* Largura inicial para acomodar o conteúdo 2x2 */
+      height: auto; /* Altura automática para se ajustar ao conteúdo */
+      background: #0d1117; /* Dark background for the overlay itself */
+      border-radius: 10px; /* Rounded corners */
+      box-shadow: 0 0 15px rgba(0,0,0,0.7); /* Stronger shadow */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- ESTILOS PARA MODO DE EDIÇÃO GLOBAL --- */
+    .resizable-overlay-wrapper.global-edit-mode-active {
+      outline: 2px dashed rgba(0, 123, 255, 0.7) !important;
+      outline-offset: -2px;
+    }
+
+    /* Estilo dos manipuladores de redimensionamento */
+    .resize-handle {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      z-index: 1001; /* Acima de outros elementos */
+      background: transparent; /* Transparente para não bloquear o conteúdo */
+      -webkit-app-region: no-drag; /* Desabilita arrasto da janela nos manipuladores */
+      display: none; /* Escondido por padrão */
+    }
+
+    .global-edit-mode-active .resize-handle {
+      display: block !important; /* Mostra apenas em modo de edição global */
+    }
+
+    /* Posição e cursor para cada manipulador */
+    .resize-handle.top-left    { top: 0; left: 0; cursor: nwse-resize; }
+    .resize-handle.top-center  { top: 0; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .resize-handle.top-right   { top: 0; right: 0; cursor: nesw-resize; }
+    .resize-handle.right-center{ top: 50%; right: 0; transform: translateY(-50%); cursor: ew-resize; }
+    .resize-handle.bottom-right{ bottom: 0; right: 0; cursor: se-resize; }
+    .resize-handle.bottom-center{ bottom: 0; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    .resize-handle.bottom-left { bottom: 0; left: 0; cursor: sw-resize; }
+    .resize-handle.left-center { top: 50%; left: 0; transform: translateY(-50%); cursor: ew-resize; }
+
+    /* Estilo do cabeçalho da overlay (para arrastar e controles) */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      background: #0c0d12; /* Very dark background */
+      cursor: default; /* Cursor padrão, muda para 'move' em modo de edição */
+      -webkit-app-region: drag;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+    .global-edit-mode-active .header {
+        cursor: move;
+    }
+
+    /* Estilo do título no cabeçalho */
+    .header .title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      color: #e5e7eb; /* Light text color */
+    }
+
+    /* Estilo dos controles (botões) no cabeçalho */
+    .controls {
+      display: flex;
+      gap: 4px;
+      -webkit-app-region: no-drag; /* Desabilita arrasto da janela nos controles */
+    }
+
+    /* Estilo dos botões de controle */
+    .controls button {
+      background: #334155; /* Cor de fundo padrão */
+      border: none;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: background 0.2s; /* Transição suave no hover */
+      color: #ccc; /* Cor padrão dos ícones */
+    }
+    .controls button:hover {
+      background: #475569; /* Cor de fundo no hover */
+    }
+    #closeBtn { background: #dc2626; } /* Cor do botão de fechar */
+    #closeBtn:hover { background: #ef4444; } /* Cor do botão de fechar no hover */
+
+    /* Cores dos botões de controle */
+    #pin.active { background: #60a5fa; color: #fff; }
+    #lock.active { background: #22d3ee; color: #fff; }
+    #click.active { background: #6366f1; color: #fff; }
+    #gear.active { background: #475569; color: #fff; }
+
+    /* Estilo do popover de ajustes */
+    #settings-popover {
+      position: absolute;
+      top: 40px; /* Ajustado para ficar abaixo do header */
+      right: 10px;
+      display: none;
+      background-color: rgba(30, 41, 59, 0.95);
+      border: 1px solid #3b82f6;
+      border-radius: 0.5rem;
+      padding: 0.6rem;
+      z-index: 1000;
+      flex-direction: column; /* Para empilhar os controles */
+      gap: 8px; /* Espaçamento entre os controles */
+      font-size: 12px;
+      color: #fff;
+      min-width: 150px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    #settings-popover label {
+      color: #cbd5e1;
+      font-size: 0.7rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #settings-popover input[type=range] {
+      width: 80px;
+      accent-color: #3b82f6; /* Accent color for range slider thumb */
+    }
+
+    /* Text status colors for temperature */
+    .text-status-cold { color: #3b82f6; } /* Blue */
+    .text-status-ideal { color: #4ade80; } /* Green */
+    .text-status-warning { color: #facc15; } /* Yellow */
+    .text-status-hot { color: #ef4444; } /* Red */
+
+    /* Background colors for tire zones based on temperature */
+    .bg-temp-cold { background-color: #1a56db; } /* Deeper blue */
+    .bg-temp-ideal { background-color: #16a34a; } /* Deeper green */
+    .bg-temp-warning { background-color: #d97706; } /* Deeper yellow/orange */
+    .bg-temp-hot { background-color: #b91c1c; } /* Deeper red */
+    .bg-temp-default { background-color: #1f2937; } /* Default dark gray */
+
+    /* Border colors for tire compounds */
+    .border-soft { border-color: #ef4444 !important; } /* Red */
+    .border-medium { border-color: #facc15 !important; } /* Yellow */
+    .border-hard { border-color: #f3f4f6 !important; } /* White */
+    .border-wet { border-color: #3b82f6 !important; } /* Blue */
+    .border-unknown { border-color: #9ca3af !important; } /* Gray */
+
+    /* Compound indicator badge */
+    .compound-indicator {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: #e5e7eb; /* Light text color */
+      font-weight: bold;
+    }
+
+    /* Tire section layout */
+    .tire-section {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+    }
+
+    /* Individual tire zone styling (wear/temp) */
+    .tire-zone {
+      width: 32%; /* Distribute width evenly */
+      padding: 2px;
+      text-align: center;
+      font-size: 10px;
+      border-radius: 2px;
+      background-color: #1f2937; /* Default dark gray background */
+      transition: background-color 0.2s ease-in-out; /* Smooth transition for color changes */
+    }
+
+    /* Main content padding */
+    .content-padding {
+      padding: 1rem; /* p-4 in Tailwind */
+    }
+
+    /* Estilos Tailwind existentes */
+    .text-center { text-align: center; }
+    .text-xl { font-size: 1.25rem; }
+    .font-semibold { font-weight: 600; }
+    .text-red-500 { color: #ef4444; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-red-400 { color: #f87171; }
+    .mb-4 { margin-bottom: 1rem; }
+    .grid { display: grid; }
+    .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .gap-3 { gap: 0.75rem; }
+    .text-xs { font-size: 0.75rem; }
+    .text-blue-300 { color: #93c5fd; }
+    .text-lg { font-size: 1.125rem; }
+    .font-bold { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="resizable-overlay-wrapper" id="wrapper">
+    <div class="resize-handle top-left"    id="h-tl"></div>
+    <div class="resize-handle top-center"  id="h-tc"></div>
+    <div class="resize-handle top-right"   id="h-tr"></div>
+    <div class="resize-handle right-center"id="h-rc"></div>
+    <div class="resize-handle bottom-right"id="h-br"></div>
+    <div class="resize-handle bottom-center"id="h-bc"></div>
+    <div class="resize-handle bottom-left" id="h-bl"></div>
+    <div class="resize-handle left-center" id="h-lc"></div>
+
+    <div class="header" id="overlay-header">
+      <div class="title">Pneus &amp; Freios - GARAGEM</div>
+      <div class="controls">
+        <button id="pin"   title="Sempre visível">📌</button>
+        <button id="lock"  title="Travar/Destravar posição">🔒</button>
+        <button id="click" title="Ignorar cliques">🖱️</button>
+        <button id="gear"  title="Ajustes">⚙️</button>
+        <button id="closeBtn" title="Fechar overlay">✖</button>
+      </div>
+    </div>
+
+    <div class="content-padding">
+      <div class="text-center text-xl font-semibold text-red-500 mb-1">Pneus & Freios</div>
+      <div class="text-center text-sm text-red-400 mb-4">GARAGEM</div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div id="frt-esq" class="rounded-xl p-2 border-4 border-soft relative">
+          <div class="text-xs text-blue-300">DESGASTE</div>
+          <div class="tire-section">
+            <div class="tire-zone" id="frt-esq-wearL">100%</div>
+            <div class="tire-zone" id="frt-esq-wearM">100%</div>
+            <div class="tire-zone" id="frt-esq-wearR">100%</div>
+          </div>
+          <div class="text-xs text-blue-300 mt-1">TEMP</div>
+          <div class="tire-section">
+            <div class="tire-zone" id="frt-esq-tempL">0°C</div>
+            <div class="tire-zone" id="frt-esq-tempM">0°C</div>
+            <div class="tire-zone" id="frt-esq-tempR">0°C</div>
+          </div>
+          <div class="text-xs text-blue-300 mt-1">PRESS FINAL</div>
+          <div class="press text-lg font-bold" id="frt-esq-press">0.0</div>
+          <div class="compound-indicator" id="frt-esq-compound">S</div>
+        </div>
+
+        <div id="frt-dir" class="rounded-xl p-2 border-4 border-soft relative">
+          <div class="text-xs text-blue-300">DESGASTE</div>
+          <div class="tire-section">
+            <div class="tire-zone" id="frt-dir-wearL">100%</div>
+            <div class="tire-zone" id="frt-dir-wearM">100%</div>
+            <div class="tire-zone" id="frt-dir-wearR">100%</div>
+          </div>
+          <div class="text-xs text-blue-300 mt-1">TEMP</div>
+          <div class="tire-section">
+            <div class="tire-zone" id="frt-dir-tempL">0°C</div>
+            <div class="tire-zone" id="frt-dir-tempM">0°C</div>
+            <div class="tire-zone" id="frt-dir-tempR">0°C</div>
+          </div>
+          <div class="text-xs text-blue-300 mt-1">PRESS FINAL</div>
+          <div class="press text-lg font-bold" id="frt-dir-press">0.0</div>
+          <div class="compound-indicator" id="frt-dir-compound">S</div>
+        </div>
+
+        <div id="trs-esq" class="rounded-xl p-2 border-4 border-soft relative">
+          <div class="text-xs text-blue-300">DESGASTE</div>
+          <div class="tire-section">
+            <div class="tire-zone" id="trs-esq-wearL">100%</div>
+            <div class="tire-zone" id="trs-esq-wearM">100%</div>
+            <div class="tire-zone" id="trs-esq-wearR">100%</div>
+          </div>
+          <div class="text-xs text-blue-300 mt-1">TEMP</div>
+          <div class="tire-section">
+            <div class="tire-zone" id="trs-esq-tempL">0°C</div>
+            <div class="tire-zone" id="trs-esq-tempM">0°C</div>
+            <div class="tire-zone" id="trs-esq-tempR">0°C</div>
+          </div>
+          <div class="text-xs text-blue-300 mt-1">PRESS FINAL</div>
+          <div class="press text-lg font-bold" id="trs-esq-press">0.0</div>
+          <div class="compound-indicator" id="trs-esq-compound">S</div>
+        </div>
+
+        <div id="trs-dir" class="rounded-xl p-2 border-4 border-soft relative">
+          <div class="text-xs text-blue-300">DESGASTE</div>
+          <div class="tire-section">
+            <div class="tire-zone" id="trs-dir-wearL">100%</div>
+            <div class="tire-zone" id="trs-dir-wearM">100%</div>
+            <div class="tire-zone" id="trs-dir-wearR">100%</div>
+          </div>
+          <div class="text-xs text-blue-300 mt-1">TEMP</div>
+          <div class="tire-section">
+            <div class="tire-zone" id="trs-dir-tempL">0°C</div>
+            <div class="tire-zone" id="trs-dir-tempM">0°C</div>
+            <div class="tire-zone" id="trs-dir-tempR">0°C</div>
+          </div>
+          <div class="text-xs text-blue-300 mt-1">PRESS FINAL</div>
+          <div class="press text-lg font-bold" id="trs-dir-press">0.0</div>
+          <div class="compound-indicator" id="trs-dir-compound">S</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="settings-popover">
+    <label>Opacidade <input type="range" id="rangeOpacity" min="0.1" max="1" step="0.01" value="1"></label>
+    <label>Contraste <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1"></label>
+    <label>Brilho    <input type="range" id="rangeBrightness" min="0.5" max="2" step="0.01" value="1"></label>
+  </div>
+
+  <script>
+    // --- Constantes e Variáveis de Estado ---
+    const OVERLAY_NAME = 'overlay-tiresgarage';
+    const resizableOverlayWrapper = document.getElementById('wrapper');
+    const overlayHeader = document.getElementById('overlay-header');
+    const settingsPopover = document.getElementById('settings-popover');
+    const rangeOpacity = document.getElementById('rangeOpacity');
+    const rangeContrast = document.getElementById('rangeContrast');
+    const rangeBrightness = document.getElementById('rangeBrightness');
+    const pinButton = document.getElementById('pin');
+    const lockButton = document.getElementById('lock');
+    const clickButton = document.getElementById('click');
+    const gearButton = document.getElementById('gear');
+    const closeButton = document.getElementById('closeBtn');
+
+    let isResizing = false;
+    let resizeHandleType = '';
+    let initialX, initialY, initialWidth, initialHeight, initialLeft, initialTop;
+
+    let isDragging = false;
+    let dragStartX, dragStartY, windowStartX, windowStartY;
+
+    let isCurrentlyInGlobalEditMode = false;
+    let localPinned = false;
+    let localLocked = true; // Começa travado por padrão
+    let localIgnoreClicks = true; // Começa ignorando cliques por padrão
+
+    // --- Lógica de Redimensionamento e Arraste ---
+    function getCursorForHandle(handleType) {
+      const cursors = { tl: 'nwse-resize', tc: 'ns-resize', tr: 'nesw-resize', rc: 'ew-resize', br: 'se-resize', bc: 'ns-resize', bl: 'sw-resize', lc: 'ew-resize' };
+      return cursors[handleType] || 'default';
+    }
+
+    document.querySelectorAll('.resize-handle').forEach(handle => {
+      handle.addEventListener('mousedown', (e) => {
+        if (!isCurrentlyInGlobalEditMode) return; // Só permite redimensionar no modo de edição global
+        e.preventDefault(); e.stopPropagation();
+        isResizing = true;
+        resizeHandleType = handle.id.replace('h-', '');
+        initialX = e.clientX; initialY = e.clientY;
+        const rect = resizableOverlayWrapper.getBoundingClientRect();
+        initialWidth = rect.width; initialHeight = rect.height;
+        initialLeft = rect.left; initialTop = rect.top;
+        document.body.style.cursor = getCursorForHandle(resizeHandleType);
+      });
+    });
+
+    function resize(e, handleType) {
+      if (!isResizing || !isCurrentlyInGlobalEditMode) return; // Só permite redimensionar no modo de edição global
+      const aspectRatio = initialWidth / initialHeight;
+      const shiftPressed = e.shiftKey;
+      let newWidth = initialWidth, newHeight = initialHeight, newLeft = initialLeft, newTop = initialTop;
+      const deltaX = e.clientX - initialX, deltaY = e.clientY - initialY;
+
+      switch (handleType) {
+        case 'br': newWidth = initialWidth + deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY; break;
+        case 'bl': newWidth = initialWidth - deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight + deltaY; newLeft = initialLeft + deltaX; break;
+        case 'tr': newWidth = initialWidth + deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY; newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY); break;
+        case 'tl': newWidth = initialWidth - deltaX; newHeight = shiftPressed ? newWidth / aspectRatio : initialHeight - deltaY; newLeft = initialLeft + deltaX; newTop = initialTop + (shiftPressed ? (initialHeight - newHeight) : deltaY); break;
+        case 'rc': newWidth = initialWidth + deltaX; break;
+        case 'lc': newWidth = initialWidth - deltaX; newLeft = initialLeft + deltaX; break;
+        case 'bc': newHeight = initialHeight + deltaY; break;
+        case 'tc': newHeight = initialHeight - deltaY; newTop = initialTop + deltaY; break;
+      }
+
+      const minWidth = 350, minHeight = 400; // Ajustado para o conteúdo 2x2
+      newWidth = Math.max(newWidth, minWidth); newHeight = Math.max(newHeight, minHeight);
+
+      // Limites da tela
+      const screenWidth = window.electronAPI?.setBounds ? window.screen.width : window.innerWidth;
+      const screenHeight = window.electronAPI?.setBounds ? window.screen.height : window.innerHeight;
+
+      if (newLeft + newWidth > screenWidth) newWidth = screenWidth - newLeft;
+      if (newTop + newHeight > screenHeight) newHeight = screenHeight - newTop;
+      newLeft = Math.max(newLeft, 0); newTop = Math.max(newTop, 0);
+
+      if (window.electronAPI?.setBounds) {
+        window.electronAPI.setBounds(OVERLAY_NAME, {
+          x: Math.round(newLeft), y: Math.round(newTop),
+          width: Math.round(newWidth), height: Math.round(newHeight)
+        });
+      } else {
+        resizableOverlayWrapper.style.width = newWidth + 'px'; resizableOverlayWrapper.style.height = newHeight + 'px';
+        resizableOverlayWrapper.style.left = newLeft + 'px'; resizableOverlayWrapper.style.top = newTop + 'px';
+      }
+    }
+
+    overlayHeader.addEventListener('mousedown', (e) => {
+      // Só permite arrastar no modo de edição global e se o clique não for nos controles
+      if (!isCurrentlyInGlobalEditMode || e.target.closest('.controls')) return;
+      isDragging = true;
+      dragStartX = e.clientX; dragStartY = e.clientY;
+      const rect = resizableOverlayWrapper.getBoundingClientRect();
+      windowStartX = rect.left; windowStartY = rect.top;
+      document.body.style.cursor = 'grabbing';
+    });
+
+    function dragMove(e) {
+      if (!isDragging || !isCurrentlyInGlobalEditMode) return; // Só permite arrastar no modo de edição global
+      const deltaX = e.clientX - dragStartX, deltaY = e.clientY - dragStartY;
+
+      // Limites da tela
+      const screenWidth = window.electronAPI?.setBounds ? window.screen.width : window.innerWidth;
+      const screenHeight = window.electronAPI?.setBounds ? window.screen.height : window.innerHeight;
+
+      const maxX = screenWidth - resizableOverlayWrapper.offsetWidth;
+      const maxY = screenHeight - resizableOverlayWrapper.offsetHeight;
+      const newX = Math.min(Math.max(windowStartX + deltaX, 0), maxX);
+      const newY = Math.min(Math.max(windowStartY + deltaY, 0), maxY);
+
+      if (window.electronAPI?.setBounds) {
+        window.electronAPI.setBounds(OVERLAY_NAME, {
+          x: Math.round(newX), y: Math.round(newY),
+          width: Math.round(resizableOverlayWrapper.offsetWidth),
+          height: Math.round(resizableOverlayWrapper.offsetHeight)
+        });
+      } else {
+        resizableOverlayWrapper.style.left = newX + 'px'; resizableOverlayWrapper.style.top = newY + 'px';
+      }
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      if (isResizing) resize(e, resizeHandleType);
+      else if (isDragging) dragMove(e);
+    });
+
+    document.addEventListener('mouseup', () => {
+      isResizing = false; isDragging = false;
+      document.body.style.cursor = ''; // Restaura o cursor padrão
+    });
+
+    // Listener para atualização de bounds via Electron (se disponível)
+    if (window.electronAPI && window.electronAPI.onUpdateBounds) {
+        window.electronAPI.onUpdateBounds((bounds) => {
+            if (bounds && typeof bounds.x === 'number') {
+                resizableOverlayWrapper.style.left = `${bounds.x}px`;
+                resizableOverlayWrapper.style.top = `${bounds.y}px`;
+                resizableOverlayWrapper.style.width = `${bounds.width}px`;
+                resizableOverlayWrapper.style.height = `${bounds.height}px`;
+            }
+        });
+    }
+
+    // --- Listener para Modo de Edição Global ---
+    if (window.electronAPI && window.electronAPI.onEditMode) {
+      window.electronAPI.onEditMode((isGlobalEditModeActive) => {
+        console.log(`${OVERLAY_NAME} - Modo de Edição Global: ${isGlobalEditModeActive}`);
+        isCurrentlyInGlobalEditMode = isGlobalEditModeActive;
+        resizableOverlayWrapper.classList.toggle('global-edit-mode-active', isGlobalEditModeActive);
+        overlayHeader.style.cursor = isGlobalEditModeActive ? 'move' : 'default';
+        // Atualiza o estado visual dos botões de lock e click-through com base no modo global
+        updateVisualLockButtonState(!isGlobalEditModeActive);
+        updateVisualClickButtonState(!isGlobalEditModeActive);
+      });
+    }
+
+    // --- Lógica dos Botões de Controle ---
+    closeButton.onclick = () => window.electronAPI?.closeOverlay?.(OVERLAY_NAME);
+
+    gearButton.onclick = (e) => {
+      settingsPopover.style.display = settingsPopover.style.display === 'none' ? 'flex' : 'none'; // Use flex for column layout
+      // Posiciona o popover à direita do botão de engrenagem
+      settingsPopover.style.right = (window.innerWidth - e.target.getBoundingClientRect().right + 10) + 'px';
+    };
+    document.addEventListener('mousedown', (e) => {
+      if (settingsPopover.style.display === 'flex' && !settingsPopover.contains(e.target) && e.target !== gearButton) {
+        settingsPopover.style.display = 'none';
+      }
+    });
+
+    rangeOpacity.oninput = (e) => {
+      const opacity = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.opacity = opacity;
+      saveSetting('opacity', opacity);
+      if (window.electronAPI && window.electronAPI.setOpacity) {
+        window.electronAPI.setOpacity(OVERLAY_NAME, opacity);
+      }
+    };
+    rangeContrast.oninput = (e) => {
+      const contrast = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.filter = `contrast(${contrast * 100}%) brightness(${parseFloat(rangeBrightness.value) * 100}%)`;
+      saveSetting('contrast', contrast);
+    };
+    rangeBrightness.oninput = (e) => {
+      const brightness = parseFloat(e.target.value);
+      resizableOverlayWrapper.style.filter = `brightness(${brightness * 100}%) contrast(${parseFloat(rangeContrast.value) * 100}%)`;
+      saveSetting('brightness', brightness);
+    };
+
+
+    function updateVisualPinButtonState(isPinned) {
+        localPinned = isPinned;
+        pinButton.classList.toggle('active', isPinned);
+        pinButton.innerHTML = isPinned ? '📍' : '📌';
+    }
+    function updateVisualLockButtonState(isLocked) {
+        localLocked = isLocked;
+        lockButton.classList.toggle('active', isLocked);
+        lockButton.innerHTML = isLocked ? '🔓' : '🔒';
+        // Gerencia pointer-events do wrapper para travar/destravar cliques
+        resizableOverlayWrapper.style.pointerEvents = isLocked ? 'none' : 'auto';
+    }
+    function updateVisualClickButtonState(shouldIgnoreClicks) {
+        localIgnoreClicks = shouldIgnoreClicks;
+        clickButton.classList.toggle('active', shouldIgnoreClicks);
+        clickButton.innerHTML = shouldIgnoreClicks ? '🚫🖱️' : '🖱️';
+    }
+
+    pinButton.onclick = () => {
+      const preferredPinnedState = !localPinned;
+      saveSetting('pinned', preferredPinnedState);
+      updateVisualPinButtonState(preferredPinnedState);
+      window.electronAPI?.setAlwaysOnTop?.(OVERLAY_NAME, preferredPinnedState);
+    };
+
+    lockButton.onclick = () => {
+      const preferredLockedState = !localLocked;
+      saveSetting('locked', preferredLockedState);
+      updateVisualLockButtonState(preferredLockedState);
+      // Se a API Electron estiver disponível, usa a função toggleMovable
+      if (window.electronAPI && window.electronAPI.toggleMovable) {
+        window.electronAPI.toggleMovable(OVERLAY_NAME, !preferredLockedState); // Passa o oposto para movable
+      }
+      console.log(`${OVERLAY_NAME} - Preferência de Lock salva: ${preferredLockedState}. Estado real da janela é ditado pelo F6.`);
+    };
+
+    clickButton.onclick = () => {
+      const preferredIgnoreState = !localIgnoreClicks;
+      saveSetting('ignoreClicks', preferredIgnoreState);
+      updateVisualClickButtonState(preferredIgnoreState);
+      // Se a API Electron estiver disponível, usa a função setIgnoreMouseEvents
+      if (window.electronAPI && window.electronAPI.setIgnoreMouseEvents) {
+        window.electronAPI.setIgnoreMouseEvents(OVERLAY_NAME, preferredIgnoreState, { forward: true });
+      }
+      console.log(`${OVERLAY_NAME} - Preferência de IgnoreClicks salva: ${preferredIgnoreState}. Estado real da janela é ditado pelo F6.`);
+    };
+
+    // --- Salvar e Carregar Configurações ---
+    const SETTINGS_PREFIX = `settings-${OVERLAY_NAME}-`;
+    function saveSetting(key, value) {
+      try { localStorage.setItem(SETTINGS_PREFIX + key, JSON.stringify(value)); } catch (e) { console.error("Erro ao salvar setting:", e); }
+    }
+    function loadSetting(key, defaultValue) {
+      try { const value = localStorage.getItem(SETTINGS_PREFIX + key); return value === null ? defaultValue : JSON.parse(value); } catch (e) { console.error("Erro ao carregar setting:", e); return defaultValue; }
+    }
+
+    function loadAllSettings() {
+      const opacity = loadSetting('opacity', 1);
+      rangeOpacity.value = opacity;
+      resizableOverlayWrapper.style.opacity = opacity;
+      if (window.electronAPI && window.electronAPI.setOpacity) {
+        window.electronAPI.setOpacity(OVERLAY_NAME, opacity);
+      }
+
+      const contrast = loadSetting('contrast', 1);
+      const brightness = loadSetting('brightness', 1);
+      rangeContrast.value = contrast;
+      rangeBrightness.value = brightness;
+      resizableOverlayWrapper.style.filter = `contrast(${contrast * 100}%) brightness(${brightness * 100}%)`;
+
+
+      localPinned = loadSetting('pinned', false);
+      updateVisualPinButtonState(localPinned);
+      window.electronAPI?.setAlwaysOnTop?.(OVERLAY_NAME, localPinned);
+
+      updateVisualLockButtonState(loadSetting('locked', true));
+      updateVisualClickButtonState(loadSetting('ignoreClicks', true));
+
+      // Carrega a posição e tamanho da janela se estiver em Electron
+      if (window.electronAPI && window.electronAPI.getBounds) {
+          window.electronAPI.getBounds(OVERLAY_NAME).then(bounds => {
+              if (bounds && typeof bounds.x === 'number') {
+                  resizableOverlayWrapper.style.left = `${bounds.x}px`;
+                  resizableOverlayWrapper.style.top = `${bounds.y}px`;
+                  resizableOverlayWrapper.style.width = `${bounds.width}px`;
+                  resizableOverlayWrapper.style.height = `${bounds.height}px`;
+              }
+          }).catch(err => console.error("Erro ao carregar bounds:", err));
+      }
+
+      // Aplica o estado inicial de lock e ignoreClicks baseado nas preferências salvas
+      // e no modo de edição global (se ativo, desativa o lock e ignoreClicks)
+      if (!isCurrentlyInGlobalEditMode) {
+          updateVisualLockButtonState(localLocked);
+          updateVisualClickButtonState(localIgnoreClicks);
+          if (window.electronAPI && window.electronAPI.toggleMovable) {
+              window.electronAPI.toggleMovable(OVERLAY_NAME, !localLocked);
+          }
+          if (window.electronAPI && window.electronAPI.setIgnoreMouseEvents) {
+              window.electronAPI.setIgnoreMouseEvents(OVERLAY_NAME, localIgnoreClicks, { forward: true });
+          }
+      } else {
+          // No modo de edição global, a janela é sempre móvel e não ignora cliques
+          updateVisualLockButtonState(false); // Desbloqueia visualmente
+          updateVisualClickButtonState(false); // Não ignora cliques visualmente
+          if (window.electronAPI && window.electronAPI.toggleMovable) {
+              window.electronAPI.toggleMovable(OVERLAY_NAME, true);
+          }
+          if (window.electronAPI && window.electronAPI.setIgnoreMouseEvents) {
+              window.electronAPI.setIgnoreMouseEvents(OVERLAY_NAME, false, { forward: true });
+          }
+      }
+    }
+
+    // Funções utilitárias para classes de status e composto
+    function getTempBgClass(temp) {
+      if (temp < 70) return 'bg-temp-cold';
+      if (temp < 95) return 'bg-temp-ideal';
+      if (temp < 110) return 'bg-temp-warning';
+      return 'bg-temp-hot';
+    }
+
+    function getCompoundClass(compound) {
+      const s = (compound||'').toUpperCase(); // Ensure uppercase for consistent comparison
+      if (s.includes('SOFT'))   return 'border-soft';
+      if (s.includes('MED') )   return 'border-medium';
+      if (s.includes('HARD'))   return 'border-hard';
+      if (s.includes('WET')||s.includes('RAIN')||s.includes('CHUVA')) return 'border-wet';
+      return 'border-unknown';
+    }
+
+    // Mapeamento dos pneus aos índices de array
+    const tireMap = [
+      { id:'frt-esq', iRacingKey:'frontLeft' },
+      { id:'frt-dir', iRacingKey:'frontRight' },
+      { id:'trs-esq', iRacingKey:'rearLeft' },
+      { id:'trs-dir', iRacingKey:'rearRight' }
+    ];
+
+    const compoundsMap = {
+      'S': 'Soft',
+      'M': 'Medium',
+      'H': 'Hard',
+      'W': 'Wet',
+      'U': 'Unknown' // For any unexpected compound types
+    };
+
+    // Helper to get tire element by ID prefix
+    const getTireElement = (tireId, suffix) => document.getElementById(`${tireId}-${suffix}`);
+
+    /**
+     * Updates the UI for a single tire based on received data.
+     * @param {string} tireId - The ID prefix of the tire (e.g., 'frt-esq').
+     * @param {Object} tireData - Data object for the specific tire.
+     */
+    function updateTireUI(tireId, tireData) {
+      // Update wear percentages
+      getTireElement(tireId, 'wearL').textContent = `${(tireData.wear.left * 100).toFixed(1)}%`;
+      getTireElement(tireId, 'wearM').textContent = `${(tireData.wear.middle * 100).toFixed(1)}%`;
+      getTireElement(tireId, 'wearR').textContent = `${(tireData.wear.right * 100).toFixed(1)}%`;
+
+      // Update temperatures and apply color classes
+      const tempL_el = getTireElement(tireId, 'tempL');
+      const tempM_el = getTireElement(tireId, 'tempM');
+      const tempR_el = getTireElement(tireId, 'tempR');
+
+      tempL_el.textContent = `${tireData.temp.left.toFixed(0)}°C`;
+      tempM_el.textContent = `${tireData.temp.middle.toFixed(0)}°C`;
+      tempR_el.textContent = `${tireData.temp.right.toFixed(0)}°C`;
+
+      // Remove all previous background classes and apply new ones
+      [tempL_el, tempM_el, tempR_el].forEach(el => {
+        el.classList.remove('bg-temp-cold', 'bg-temp-ideal', 'bg-temp-warning', 'bg-temp-hot', 'bg-temp-default');
+      });
+
+      tempL_el.classList.add(getTempBgClass(tireData.temp.left));
+      tempM_el.classList.add(getTempBgClass(tireData.temp.middle));
+      tempR_el.classList.add(getTempBgClass(tireData.temp.right));
+
+      // Update final pressure
+      getTireElement(tireId, 'press').textContent = tireData.pressure.toFixed(1);
+
+      // Update compound indicator and tire container border
+      const compoundEl = getTireElement(tireId, 'compound');
+      const tireContainerEl = document.getElementById(tireId);
+
+      const compoundCode = tireData.compound;
+      compoundEl.textContent = compoundsMap[compoundCode] || compoundCode; // Display full name or code
+
+      // Remove all existing border classes
+      tireContainerEl.classList.remove('border-soft', 'border-medium', 'border-hard', 'border-wet', 'border-unknown');
+
+      // Add the new border class based on compound
+      tireContainerEl.classList.add(getCompoundClass(compoundCode));
+    }
+
+
+    const WS_URL = window.OVERLAY_WS_URL || "ws://localhost:5221/ws";
+    let ws;
+    function connectWebSocket() {
+        ws = new WebSocket(WS_URL);
+        ws.onopen = () => console.log(`${OVERLAY_NAME} - WS Conectado a ${WS_URL}`);
+
+        ws.onmessage = ({data}) => {
+            try {
+                const d = JSON.parse(data);
+
+                if (d.tires) {
+                    tireMap.forEach(({id, iRacingKey}) => {
+                        if (d.tires[iRacingKey]) {
+                            updateTireUI(id, d.tires[iRacingKey]);
+                        }
+                    });
+                }
+            } catch (err) {
+                 console.error(`${OVERLAY_NAME} - Erro ao processar mensagem WS: ${err.message}. Dados recebidos:`, data, "Objeto de erro:", err);
+            }
+        };
+
+        ws.onclose = (event) => {
+            console.log(`${OVERLAY_NAME} - WS Desconectado. Tentando reconectar... Evento de fechamento:`, event);
+            setTimeout(connectWebSocket, 3000);
+        };
+
+        ws.onerror = (event) => {
+            console.error(`${OVERLAY_NAME} - Falha na conexão WebSocket com ${WS_URL}. Verifique se o servidor WebSocket está em execução e acessível. Evento:`, event);
+            // O onclose será chamado após o onerror, então a reconexão será tentada lá.
+        };
+    }
+
+    // --- Inicialização ---
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAllSettings();
+      connectWebSocket();
+      if (!isCurrentlyInGlobalEditMode) {
+          resizableOverlayWrapper.classList.remove('global-edit-mode-active');
+          overlayHeader.style.cursor = 'default';
+          document.querySelectorAll('.resize-handle').forEach(h => h.style.display = 'none');
+          updateVisualLockButtonState(localLocked);
+          updateVisualClickButtonState(localIgnoreClicks);
+      }
+    });
+  </script>
+</body>
+</html>

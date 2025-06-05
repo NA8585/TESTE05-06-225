@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\SuperBackendNR85IA.props" />
+</Project>

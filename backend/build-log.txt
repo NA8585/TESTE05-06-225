@@ -1,0 +1,56 @@
+Compilação de 23/05/2025 23:46:41 iniciada.
+     1>Projeto "C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA.csproj" no nó 1 (Restore destino(s)).
+     1>_GetAllRestoreProjectPathItems:
+         Determinando os projetos a serem restaurados...
+       Restore:
+         A validação da cadeia de certificados X.509 usará o repositório de confiança padrão selecionado pelo .NET.
+         A validação da cadeia de certificados X.509 usará o repositório de confiança padrão selecionado pelo .NET.
+         O arquivo de ativos não foi alterado. Ignorando gravação de arquivo de ativos. Caminho: C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\project.assets.json
+         C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA.csproj restaurado (em 36 ms).
+         
+         Arquivos de configuração NuGet usados:
+             C:\Users\docto\AppData\Roaming\NuGet\NuGet.Config
+             C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config
+             C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config
+         
+         Feeds usados:
+             https://api.nuget.org/v3/index.json
+             C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\
+         Todos os projetos estão atualizados para restauração.
+     1>Projeto de compilação pronto "C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA.csproj" (Restore destino(s)).
+   1:7>Projeto "C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA.csproj" no nó 1 (destinos padrão).
+     1>GenerateTargetFrameworkMonikerAttribute:
+       Ignorando o destino "GenerateTargetFrameworkMonikerAttribute" porque todos os arquivos de saída estão atualizados em relação aos arquivos de entrada.
+       CoreGenerateAssemblyInfo:
+       Ignorando o destino "CoreGenerateAssemblyInfo" porque todos os arquivos de saída estão atualizados em relação aos arquivos de entrada.
+       _DiscoverMvcApplicationParts:
+       Ignorando o destino "_DiscoverMvcApplicationParts" porque todos os arquivos de saída estão atualizados em relação aos arquivos de entrada.
+       _GenerateSourceLinkFile:
+         O Link de Origem está vazio, o arquivo 'obj\Debug\net6.0-windows7.0\SuperBackendNR85IA.sourcelink.json' não existe.
+       CoreCompile:
+       Ignorando o destino "CoreCompile" porque todos os arquivos de saída estão atualizados em relação aos arquivos de entrada.
+       _CreateAppHost:
+       Ignorando o destino "_CreateAppHost" porque todos os arquivos de saída estão atualizados em relação aos arquivos de entrada.
+       _ProcessScopedCssFiles:
+       Ignorando o destino "_ProcessScopedCssFiles" porque ele não tem saídas.
+       _ProcessScopedCssFiles:
+       Ignorando o destino "_ProcessScopedCssFiles" porque ele não tem saídas.
+       ResolveBuildCompressedStaticWebAssetsConfiguration:
+         Resolved 0 compressed assets for 0 candidate assets.
+       _BuildCopyStaticWebAssetsPreserveNewest:
+       Ignorando o destino "_BuildCopyStaticWebAssetsPreserveNewest" porque ele não tem saídas.
+       _CopyOutOfDateSourceItemsToOutputDirectory:
+       Ignorando o destino "_CopyOutOfDateSourceItemsToOutputDirectory" porque todos os arquivos de saída estão atualizados em relação aos arquivos de entrada.
+       GenerateBuildDependencyFile:
+       Ignorando o destino "GenerateBuildDependencyFile" porque todos os arquivos de saída estão atualizados em relação aos arquivos de entrada.
+       GenerateBuildRuntimeConfigurationFiles:
+       Ignorando o destino "GenerateBuildRuntimeConfigurationFiles" porque todos os arquivos de saída estão atualizados em relação aos arquivos de entrada.
+       CopyFilesToOutputDirectory:
+         SuperBackendNR85IA -> C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\bin\Debug\net6.0-windows7.0\SuperBackendNR85IA.dll
+     1>Projeto de compilação pronto "C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\SuperBackendNR85IA.csproj" (destinos padrão).
+
+Compilação com êxito.
+    0 Aviso(s)
+    0 Erro(s)
+
+Tempo Decorrido 00:00:01.41

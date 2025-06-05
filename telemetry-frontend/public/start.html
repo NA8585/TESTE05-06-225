@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coaching NR85 IA - Página Inicial</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    body {
+      background-color: #0a0f23;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      border: 2px solid #1e3a8a;
+      padding: 30px;
+      border-radius: 1rem;
+      background-color: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(10px);
+      background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+      background-blend-mode: multiply;
+      box-shadow: 0 0 15px rgba(30, 58, 138, 0.3);
+      text-align: center;
+      max-width: 720px;
+      width: 100%;
+      animation: fadeIn 1.2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .logo {
+      font-size: 2.5rem;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo i {
+      animation: pulseIcon 1.5s infinite;
+    }
+    @keyframes pulseIcon {
+      0%, 100% { transform: scale(1); color: #ffffff; }
+      50% { transform: scale(1.2); color: #3b82f6; }
+    }
+    .gradient-text-nr85 {
+      background: linear-gradient(to right, #ff0000, #ffffff, #00ff00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gradient-text-ia {
+      background: linear-gradient(to right, #00ffff, #00bfff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+    }
+    .highlight-verse {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 0.8rem;
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.05);
+      writing-mode: vertical-rl;
+    }
+    .main-message {
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    .slogan {
+      font-size: 1.4rem;
+      color: #d4af37;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .triangle-inspiration {
+      display: grid;
+      grid-template-areas:
+        ". pai ."
+        "filho . alcorao";
+      gap: 20px;
+      justify-items: center;
+      margin-top: 20px;
+    }
+    .triangle-inspiration img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+    }
+    .triangle-inspiration div {
+      text-align: center;
+    }
+    .triangle-inspiration label {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.8rem;
+      color: #ffffff;
+    }
+    .triangle-inspiration label.fé {
+      color: #34d399;
+    }
+    .btn-iniciar {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #1e40af;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 9999px;
+      box-shadow: 0 0 10px rgba(30, 64, 175, 0.5);
+      cursor: pointer;
+    }
+    .btn-iniciar:hover {
+      transform: scale(1.05);
+    }
+    .quote-box {
+      margin-top: 30px;
+      padding: 15px 25px;
+      border-left: 4px solid #d4af37;
+      background-color: rgba(255, 255, 255, 0.03);
+      border-radius: 0.5rem;
+      max-width: 600px;
+      text-align: center;
+    }
+    .quote-text {
+      font-size: 1rem;
+      color: #fefcbf;
+      font-style: italic;
+      font-family: 'Orbitron', sans-serif;
+    }
+    .footer-message {
+      font-size: 0.9rem;
+      color: #d4af37;
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(212, 175, 55, 0.3);
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <div class="highlight-verse">﷽ بسم الله الرحمن الرحيم
+  </div>
+  <div class="container">
+    <div class="logo">
+      <i class="fas fa-headset"></i> Coaching <span class="gradient-text-nr85">NR85</span> <span class="gradient-text-ia">IA</span>
+    </div>
+    <div class="slogan">"Guiado pela fé, conduzido pela performance"</div>
+    <div class="main-message">
+      <p>Bem vindo ao Coaching NR85 IA.</p>
+      <p>Tenha um engenheiro pessoal ao seu lado, sempre que acelerar.</p>
+      <p>Nada na vida acontece por acaso. Tudo no tempo de Deus.</p>
+    </div>
+    <div class="triangle-inspiration">
+      <div style="grid-area: pai">
+        <img src="images/pai.jpg" alt="Pai">
+        <label>Inspiração</label>
+      </div>
+      <div style="grid-area: filho">
+        <img src="images/filho.jpg" alt="Filho">
+        <label>Motivação</label>
+      </div>
+      <div style="grid-area: alcorao">
+        <img src="images/alcorao.jpg" alt="Alcorão">
+        <label class="fé">Fé</label>
+      </div>
+    </div>
+    <button class="btn-iniciar" onclick="iniciar()">Começar</button>
+    <div class="quote-box">
+      <p class="quote-text">"A paciência é luz." — Profeta Muhammad ﷺ</p>
+    </div>
+  </div>
+  <div class="footer-message">
+    " Em nome de Deus, seja feita a vontade Dele."
+  </div>
+
+  <audio id="startSound" src="./assets/engine-start.mp3" preload="auto"></audio>
+  <script>
+     function iniciar() {
+      document.getElementById('startSound').play();
+      // Adiciona o chamado para criar a overlay
+      if (window.electronAPI) {
+        window.electronAPI.createOverlay('combined-overlay', {
+          file: 'combined-overlay.html', // Nome do arquivo HTML da sua overlay
+          width: 400, // Largura inicial da janela da overlay
+          height: 200, // Altura inicial da janela da overlay
+          x: 50, // Posição X inicial na tela
+          y: 50  // Posição Y inicial na tela
+        });
+      } else {
+        console.warn("electronAPI não disponível. Não foi possível criar a overlay.");
+      }
+      setTimeout(() => {
+        window.location.href = 'menu.html';
+      }, 600);
+    }
+  </script>
+</body>
+</html>

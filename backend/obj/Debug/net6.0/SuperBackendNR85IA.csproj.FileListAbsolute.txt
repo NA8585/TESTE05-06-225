@@ -1,0 +1,6 @@
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0\SuperBackendNR85IA.csproj.AssemblyReference.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0\SuperBackendNR85IA.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0\SuperBackendNR85IA.AssemblyInfoInputs.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0\SuperBackendNR85IA.AssemblyInfo.cs
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0\SuperBackendNR85IA.csproj.CoreCompileInputs.cache
+C:\Users\docto\SuperBackendNR85IA\SuperBackendNR85IA\obj\Debug\net6.0\SuperBackendNR85IA.MvcApplicationPartsAssemblyInfo.cache

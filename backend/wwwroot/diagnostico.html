@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Overlay iRacing - ALL DATA Diagnóstico + Alertas</title>
+  <style>
+    body { background: #161616; color: #eee; font-family: "Fira Mono", Consolas, monospace; margin: 0; padding: 20px;}
+    h1 { font-size: 2rem; margin-bottom: 6px; }
+    .ok { color: #0f0; font-weight: bold; }
+    .nok { color: #f55; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border-bottom: 1px solid #333; padding: 4px 8px; font-size: 1rem; }
+    th { background: #212121; color: #ffd700; }
+    td.null { color: #f55; font-weight:bold; }
+    .jsonbox { background: #111; color: #0fa; padding: 8px; font-size: 0.9rem; border-radius: 4px; margin-top: 12px; white-space: pre-wrap;}
+    .status { margin-bottom: 5px; }
+    button { background: #252525; color: #ffd700; border: none; padding: 6px 16px; border-radius: 8px; margin: 4px 0 8px 0; cursor: pointer; font-weight: bold;}
+    button:hover { background: #444; }
+    .campo { font-weight: bold; }
+    .small { font-size: 0.85em; opacity: 0.8;}
+    .alerta { background: #300; color: #ffd700; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; font-weight: bold; font-size: 1.1em;}
+    .alerta strong { color: #f55; }
+  </style>
+</head>
+<body>
+  <h1>Overlay iRacing: Diagnóstico Completo (ALL DATA)</h1>
+  <div class="status">Status: <span id="wsstatus" class="nok">Desconectado</span></div>
+  <div class="status">Recebendo dados: <span id="wsdata" class="nok">Não</span></div>
+  <div id="alerta-missing"></div>
+  <button id="toggle">Ver JSON Completo</button>
+  <div id="container"></div>
+  <div id="json" class="jsonbox" style="display:none"></div>
+  <script>
+    const WEBSOCKET_URL = "ws://localhost:5221/ws"; // ajuste se necessário
+
+    let lastData = {};
+    let wsConnected = false;
+    let ws = null;
+    let missingKeys = [];
+
+    function connectWS() {
+      ws = new WebSocket(WEBSOCKET_URL);
+      document.getElementById("wsstatus").textContent = "Conectando...";
+      ws.onopen = () => {
+        wsConnected = true;
+        document.getElementById("wsstatus").textContent = "Conectado";
+        document.getElementById("wsstatus").className = "ok";
+      };
+      ws.onclose = () => {
+        wsConnected = false;
+        document.getElementById("wsstatus").textContent = "Desconectado";
+        document.getElementById("wsstatus").className = "nok";
+        document.getElementById("wsdata").textContent = "Não";
+        document.getElementById("alerta-missing").innerHTML = "";
+        setTimeout(connectWS, 4000);
+      };
+      ws.onerror = () => ws.close();
+      ws.onmessage = evt => {
+        document.getElementById("wsdata").textContent = "Sim";
+        document.getElementById("wsdata").className = "ok";
+        let data;
+        try {
+          data = JSON.parse(evt.data);
+          lastData = data;
+          showMissing(data);
+          renderTable(data);
+        } catch (e) {
+          document.getElementById("container").textContent = "Erro ao processar dados recebidos.";
+        }
+      }
+    }
+
+    // Alerta para campos faltando
+    function showMissing(obj) {
+      missingKeys = [];
+      function checkMissing(obj, parentKey = "") {
+        if (typeof obj !== "object" || obj === null) {
+          if (obj === null || obj === undefined) missingKeys.push(parentKey);
+        } else if (Array.isArray(obj)) {
+          obj.forEach((v, i) => checkMissing(v, parentKey + `[${i}]`));
+        } else {
+          for (const k in obj) {
+            if (!obj.hasOwnProperty(k)) continue;
+            checkMissing(obj[k], parentKey ? parentKey + "." + k : k);
+          }
+        }
+      }
+      checkMissing(obj);
+      const alertaDiv = document.getElementById("alerta-missing");
+      if (missingKeys.length) {
+        alertaDiv.innerHTML =
+          `<div class="alerta">
+            <strong>Atenção:</strong> ${missingKeys.length} variáveis não estão sendo adquiridas ou estão nulas!<br>
+            <span class="small">Campos: ${missingKeys.slice(0,15).join(", ")}${missingKeys.length>15?", ...":""}</span>
+          </div>`;
+      } else {
+        alertaDiv.innerHTML = "";
+      }
+    }
+
+    function renderTable(obj, parentKey = "", depth = 0) {
+      let rows = `<table><tr><th>Campo</th><th>Valor</th></tr>`;
+      function process(obj, parentKey, depth) {
+        if (typeof obj !== "object" || obj === null) {
+          let val = obj === null || obj === undefined ? "<span class='null'>null</span>" : obj;
+          let key = parentKey;
+          rows += `<tr><td class="campo">${key}</td><td class="${obj === null ? 'null' : ''}">${val}</td></tr>`;
+        } else if (Array.isArray(obj)) {
+          obj.forEach((v, i) => process(v, parentKey + `[${i}]`, depth + 1));
+        } else {
+          for (const k in obj) {
+            if (!obj.hasOwnProperty(k)) continue;
+            process(obj[k], parentKey ? parentKey + "." + k : k, depth + 1);
+          }
+        }
+      }
+      process(obj, parentKey, depth);
+      rows += "</table>";
+      document.getElementById("container").innerHTML = rows;
+    }
+
+    document.getElementById("toggle").onclick = function() {
+      let box = document.getElementById("json");
+      if (box.style.display === "none") {
+        box.style.display = "block";
+        document.getElementById("toggle").textContent = "Ver Tabela Detalhada";
+        box.textContent = JSON.stringify(lastData, null, 2);
+      } else {
+        box.style.display = "none";
+        document.getElementById("toggle").textContent = "Ver JSON Completo";
+      }
+    };
+
+    connectWS();
+  </script>
+</body>
+</html>

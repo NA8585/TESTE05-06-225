@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Menu – NR85 IA</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
+  <style>
+   :root {
+      --bg: #0f172a; --side: #1e293b; --txt: #cbd5e1; --primary: #3b82f6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, Roboto, Helvetica, Arial, sans-serif; }
+    body { display: flex; height: 100vh; background: var(--bg); color: var(--txt); }
+    .sidebar {
+      width: 170px; background: var(--side); padding: 6px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .sidebar button {
+      all: unset; display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 6px 8px; cursor: pointer;
+      background: #233047; border-radius: 4px; font-size: .85rem; color: var(--txt);
+    }
+    .sidebar button:hover { background: var(--primary); }
+    main { flex: 1; padding: 18px; }
+  </style>
+ </head>
+ <body>
+  <nav class="sidebar">
+   <button onclick="abrir('overlay-testefinal.html','testefinal')"><i class="fas fa-list"></i> Teste Final</button>
+   <button onclick="abrir('overlay-standings.html','standings')"><i class="fas fa-trophy"></i> Standings</button>
+   <button onclick="abrir('overlay-inputs.html','inputs')"><i class="fas fa-sliders-h"></i> Inputs</button>
+   <button onclick="abrir('overlay-calculadora.html','calculadora')"><i class="fas fa-gas-pump"></i> Calculadora</button>
+   <button onclick="abrir('overlay-delta.html','delta')"><i class="fas fa-stopwatch"></i> Delta</button>
+   <button onclick="abrir('overlay-tanque.html','tanque')"><i class="fas fa-tachometer-alt"></i> Tanque</button>
+   <button onclick="abrir('overlay-tiresandbrakes.html','tiresandbrakes')"><i class="fas fa-car"></i> Pneus & Freios</button>
+   <button onclick="abrir('overlay-tiresgarage.html','tiresgarage')"><i class="fas fa-warehouse"></i> Pneus Garagem</button>
+   <button onclick="abrir('overlay-relative.html','relative')"><i class="fas fa-ruler-combined"></i> Relative</button>
+   <button onclick="abrir('overlay-sessao.html','sessao')"><i class="fas fa-clock"></i> Sessão</button>
+   <button onclick="fecharTodas()"><i class="fas fa-xmark"></i> Fechar Todas</button>
+  </nav>
+  <main id="placeholder">
+   <h2>Selecione uma overlay à esquerda</h2>
+  </main>
+  <script>
+    const { createOverlay, focusOverlay, isDestroyed } = window.electron ?? {};
+    const overlays = new Map();
+
+    function abrir(file, name) {
+      if (!file.endsWith('.html')) file += '.html';
+      const existing = overlays.get(name);
+      if (existing && !existing.isDestroyed()) {
+        focusOverlay?.(name);
+        return;
+      }
+      createOverlay?.(name, { file });
+      overlays.set(name, { isDestroyed: () => false });
+    }
+
+    function fecharTodas() {
+      for (const [name] of overlays) {
+        window.electron?.createOverlay?.(name, { file: '__close__' });
+      }
+    }
+  </script>
+ </body>
+</html>
