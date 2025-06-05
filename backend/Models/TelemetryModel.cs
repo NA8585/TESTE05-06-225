@@ -204,6 +204,7 @@ namespace SuperBackendNR85IA.Models
         // Valores calculados
         public float FuelUsePerLapCalc { get; set; }
         public float EstLapTimeCalc { get; set; }
+        public float ConsumoVoltaAtual { get; set; }
         public int LapsRemaining { get; set; }
         public float ConsumoMedio { get; set; }
         public float VoltasRestantesMedio { get; set; }

@@ -622,11 +622,12 @@
         }
 
 
-        // Consumo por Volta (instantâneo/recente do SDK)
-        const fuelLap = model.fuelUsePerLap ?? model.fuelPerLap ??
+        // Consumo da volta atual
+        const fuelLap = model.consumoVoltaAtual ?? model.ConsumoVoltaAtual ??
+                        model.fuelUsePerLap ?? model.fuelPerLap ??
                         model.FuelUsePerLap ?? model.FuelPerLap ??
                         model.fuelUsePerLapCalc ?? model.FuelUsePerLapCalc ?? 0;
-        consumoPorVoltaValor.textContent = `${fuelLap.toFixed(2)}L`; // fuelUsePerLap
+        consumoPorVoltaValor.textContent = `${fuelLap.toFixed(2)}L`;
 
         // Voltas Restantes (com base no consumo atual/instantâneo)
         voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? model.LapsRemaining ?? 0); // lapsRemaining

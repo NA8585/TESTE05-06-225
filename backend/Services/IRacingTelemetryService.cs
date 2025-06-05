@@ -533,13 +533,18 @@ namespace SuperBackendNR85IA.Services
                 t.FuelUsePerLapCalc = t.FuelUsePerLap;
                 t.EstLapTimeCalc    = t.EstLapTime;
 
+                t.ConsumoVoltaAtual = t.FuelUsePerLap;
+
                 double lapsLeftWithCurrentFuel = TelemetryCalculations.GetFuelLapsLeft(
                     t.FuelLevel,
-                    t.FuelUsePerLap
+                    t.ConsumoVoltaAtual
                 );
                 t.LapsRemaining = (int)Math.Floor(lapsLeftWithCurrentFuel);
 
-                t.ConsumoMedio = (t.Lap > 0 && t.FuelUsedTotal > 0) ? (t.FuelUsedTotal / t.Lap) : 0;
+                float lapsEfetivos = (t.Lap > 0) ? ((t.Lap - 1) + t.LapDistPct) : t.LapDistPct;
+                t.ConsumoMedio = (lapsEfetivos > 0 && t.FuelUsedTotal > 0)
+                    ? (t.FuelUsedTotal / lapsEfetivos)
+                    : 0;
                 t.VoltasRestantesMedio = (t.ConsumoMedio > 0) ? (t.FuelLevel / t.ConsumoMedio) : 0;
 
                 if (t.TotalLaps > 0)
@@ -554,12 +559,12 @@ namespace SuperBackendNR85IA.Services
                         : 0;
                 }
 
-                float fuelNeededForRaceLaps = (t.LapsRemainingRace > 0 && t.FuelUsePerLap > 0)
-                    ? (t.LapsRemainingRace * t.FuelUsePerLap) : 0;
-                t.NecessarioFim = Math.Max(0, fuelNeededForRaceLaps - t.FuelLevel);
+                float fuelNeededForRaceLaps = (t.LapsRemainingRace > 0 && t.ConsumoMedio > 0)
+                    ? (t.LapsRemainingRace * t.ConsumoMedio) : 0;
+                t.NecessarioFim = fuelNeededForRaceLaps;
 
-                float safetyMarginLiters = (t.FuelUsePerLap > 0) ? (t.FuelUsePerLap * 2) : 1.0f;
-                t.RecomendacaoAbastecimento = Math.Max(0, t.NecessarioFim + safetyMarginLiters);
+                float faltante = fuelNeededForRaceLaps - t.FuelLevel;
+                t.RecomendacaoAbastecimento = Math.Max(0, faltante);
 
                 t.FuelRemaining = t.FuelLevel;
                 t.FuelEta       = t.LapsRemaining * t.EstLapTime;
