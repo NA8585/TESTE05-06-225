@@ -24,6 +24,13 @@ namespace SuperBackendNR85IA.Services
         private (DriverInfo? Drv, WeekendInfo? Wkd, SessionInfo? Ses,SectorInfo Sec) _cachedYamlData;
         private int _lastTick = -1;
 
+        // Campos para cálculo de consumo atual/médio
+        private float? _fuelAtLapStart;
+        private int _lapAtFuelStart = -1;
+        private float _lastLapConsumption = 0f;
+        private float _consumoTotal = 0f;
+        private int _voltasCompletas = 0;
+
         public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
         {
             _log = log;
@@ -213,6 +220,25 @@ namespace SuperBackendNR85IA.Services
             t.LapDeltaToSessionBestLap    = GetSdkValue<float>(d, "LapDeltaToSessionBestLap") ?? 0f;
             t.LapDeltaToSessionOptimalLap = GetSdkValue<float>(d, "LapDeltaToSessionOptimalLap") ?? 0f;
             t.LapDeltaToDriverBestLap     = GetSdkValue<float>(d, "LapDeltaToPlayerBestLap") ?? 0f;
+
+            // Controle de consumo por volta
+            if (_fuelAtLapStart == null)
+            {
+                _fuelAtLapStart = t.FuelLevel;
+                _lapAtFuelStart = t.Lap;
+            }
+            if (t.Lap > _lapAtFuelStart)
+            {
+                float diff = _fuelAtLapStart.Value - t.FuelLevel;
+                if (diff < 0f) diff = 0f; // evita valores negativos (reabastecimento)
+                int lapsPassed = t.Lap - _lapAtFuelStart;
+                float perLap = lapsPassed > 0 ? diff / lapsPassed : diff;
+                _lastLapConsumption = perLap;
+                _consumoTotal += perLap * lapsPassed;
+                _voltasCompletas += lapsPassed;
+                _fuelAtLapStart = t.FuelLevel;
+                _lapAtFuelStart = t.Lap;
+            }
 
             // ─────────────────────────────────────────────────────────────────────────
             // Coleta de SETORES (arrays prontas do SDK)
@@ -533,7 +559,7 @@ namespace SuperBackendNR85IA.Services
                 t.FuelUsePerLapCalc = t.FuelUsePerLap;
                 t.EstLapTimeCalc    = t.EstLapTime;
 
-                t.ConsumoVoltaAtual = t.FuelUsePerLap;
+                t.ConsumoVoltaAtual = _lastLapConsumption;
 
                 double lapsLeftWithCurrentFuel = TelemetryCalculations.GetFuelLapsLeft(
                     t.FuelLevel,
@@ -541,10 +567,8 @@ namespace SuperBackendNR85IA.Services
                 );
                 t.LapsRemaining = (int)Math.Floor(lapsLeftWithCurrentFuel);
 
+                t.ConsumoMedio = _voltasCompletas > 0 ? (_consumoTotal / _voltasCompletas) : 0f;
                 float lapsEfetivos = (t.Lap > 0) ? ((t.Lap - 1) + t.LapDistPct) : t.LapDistPct;
-                t.ConsumoMedio = (lapsEfetivos > 0 && t.FuelUsedTotal > 0)
-                    ? (t.FuelUsedTotal / lapsEfetivos)
-                    : 0;
                 t.VoltasRestantesMedio = (t.ConsumoMedio > 0) ? (t.FuelLevel / t.ConsumoMedio) : 0;
 
                 if (t.TotalLaps > 0)
