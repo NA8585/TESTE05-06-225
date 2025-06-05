@@ -15,6 +15,7 @@ namespace SuperBackendNR85IA.Services
     {
         public int SectorCount { get; set; }
         public float[] SectorTimes { get; set; } = Array.Empty<float>();
+        public float[] BestSectorTimes { get; set; } = Array.Empty<float>();
     }
 
     public class SessionYamlParser
@@ -85,12 +86,15 @@ namespace SuperBackendNR85IA.Services
                 TrackLengthKm    = trackLengthKm,
                 TrackConfigName  = GetStr(wNode, "TrackConfigName"),
                 SessionType      = GetStr(wNode, "SessionType"),
-                Skies            = GetStr(wNode, "Skies"),    
+                Skies            = GetStr(wNode, "Skies"),
                 WindSpeed        = GetFloatFromSpecialFormat(wNode, "WindSpeed"), // Ex: "12 kph"
                 AirPressure      = GetFloatFromSpecialFormat(wNode, "AirPressure"), // Ex: "29.00 Hg" ou "101.2 kPa"
                 RelativeHumidity = GetFloatFromSpecialFormat(wNode, "RelativeHumidity"), // Ex: "50.0 %"
                 ChanceOfRain     = GetFloatFromSpecialFormat(wNode, "ChanceOfRain"),     // Ex: "0.0 %"
-                ForecastType     = GetStr(wNode, "ForecastType")
+                ForecastType     = GetStr(wNode, "ForecastType"),
+                TrackWindVel     = GetFloatFromSpecialFormat(wNode, "WindVel"),
+                TrackAirTemp     = GetFloatFromSpecialFormat(wNode, "AirTemp"),
+                TrackNumTurns    = GetStr(wNode, "TrackNumTurns")
             };
         }
 
@@ -158,8 +162,9 @@ namespace SuperBackendNR85IA.Services
 
             return new SectorInfo
             {
-                SectorCount = GetInt(sessionData, "SectorCount"),
-                SectorTimes = GetFloatArray(sessionData, "SectorTimes")
+                SectorCount    = GetInt(sessionData, "SectorCount"),
+                SectorTimes    = GetFloatArray(sessionData, "SectorTimes"),
+                BestSectorTimes = GetFloatArray(sessionData, "BestSectorTimes")
             };
         }
 
