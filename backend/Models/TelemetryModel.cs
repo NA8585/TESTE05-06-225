@@ -235,7 +235,7 @@ namespace SuperBackendNR85IA.Models
         public float RelativeHumidity { get; set; }
         public float ChanceOfRain { get; set; }
         public int IncidentLimit { get; set; }
-	    public float TrackAirTemp {get; set;}
+        public float TrackAirTemp { get; set; }
         public string SessionInfoYaml { get; set; } = string.Empty;
         
         // ─────────────────────────────────────────────────────────────────────────

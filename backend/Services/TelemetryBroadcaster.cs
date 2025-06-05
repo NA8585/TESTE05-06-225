@@ -7,7 +7,6 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SuperBackendNR85IA.Models;              // Para TelemetryModel
 
 namespace SuperBackendNR85IA.Services
 {
@@ -78,7 +77,7 @@ namespace SuperBackendNR85IA.Services
             webSocket.Dispose();
         }
 
-        public async Task BroadcastTelemetry(TelemetryModel telemetryData)
+        public async Task BroadcastTelemetry(object telemetryData)
         {
             if (telemetryData == null || !_clients.Any())
                 return;
