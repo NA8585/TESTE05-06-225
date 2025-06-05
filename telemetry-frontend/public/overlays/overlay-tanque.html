@@ -638,11 +638,12 @@
 
         // Status do Combustível
         const status = model.fuelStatus ?? model.FuelStatus ?? {}; // fuelStatus
-        statusValor.textContent = status.text || '--';
+        statusValor.textContent = status.text ?? status.Text ?? '--';
         // Remove todas as classes de status antes de adicionar a nova
         statusValor.className = 'text-lg font-bold'; // Reseta para classes base
-        if (status.class) {
-            statusValor.classList.add(status.class);
+        const statusClass = status.class ?? status.Class;
+        if (statusClass) {
+            statusValor.classList.add(statusClass);
         } else {
             statusValor.classList.add('status-ok'); // Fallback
         }
