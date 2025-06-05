@@ -1,3 +1,5 @@
+using System;
+
 namespace SuperBackendNR85IA.Models
 {
     public class SectorInfo

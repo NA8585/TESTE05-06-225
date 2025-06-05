@@ -73,5 +73,20 @@ namespace SuperBackendNR85IA.Services
             if ((warnings & 0x40) != 0) lst.Add("OilTemp");
             return lst;
         }
+
+        // Novo: interpreta o enum CarIdxTrackSurface / TrkLoc
+        public static string TranslateTrackSurface(int surface) =>
+            surface switch
+            {
+                0 => "OffTrack",
+                1 => "InPitStall",
+                2 => "ApproachingPits",
+                3 => "OnTrack",
+                4 => "NotInWorld",
+                5 => "InGarage",
+                6 => "ApproachingGrid",
+                7 => "OnGrid",
+                _ => "Unknown",
+            };
     }
 }

@@ -280,8 +280,13 @@ namespace SuperBackendNR85IA.Services
             // Distância Relativa (frente / trás)
             // ─────────────────────────────────────────────────────────────────────────
 
-            var lapPctArr = GetSdkArray<float>(d, "CarIdxLapDistPct")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
-            var posArr    = GetSdkArray<int>(d, "CarIdxPosition")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
+            var lapPctArr        = GetSdkArray<float>(d, "CarIdxLapDistPct")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
+            var posArr           = GetSdkArray<int>(d, "CarIdxPosition")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
+            var lapArr           = GetSdkArray<int>(d, "CarIdxLap")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
+            var onPitArr         = GetSdkArray<bool>(d, "CarIdxOnPitRoad")?.Select(v => v ?? false).ToArray() ?? Array.Empty<bool>();
+            var trackSurfaceArr  = GetSdkArray<int>(d, "CarIdxTrackSurface")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
+            var lastLapArr       = GetSdkArray<float>(d, "CarIdxLastLapTime")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
+            var f2TimeArr        = GetSdkArray<float>(d, "CarIdxF2Time")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
             int myIdx     = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
 
             if (myIdx >= 0 && myIdx < lapPctArr.Length && lapPctArr.Length == posArr.Length)
@@ -307,8 +312,13 @@ namespace SuperBackendNR85IA.Services
                 t.DistanceAhead  = float.IsInfinity(bestA)  ? -1f : bestA  * trackKm * 1000f;
                 t.DistanceBehind = float.IsInfinity(bestB) ? -1f : bestB * trackKm * 1000f;
 
-                t.CarIdxLapDistPct = lapPctArr;
-                t.CarIdxPosition   = posArr;
+                t.CarIdxLapDistPct  = lapPctArr;
+                t.CarIdxPosition    = posArr;
+                t.CarIdxLap         = lapArr;
+                t.CarIdxOnPitRoad   = onPitArr;
+                t.CarIdxTrackSurface= trackSurfaceArr;
+                t.CarIdxLastLapTime = lastLapArr;
+                t.CarIdxF2Time      = f2TimeArr;
             }
             else
             {
@@ -316,6 +326,11 @@ namespace SuperBackendNR85IA.Services
                 t.DistanceBehind   = -1f;
                 t.CarIdxLapDistPct = Array.Empty<float>();
                 t.CarIdxPosition   = Array.Empty<int>();
+                t.CarIdxLap        = Array.Empty<int>();
+                t.CarIdxOnPitRoad  = Array.Empty<bool>();
+                t.CarIdxTrackSurface= Array.Empty<int>();
+                t.CarIdxLastLapTime= Array.Empty<float>();
+                t.CarIdxF2Time     = Array.Empty<float>();
             }
 
             // --- Sessão ---
