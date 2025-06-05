@@ -68,10 +68,16 @@ namespace SuperBackendNR85IA.Calculations
             {"Best", best ?? 0}
         };
 
-        public static List<double> CalculateSectorTimes(List<double> sessionTimes, List<double> lapDistPct)
+        public static List<double> CalculateSectorTimes(List<double> sessionTimes, List<double> lapDistPct, int sectorCount = 3)
         {
-            List<double> sectorTimes = new List<double>();
-            double[] sectorLimits = { 0.33, 0.66, 1.0 };
+            var sectorTimes = new List<double>();
+
+            if (sectorCount <= 0 || sessionTimes.Count == 0 || lapDistPct.Count == 0)
+                return sectorTimes;
+
+            // limites proporcionais ao número de setores
+            var sectorLimits = Enumerable.Range(1, sectorCount).Select(i => (double)i / sectorCount).ToArray();
+
             int sectorIdx = 0;
             double lastTime = sessionTimes.FirstOrDefault();
 
@@ -88,6 +94,7 @@ namespace SuperBackendNR85IA.Calculations
                     sectorIdx++;
                 }
             }
+
             return sectorTimes;
         }
 
@@ -158,5 +165,37 @@ namespace SuperBackendNR85IA.Calculations
                 default: return sessionTypeRaw ?? "Desconhecido";
             }
         }
+
+        // --- NOVOS CÁLCULOS ---
+
+        // Consumo instantâneo de combustível (L/volta) baseado em dois pontos consecutivos do raw
+        public static float CalcularConsumoInstantaneo(float fuelAnterior, float fuelAtual, float lapPctAnterior, float lapPctAtual)
+        {
+            float deltaPct = lapPctAtual - lapPctAnterior;
+            if (deltaPct < 0) deltaPct += 1f;
+            if (deltaPct <= 0) return 0f;
+
+            float gasto = fuelAnterior - fuelAtual;
+            return gasto > 0 ? gasto / deltaPct : 0f;
+        }
+
+        // Consumo médio de combustível baseado no total usado e voltas completadas
+        public static float CalcularConsumoMedio(float fuelUsadoTotal, int voltasCompletas)
+            => (voltasCompletas > 0 && fuelUsadoTotal > 0) ? fuelUsadoTotal / voltasCompletas : 0f;
+
+        // Previsão de voltas restantes com base no combustível atual e consumo médio
+        public static float PreverVoltasRestantes(float fuelLevel, float consumoMedio)
+            => consumoMedio > 0 ? fuelLevel / consumoMedio : 0f;
+
+        // Cálculo de desgaste médio dos pneus (0-100%)
+        public static float CalcularDesgasteMedio(params float[] desgaste)
+        {
+            var validos = desgaste?.Where(v => v > 0).ToList() ?? new List<float>();
+            return validos.Count > 0 ? 100f - validos.Average() : 0f;
+        }
+
+        // Duração total prevista da sessão (tempo já transcorrido + restante)
+        public static double CalcularDuracaoSessao(double tempoAtual, double tempoRestante)
+            => tempoAtual + tempoRestante;
     }
 }
