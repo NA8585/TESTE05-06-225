@@ -584,10 +584,11 @@
     const necessarioFimValor       = document.getElementById('necessarioFimValor');
     const statusValor              = document.getElementById('statusValor');
     const recomendacaoAbastecimento= document.getElementById('recomendacaoAbastecimentoValor');
-    const capacidadeTotalTanque    = 80; // Valor fixo da sua overlay original
+    let capacidadeTotalTanque    = 80; // Valor padrão caso backend não envie
 
     function updateFuelCalculator(data) {
-      const atual = data.tanqueAtual ?? 0;
+      capacidadeTotalTanque = data.fuelCapacity ?? data.FuelCapacity ?? capacidadeTotalTanque;
+      const atual = data.tanqueAtual ?? data.fuelLevel ?? 0;
       tanqueAtualValor.textContent = `${atual.toFixed(1)}L`;
       const pct = Math.max(0, Math.min(100, (atual / capacidadeTotalTanque) * 100));
       barraTanque.style.width = `${pct}%`;

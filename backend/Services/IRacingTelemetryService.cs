@@ -188,6 +188,7 @@ namespace SuperBackendNR85IA.Services
             t.Gear                = GetSdkValue<int>(d, "Gear") ?? 0;
             t.FuelLevel           = GetSdkValue<float>(d, "FuelLevel") ?? 0f;
             t.FuelLevelPct        = GetSdkValue<float>(d, "FuelLevelPct") ?? 0f;
+            t.FuelCapacity        = t.FuelLevelPct > 0f ? t.FuelLevel / t.FuelLevelPct : 0f;
             t.WaterTemp           = GetSdkValue<float>(d, "WaterTemp") ?? 0f;
             t.OilTemp             = GetSdkValue<float>(d, "OilTemp") ?? 0f;
             t.OilPress            = GetSdkValue<float>(d, "OilPress") ?? 0f;

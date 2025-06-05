@@ -601,9 +601,10 @@
     const necessarioFimValor       = document.getElementById('necessarioFimValor');
     const statusValor              = document.getElementById('statusValor');
     const recomendacaoAbastecimentoValor = document.getElementById('recomendacaoAbastecimentoValor'); // Corrigido o ID
-    const capacidadeTotalTanque    = 80; // Exemplo, idealmente viria do YAML ou config
+    let capacidadeTotalTanque    = 80; // valor padrão caso backend não envie
 
     function updateFuelCalculator(model) {
+        capacidadeTotalTanque = model.fuelCapacity ?? model.FuelCapacity ?? capacidadeTotalTanque;
         // Tanque Atual e Barra
         const atual = model.fuelLevel ?? model.FuelLevel ?? 0; // camelCase ou PascalCase
         tanqueAtualValor.textContent = `${atual.toFixed(1)}L`;
