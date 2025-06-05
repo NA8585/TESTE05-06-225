@@ -605,7 +605,7 @@
 
     function updateFuelCalculator(model) {
         // Tanque Atual e Barra
-        const atual = model.fuelLevel ?? 0; // Nome da propriedade no backend é fuelLevel (camelCase no JSON)
+        const atual = model.fuelLevel ?? model.FuelLevel ?? 0; // camelCase ou PascalCase
         tanqueAtualValor.textContent = `${atual.toFixed(1)}L`;
         const pct = Math.max(0, Math.min(100, (atual / capacidadeTotalTanque) * 100));
         barraTanque.style.width = `${pct}%`;
@@ -622,33 +622,37 @@
 
 
         // Consumo por Volta (instantâneo/recente do SDK)
-        consumoPorVoltaValor.textContent = `${(model.fuelUsePerLap ?? 0).toFixed(2)}L`; // fuelUsePerLap
+        const fuelLap = model.fuelUsePerLap ?? model.fuelPerLap ??
+                        model.FuelUsePerLap ?? model.FuelPerLap ??
+                        model.fuelUsePerLapCalc ?? model.FuelUsePerLapCalc ?? 0;
+        consumoPorVoltaValor.textContent = `${fuelLap.toFixed(2)}L`; // fuelUsePerLap
 
         // Voltas Restantes (com base no consumo atual/instantâneo)
-        voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? 0); // lapsRemaining
+        voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? model.LapsRemaining ?? 0); // lapsRemaining
 
         // Consumo Médio
-        consumoMedioValor.textContent = `${(model.consumoMedio ?? 0).toFixed(2)}L`; // consumoMedio
+        consumoMedioValor.textContent = `${(model.consumoMedio ?? model.ConsumoMedio ?? 0).toFixed(2)}L`; // consumoMedio
 
         // Voltas Restantes (com base no consumo médio)
-        voltasRestantesMedioValor.textContent = Math.floor(model.voltasRestantesMedio ?? 0); // voltasRestantesMedio
+        voltasRestantesMedioValor.textContent = Math.floor(model.voltasRestantesMedio ?? model.VoltasRestantesMedio ?? 0); // voltasRestantesMedio
 
         // Necessário para o Fim
-        necessarioFimValor.textContent = `${(model.necessarioFim ?? 0).toFixed(1)}L`; // necessarioFim
+        necessarioFimValor.textContent = `${(model.necessarioFim ?? model.NecessarioFim ?? 0).toFixed(1)}L`; // necessarioFim
 
         // Status do Combustível
-        const status = model.fuelStatus ?? {}; // fuelStatus
-        statusValor.textContent = status.text || '--';
+        const status = model.fuelStatus ?? model.FuelStatus ?? {}; // fuelStatus
+        statusValor.textContent = status.text ?? status.Text ?? '--';
         // Remove todas as classes de status antes de adicionar a nova
         statusValor.className = 'text-lg font-bold'; // Reseta para classes base
-        if (status.class) {
-            statusValor.classList.add(status.class);
+        const statusClass = status.class ?? status.Class;
+        if (statusClass) {
+            statusValor.classList.add(statusClass);
         } else {
             statusValor.classList.add('status-ok'); // Fallback
         }
 
         // Recomendação de Abastecimento
-        const rec = model.recomendacaoAbastecimento ?? 0; // recomendacaoAbastecimento
+        const rec = model.recomendacaoAbastecimento ?? model.RecomendacaoAbastecimento ?? 0; // recomendacaoAbastecimento
         recomendacaoAbastecimentoValor.textContent = `${rec >= 0 ? '+' : ''}${rec.toFixed(1)}L`;
         recomendacaoAbastecimentoValor.className = `text-lg font-bold ${rec > 0 ? 'text-blue-500' : 'text-green-600'}`;
     }
