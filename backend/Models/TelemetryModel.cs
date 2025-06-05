@@ -80,6 +80,11 @@ namespace SuperBackendNR85IA.Models
         // ─────────────────────────────────────────────────────────────────────────
         public float[] CarIdxLapDistPct { get; set; } = Array.Empty<float>();
         public int[] CarIdxPosition { get; set; } = Array.Empty<int>();
+        public int[] CarIdxLap { get; set; } = Array.Empty<int>();
+        public bool[] CarIdxOnPitRoad { get; set; } = Array.Empty<bool>();
+        public int[] CarIdxTrackSurface { get; set; } = Array.Empty<int>();
+        public float[] CarIdxLastLapTime { get; set; } = Array.Empty<float>();
+        public float[] CarIdxF2Time { get; set; } = Array.Empty<float>();
         public float DistanceAhead { get; set; }  // em metros (ou -1 se não houver)
         public float DistanceBehind { get; set; }  // em metros (ou -1 se não houver)
 
