@@ -15,7 +15,7 @@ namespace SuperBackendNR85IA.Calculations
                 model.FuelUsePerLap
             );
 
-            model.ConsumoVoltaAtual = model.FuelUsePerLap;
+            model.ConsumoVoltaAtual = model.FuelLevelLapStart - model.FuelLevel;
 
             model.LapsRemaining = (int)TelemetryCalculations.GetFuelLapsLeft(model.FuelLevel, model.ConsumoVoltaAtual);
 
