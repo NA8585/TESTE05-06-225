@@ -543,6 +543,18 @@ namespace SuperBackendNR85IA.Services
                 t.EstLapTimeCalc    = t.EstLapTime;
 
                 t.ConsumoVoltaAtual = _fuelAtLapStart - t.FuelLevel;
+                if (t.ConsumoVoltaAtual <= 0)
+                {
+                    float[] opts = { t.FuelUsePerLap, t.FuelPerLap, t.FuelUsePerLapCalc };
+                    foreach (var opt in opts)
+                    {
+                        if (opt > 0)
+                        {
+                            t.ConsumoVoltaAtual = opt;
+                            break;
+                        }
+                    }
+                }
 
                 double lapsLeftWithCurrentFuel = TelemetryCalculations.GetFuelLapsLeft(
                     t.FuelLevel,
