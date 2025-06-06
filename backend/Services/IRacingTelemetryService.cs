@@ -23,6 +23,8 @@ namespace SuperBackendNR85IA.Services
         private string _lastYaml = string.Empty;
         private (DriverInfo? Drv, WeekendInfo? Wkd, SessionInfo? Ses,SectorInfo Sec) _cachedYamlData;
         private int _lastTick = -1;
+        private int _lastLap = -1;
+        private float _fuelAtLapStart = 0f;
 
         public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
         {
@@ -213,6 +215,13 @@ namespace SuperBackendNR85IA.Services
             t.LapDeltaToSessionBestLap    = GetSdkValue<float>(d, "LapDeltaToSessionBestLap") ?? 0f;
             t.LapDeltaToSessionOptimalLap = GetSdkValue<float>(d, "LapDeltaToSessionOptimalLap") ?? 0f;
             t.LapDeltaToDriverBestLap     = GetSdkValue<float>(d, "LapDeltaToPlayerBestLap") ?? 0f;
+
+            if (t.Lap != _lastLap)
+            {
+                _lastLap = t.Lap;
+                _fuelAtLapStart = t.FuelLevel;
+            }
+            t.FuelLevelLapStart = _fuelAtLapStart;
 
             // ─────────────────────────────────────────────────────────────────────────
             // Coleta de SETORES (arrays prontas do SDK)
@@ -533,7 +542,7 @@ namespace SuperBackendNR85IA.Services
                 t.FuelUsePerLapCalc = t.FuelUsePerLap;
                 t.EstLapTimeCalc    = t.EstLapTime;
 
-                t.ConsumoVoltaAtual = t.FuelUsePerLap;
+                t.ConsumoVoltaAtual = _fuelAtLapStart - t.FuelLevel;
 
                 double lapsLeftWithCurrentFuel = TelemetryCalculations.GetFuelLapsLeft(
                     t.FuelLevel,

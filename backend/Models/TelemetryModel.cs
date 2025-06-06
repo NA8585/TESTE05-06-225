@@ -199,6 +199,7 @@ namespace SuperBackendNR85IA.Models
         public float FuelPerLap { get; set; }
         public float FuelCapacity { get; set; }
         public float LapDistTotal { get; set; }
+        public float FuelLevelLapStart { get; set; }
         public float FuelUsedTotal { get; set; }
 
         // Valores calculados
