@@ -16,8 +16,13 @@ namespace SuperBackendNR85IA.Calculations
             );
 
             float diffLap = model.FuelLevelLapStart - model.FuelLevel;
-            if (diffLap > 0)
-                model.ConsumoVoltaAtual = diffLap;
+            if (model.ConsumoVoltaPassada <= 0 && diffLap > 0)
+                model.ConsumoVoltaPassada = diffLap;
+
+            float delta = diffLap - model.ConsumoVoltaPassada;
+            if (delta > 0)
+                model.ConsumoVoltaAtual = delta;
+
             if (model.ConsumoVoltaAtual <= 0)
             {
                 float[] opts = { model.FuelUsePerLap, model.FuelPerLap, model.FuelUsePerLapCalc };

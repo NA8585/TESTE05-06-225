@@ -26,6 +26,7 @@ namespace SuperBackendNR85IA.Services
         private int _lastLap = -1;
         private float _fuelAtLapStart = 0f;
         private float _consumoVoltaAtual = 0f;
+        private float _consumoVoltaPassada = 0f;
         private int _lastSessionNum = -1;
 
         public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
@@ -220,14 +221,22 @@ namespace SuperBackendNR85IA.Services
 
             if (t.Lap != _lastLap)
             {
+                if (_lastLap >= 0)
+                {
+                    float lapUso = _fuelAtLapStart - t.FuelLevel;
+                    if (lapUso > 0)
+                    {
+                        _consumoVoltaAtual = lapUso - _consumoVoltaPassada;
+                        _consumoVoltaPassada = lapUso;
+                    }
+                }
+
                 _lastLap = t.Lap;
                 _fuelAtLapStart = t.FuelLevel;
             }
             t.FuelLevelLapStart = _fuelAtLapStart;
 
             float diffLap = _fuelAtLapStart - t.FuelLevel;
-            if (diffLap > 0)
-                _consumoVoltaAtual = diffLap;
 
             // ─────────────────────────────────────────────────────────────────────────
             // Coleta de SETORES (arrays prontas do SDK)
@@ -358,6 +367,7 @@ namespace SuperBackendNR85IA.Services
                 _lastSessionNum = t.SessionNum;
                 _fuelAtLapStart = t.FuelLevel;
                 _consumoVoltaAtual = 0f;
+                _consumoVoltaPassada = 0f;
                 _lastLap = t.Lap;
             }
             t.SessionState      = GetSdkValue<int>(d, "SessionState") ?? 0;
@@ -555,6 +565,7 @@ namespace SuperBackendNR85IA.Services
                 t.FuelUsePerLapCalc = t.FuelUsePerLap;
                 t.EstLapTimeCalc    = t.EstLapTime;
 
+                t.ConsumoVoltaPassada = _consumoVoltaPassada;
                 t.ConsumoVoltaAtual = _consumoVoltaAtual;
                 if (t.ConsumoVoltaAtual <= 0)
                 {
