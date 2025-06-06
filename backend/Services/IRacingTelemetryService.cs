@@ -25,6 +25,9 @@ namespace SuperBackendNR85IA.Services
         private int _lastTick = -1;
         private int _lastLap = -1;
         private float _fuelAtLapStart = 0f;
+        private float _lastLapFuelUse = 0f;
+        private float _totalFuelUsedCalc = 0f;
+        private int _completedLaps = 0;
 
         public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
         {
@@ -216,10 +219,22 @@ namespace SuperBackendNR85IA.Services
             t.LapDeltaToSessionOptimalLap = GetSdkValue<float>(d, "LapDeltaToSessionOptimalLap") ?? 0f;
             t.LapDeltaToDriverBestLap     = GetSdkValue<float>(d, "LapDeltaToPlayerBestLap") ?? 0f;
 
+            float fuelUsedThisLap = _fuelAtLapStart - t.FuelLevel;
             if (t.Lap != _lastLap)
             {
+                if (_lastLap >= 0)
+                {
+                    _lastLapFuelUse = fuelUsedThisLap;
+                    if (_lastLapFuelUse > 0)
+                    {
+                        _totalFuelUsedCalc += _lastLapFuelUse;
+                        _completedLaps++;
+                    }
+                }
+
                 _lastLap = t.Lap;
                 _fuelAtLapStart = t.FuelLevel;
+                fuelUsedThisLap = 0f;
             }
             t.FuelLevelLapStart = _fuelAtLapStart;
 
@@ -542,18 +557,19 @@ namespace SuperBackendNR85IA.Services
                 t.FuelUsePerLapCalc = t.FuelUsePerLap;
                 t.EstLapTimeCalc    = t.EstLapTime;
 
-                t.ConsumoVoltaAtual = _fuelAtLapStart - t.FuelLevel;
+                t.ConsumoVoltaAtual = _lastLapFuelUse;
 
+                float consumoReferencia = _lastLapFuelUse > 0 ? _lastLapFuelUse : t.FuelUsePerLap;
                 double lapsLeftWithCurrentFuel = TelemetryCalculations.GetFuelLapsLeft(
                     t.FuelLevel,
-                    t.ConsumoVoltaAtual
+                    consumoReferencia
                 );
                 t.LapsRemaining = (int)Math.Floor(lapsLeftWithCurrentFuel);
 
+                t.ConsumoMedio = (_completedLaps > 0)
+                    ? (_totalFuelUsedCalc / _completedLaps)
+                    : 0f;
                 float lapsEfetivos = (t.Lap > 0) ? ((t.Lap - 1) + t.LapDistPct) : t.LapDistPct;
-                t.ConsumoMedio = (lapsEfetivos > 0 && t.FuelUsedTotal > 0)
-                    ? (t.FuelUsedTotal / lapsEfetivos)
-                    : 0;
                 t.VoltasRestantesMedio = (t.ConsumoMedio > 0) ? (t.FuelLevel / t.ConsumoMedio) : 0;
 
                 if (t.TotalLaps > 0)

@@ -15,37 +15,7 @@ namespace SuperBackendNR85IA.Calculations
                 model.FuelUsePerLap
             );
 
-            model.ConsumoVoltaAtual = model.FuelLevelLapStart - model.FuelLevel;
-
             model.LapsRemaining = (int)TelemetryCalculations.GetFuelLapsLeft(model.FuelLevel, model.ConsumoVoltaAtual);
-
-            float lapsEfetivos = (model.Lap > 0) ? ((model.Lap - 1) + model.LapDistPct) : model.LapDistPct;
-            model.ConsumoMedio = (lapsEfetivos > 0 && model.FuelUsedTotal > 0)
-                ? model.FuelUsedTotal / lapsEfetivos
-                : 0f;
-            model.VoltasRestantesMedio = model.ConsumoMedio > 0 ? model.FuelLevel / model.ConsumoMedio : 0;
-            model.NecessarioFim = (float)TelemetryCalculations.GetFuelForTargetLaps(
-                model.LapsRemainingRace, model.ConsumoMedio);
-
-            float faltante = model.NecessarioFim - model.FuelLevel;
-            model.RecomendacaoAbastecimento = MathF.Max(0, faltante);
-
-            model.FuelStatus = new FuelStatus();
-            if (faltante <= 0)
-            {
-                model.FuelStatus.Text = "OK";
-                model.FuelStatus.Class = "status-ok";
-            }
-            else if (faltante <= 5)
-            {
-                model.FuelStatus.Text = "Atenção";
-                model.FuelStatus.Class = "status-warning";
-            }
-            else
-            {
-                model.FuelStatus.Text = "Crítico";
-                model.FuelStatus.Class = "status-danger";
-            }
         }
 
         public static void PreencherOverlayPneus(ref TelemetryModel model)
