@@ -25,6 +25,8 @@ namespace SuperBackendNR85IA.Services
         private int _lastTick = -1;
         private int _lastLap = -1;
         private float _fuelAtLapStart = 0f;
+        private float _consumoVoltaAtual = 0f;
+        private int _lastSessionNum = -1;
 
         public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
         {
@@ -223,6 +225,10 @@ namespace SuperBackendNR85IA.Services
             }
             t.FuelLevelLapStart = _fuelAtLapStart;
 
+            float diffLap = _fuelAtLapStart - t.FuelLevel;
+            if (diffLap > 0)
+                _consumoVoltaAtual = diffLap;
+
             // ─────────────────────────────────────────────────────────────────────────
             // Coleta de SETORES (arrays prontas do SDK)
             // ─────────────────────────────────────────────────────────────────────────
@@ -347,6 +353,13 @@ namespace SuperBackendNR85IA.Services
             t.SessionNum        = GetSdkValue<int>(d, "SessionNum") ?? 0;
             t.SessionTime       = GetSdkValue<float>(d, "SessionTime") ?? 0f;
             t.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
+            if (t.SessionNum != _lastSessionNum)
+            {
+                _lastSessionNum = t.SessionNum;
+                _fuelAtLapStart = t.FuelLevel;
+                _consumoVoltaAtual = 0f;
+                _lastLap = t.Lap;
+            }
             t.SessionState      = GetSdkValue<int>(d, "SessionState") ?? 0;
             t.PaceMode          = GetSdkValue<int>(d, "PaceMode") ?? 0;
             t.SessionFlags      = GetSdkValue<int>(d, "SessionFlags") ?? 0;
@@ -542,7 +555,19 @@ namespace SuperBackendNR85IA.Services
                 t.FuelUsePerLapCalc = t.FuelUsePerLap;
                 t.EstLapTimeCalc    = t.EstLapTime;
 
-                t.ConsumoVoltaAtual = _fuelAtLapStart - t.FuelLevel;
+                t.ConsumoVoltaAtual = _consumoVoltaAtual;
+                if (t.ConsumoVoltaAtual <= 0)
+                {
+                    float[] opts = { t.FuelUsePerLap, t.FuelPerLap, t.FuelUsePerLapCalc };
+                    foreach (var opt in opts)
+                    {
+                        if (opt > 0)
+                        {
+                            t.ConsumoVoltaAtual = opt;
+                            break;
+                        }
+                    }
+                }
 
                 double lapsLeftWithCurrentFuel = TelemetryCalculations.GetFuelLapsLeft(
                     t.FuelLevel,
