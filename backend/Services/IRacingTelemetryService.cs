@@ -26,7 +26,12 @@ namespace SuperBackendNR85IA.Services
         private int _lastLap = -1;
         private float _fuelAtLapStart = 0f;
         private float _consumoVoltaAtual = 0f;
+        private float _consumoUltimaVolta = 0f;
+        private readonly List<float> _ultimosConsumos = new();
         private int _lastSessionNum = -1;
+        private readonly CarTrackDataStore _store = new();
+        private string _carPath = string.Empty;
+        private string _trackName = string.Empty;
 
         public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
         {
@@ -220,8 +225,16 @@ namespace SuperBackendNR85IA.Services
 
             if (t.Lap != _lastLap)
             {
+                if (_lastLap >= 0)
+                {
+                    _consumoUltimaVolta = _consumoVoltaAtual;
+                    _ultimosConsumos.Add(_consumoVoltaAtual);
+                    if (_ultimosConsumos.Count > 5)
+                        _ultimosConsumos.RemoveAt(0);
+                }
                 _lastLap = t.Lap;
                 _fuelAtLapStart = t.FuelLevel;
+                _consumoVoltaAtual = 0f;
             }
             t.FuelLevelLapStart = _fuelAtLapStart;
 
@@ -353,11 +366,14 @@ namespace SuperBackendNR85IA.Services
             t.SessionNum        = GetSdkValue<int>(d, "SessionNum") ?? 0;
             t.SessionTime       = GetSdkValue<float>(d, "SessionTime") ?? 0f;
             t.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
+            bool sessionChanged = false;
             if (t.SessionNum != _lastSessionNum)
             {
+                sessionChanged = true;
                 _lastSessionNum = t.SessionNum;
                 _fuelAtLapStart = t.FuelLevel;
                 _consumoVoltaAtual = 0f;
+                _consumoUltimaVolta = 0f;
                 _lastLap = t.Lap;
             }
             t.SessionState      = GetSdkValue<int>(d, "SessionState") ?? 0;
@@ -530,6 +546,18 @@ namespace SuperBackendNR85IA.Services
                 t.ChanceOfRain        = wkd.ChanceOfRain;
             }
 
+            if (sessionChanged)
+            {
+                _carPath = drv?.CarPath ?? string.Empty;
+                _trackName = wkd?.TrackDisplayName ?? string.Empty;
+                var saved = _store.Get(_carPath, _trackName);
+                _consumoUltimaVolta = saved.ConsumoUltimaVolta;
+                t.ConsumoMedio = saved.ConsumoMedio;
+                _ultimosConsumos.Clear();
+                if (saved.UltimosConsumos != null)
+                    _ultimosConsumos.AddRange(saved.UltimosConsumos);
+            }
+
             if (ses != null)
             {
                 t.IncidentLimit = ses.IncidentLimit;
@@ -574,11 +602,17 @@ namespace SuperBackendNR85IA.Services
                     t.ConsumoVoltaAtual
                 );
                 t.LapsRemaining = (int)Math.Floor(lapsLeftWithCurrentFuel);
+                t.ConsumoUltimaVolta = _consumoUltimaVolta;
+                t.VoltasRestantesUltimaVolta = _consumoUltimaVolta > 0 ?
+                    t.FuelLevel / _consumoUltimaVolta : 0f;
 
-                float lapsEfetivos = (t.Lap > 0) ? ((t.Lap - 1) + t.LapDistPct) : t.LapDistPct;
-                t.ConsumoMedio = (lapsEfetivos > 0 && t.FuelUsedTotal > 0)
+                float lapsEfetivos = t.Lap + t.LapDistPct;
+                float calcMedia = (lapsEfetivos > 0 && t.FuelUsedTotal > 0)
                     ? (t.FuelUsedTotal / lapsEfetivos)
-                    : 0;
+                    : 0f;
+                t.ConsumoMedio = _ultimosConsumos.Count > 0
+                    ? _ultimosConsumos.Average()
+                    : calcMedia;
                 t.VoltasRestantesMedio = (t.ConsumoMedio > 0) ? (t.FuelLevel / t.ConsumoMedio) : 0;
 
                 if (t.TotalLaps > 0)
@@ -632,7 +666,18 @@ namespace SuperBackendNR85IA.Services
                 t.FuelStatus = new FuelStatus { Text = "ERRO", Class = "status-danger" };
             }
 
+            _store.Update(new CarTrackData
+            {
+                CarPath = _carPath,
+                TrackName = _trackName,
+                ConsumoMedio = t.ConsumoMedio,
+                ConsumoUltimaVolta = _consumoUltimaVolta,
+                FuelCapacity = t.FuelCapacity,
+                UltimosConsumos = _ultimosConsumos
+            });
+
             return t;
         }
+
     }
 }
