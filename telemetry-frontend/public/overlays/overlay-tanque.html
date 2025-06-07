@@ -242,6 +242,17 @@
 
       <div class="grid grid-cols-2 gap-4 mb-3">
         <div class="text-center">
+          <div id="consumoUltimaVoltaValor" class="text-green-300 text-lg font-bold">0.00L</div>
+          <div class="text-xs text-gray-300">Consumo Última Volta</div>
+        </div>
+        <div class="text-center">
+          <div id="voltasRestantesUltimaValor" class="text-blue-400 text-lg font-bold">0</div>
+          <div class="text-xs text-gray-300">Voltas Restantes</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div class="text-center">
           <div id="consumoMedioValor" class="text-green-300 text-lg font-bold">0.00L</div>
           <div class="text-xs text-gray-300">Consumo Médio</div>
         </div>
@@ -596,6 +607,8 @@
     const barraTanque              = document.getElementById('barraTanque');
     const consumoPorVoltaValor     = document.getElementById('consumoPorVoltaValor');
     const voltasRestantesAtualValor= document.getElementById('voltasRestantesAtualValor');
+    const consumoUltimaVoltaValor  = document.getElementById('consumoUltimaVoltaValor');
+    const voltasRestantesUltimaValor = document.getElementById('voltasRestantesUltimaValor');
     const consumoMedioValor        = document.getElementById('consumoMedioValor');
     const voltasRestantesMedioValor= document.getElementById('voltasRestantesMedioValor');
     const necessarioFimValor       = document.getElementById('necessarioFimValor');
@@ -623,11 +636,17 @@
 
 
         // Consumo da volta atual
-        const fuelLap = model.consumoVoltaAtual ?? model.ConsumoVoltaAtual ??
-                        model.fuelUsePerLap ?? model.fuelPerLap ??
-                        model.FuelUsePerLap ?? model.FuelPerLap ??
-                        model.fuelUsePerLapCalc ?? model.FuelUsePerLapCalc ?? 0;
-        consumoPorVoltaValor.textContent = `${fuelLap.toFixed(2)}L`;
+        const lapStart = model.fuelLevelLapStart ?? model.FuelLevelLapStart ?? atual;
+        let fuelLap = lapStart - atual;
+        if (fuelLap <= 0) {
+            fuelLap = model.consumoVoltaPassada ?? model.ConsumoVoltaPassada ??
+                      model.consumoVoltaAtual ?? model.ConsumoVoltaAtual ?? 0;
+        }
+        const lastLapFuel = model.consumoVoltaPassada ?? model.ConsumoVoltaPassada ?? fuelLap;
+        const diffFuel = fuelLap - lastLapFuel;
+        consumoPorVoltaValor.textContent = `${diffFuel.toFixed(2)}L`;
+        consumoUltimaVoltaValor.textContent = `${lastLapFuel.toFixed(2)}L`;
+        voltasRestantesUltimaValor.textContent = Math.floor(lastLapFuel > 0 ? (atual / lastLapFuel) : 0);
 
         // Voltas Restantes (com base no consumo atual/instantâneo)
         voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? model.LapsRemaining ?? 0); // lapsRemaining
