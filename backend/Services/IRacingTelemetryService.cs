@@ -72,7 +72,7 @@ namespace SuperBackendNR85IA.Services
 
                     if (_sdk.Data != null && _sdk.Data.TickCount != _lastTick)
                     {
-                        var telemetryModel = BuildTelemetryModel();
+                        var telemetryModel = await BuildTelemetryModelAsync();
                         if (telemetryModel != null)
                         {
                             TelemetryCalculationsOverlay.PreencherOverlayTanque(ref telemetryModel);
@@ -187,7 +187,7 @@ namespace SuperBackendNR85IA.Services
             }
         }
 
-        private TelemetryModel? BuildTelemetryModel()
+        private async Task<TelemetryModel?> BuildTelemetryModelAsync()
         {
             if (_sdk.Data == null) return null;
 
@@ -591,7 +591,7 @@ namespace SuperBackendNR85IA.Services
 
             if (_awaitingStoredData && !string.IsNullOrEmpty(_carPath) && !string.IsNullOrEmpty(_trackName))
             {
-                var saved = _store.Get(_carPath, _trackName);
+                var saved = await _store.GetAsync(_carPath, _trackName);
                 _consumoUltimaVolta = saved.ConsumoUltimaVolta;
                 t.ConsumoMedio = saved.ConsumoMedio;
 
@@ -713,7 +713,7 @@ namespace SuperBackendNR85IA.Services
 
             if (!string.IsNullOrEmpty(_carPath) && !string.IsNullOrEmpty(_trackName))
             {
-                _store.Update(new CarTrackData
+                await _store.UpdateAsync(new CarTrackData
                 {
                     CarPath = _carPath,
                     TrackName = _trackName,
