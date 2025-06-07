@@ -72,15 +72,15 @@ namespace SuperBackendNR85IA.Calculations
 
         public static void PreencherOverlayPneus(ref TelemetryModel model)
         {
-            model.LfWear ??= new float[3];
-            model.RfWear ??= new float[3];
-            model.LrWear ??= new float[3];
-            model.RrWear ??= new float[3];
+            model.Tyres.LfWear ??= new float[3];
+            model.Tyres.RfWear ??= new float[3];
+            model.Tyres.LrWear ??= new float[3];
+            model.Tyres.RrWear ??= new float[3];
 
-            model.LfPress = model.LfPress;
-            model.RfPress = model.RfPress;
-            model.LrPress = model.LrPress;
-            model.RrPress = model.RrPress;
+            model.Tyres.LfPress = model.Tyres.LfPress;
+            model.Tyres.RfPress = model.Tyres.RfPress;
+            model.Tyres.LrPress = model.Tyres.LrPress;
+            model.Tyres.RrPress = model.Tyres.RrPress;
         }
 
         public static void PreencherOverlaySetores(ref TelemetryModel model)

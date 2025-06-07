@@ -617,6 +617,7 @@
     let capacidadeTotalTanque    = 80; // valor padrão caso backend não envie
 
     function updateFuelCalculator(model) {
+        model = { ...model, ...(model.session || {}), ...(model.vehicle || {}), ...(model.tyres || {}), ...(model.damage || {}) };
         capacidadeTotalTanque = model.fuelCapacity ?? model.FuelCapacity ?? capacidadeTotalTanque;
         // Tanque Atual e Barra
         const atual = model.fuelLevel ?? model.FuelLevel ?? 0; // camelCase ou PascalCase

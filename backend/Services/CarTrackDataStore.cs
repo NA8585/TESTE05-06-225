@@ -33,7 +33,7 @@ namespace SuperBackendNR85IA.Services
             try
             {
                 if (File.Exists(_filePath))
-                {
+                {                    
                     var json = File.ReadAllText(_filePath);
                     _data = JsonSerializer.Deserialize<Dictionary<string, CarTrackData>>(json) ?? new();
                 }

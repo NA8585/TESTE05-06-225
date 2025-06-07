@@ -447,6 +447,9 @@ function renderRelative(data) {
     return;
   }
 
+  // Flatten possible sub-models from new TelemetryModel structure
+  data = { ...data, ...(data.session || {}), ...(data.vehicle || {}), ...(data.tyres || {}), ...(data.damage || {}) };
+
   // Parse YAML only if it has changed
   if (data.sessionInfoYaml && data.sessionInfoYaml !== lastSessionInfoYaml) {
       const parsedYaml = parseYaml(data.sessionInfoYaml);

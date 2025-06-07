@@ -76,7 +76,7 @@ namespace SuperBackendNR85IA.Services
 
                     if (_sdk.Data != null && _sdk.Data.TickCount != _lastTick)
                     {
-                        var telemetryModel = BuildTelemetryModel();
+                        var telemetryModel = await BuildTelemetryModelAsync();
                         if (telemetryModel != null)
                         {
                             TelemetryCalculationsOverlay.PreencherOverlayTanque(ref telemetryModel);
@@ -191,7 +191,7 @@ namespace SuperBackendNR85IA.Services
             }
         }
 
-        private TelemetryModel? BuildTelemetryModel()
+        private async Task<TelemetryModel?> BuildTelemetryModelAsync()
         {
             if (_sdk.Data == null) return null;
 
@@ -199,30 +199,30 @@ namespace SuperBackendNR85IA.Services
             var t = new TelemetryModel();
 
             // --- Dados básicos do veículo ---
-            t.Speed               = GetSdkValue<float>(d, "Speed") ?? 0f;
-            t.Rpm                 = GetSdkValue<float>(d, "RPM") ?? 0f;
-            t.Throttle            = GetSdkValue<float>(d, "Throttle") ?? 0f;
-            t.Brake               = GetSdkValue<float>(d, "Brake") ?? 0f;
-            t.Clutch              = GetSdkValue<float>(d, "Clutch") ?? 0f;
-            t.SteeringWheelAngle  = GetSdkValue<float>(d, "SteeringWheelAngle") ?? 0f;
-            t.Gear                = GetSdkValue<int>(d, "Gear") ?? 0;
-            t.FuelLevel           = GetSdkValue<float>(d, "FuelLevel") ?? 0f;
-            t.FuelLevelPct        = GetSdkValue<float>(d, "FuelLevelPct") ?? 0f;
-            t.FuelCapacity        = t.FuelLevelPct > 0f ? t.FuelLevel / t.FuelLevelPct : 0f;
-            t.WaterTemp           = GetSdkValue<float>(d, "WaterTemp") ?? 0f;
-            t.OilTemp             = GetSdkValue<float>(d, "OilTemp") ?? 0f;
-            t.OilPress            = GetSdkValue<float>(d, "OilPress") ?? 0f;
-            t.FuelPress           = GetSdkValue<float>(d, "FuelPress") ?? 0f;
-            t.ManifoldPress       = GetSdkValue<float>(d, "ManifoldPress") ?? 0f;
-            t.EngineWarnings      = GetSdkValue<int>(d, "EngineWarnings") ?? 0;
-            t.OnPitRoad           = GetSdkValue<bool>(d, "OnPitRoad") ?? false;
-            t.PlayerCarLastPitTime = GetSdkValue<float>(d, "PlayerCarLastPitTime") ?? 0f;
-            t.PlayerCarPitStopCount = GetSdkValue<int>(d, "PlayerCarPitStopCount") ?? 0;
-            t.PitRepairLeft       = GetSdkValue<float>(d, "PitRepairLeft") ?? 0f;
-            t.PitOptRepairLeft    = GetSdkValue<float>(d, "PitOptRepairLeft") ?? 0f;
+            t.Vehicle.Speed               = GetSdkValue<float>(d, "Speed") ?? 0f;
+            t.Vehicle.Rpm                 = GetSdkValue<float>(d, "RPM") ?? 0f;
+            t.Vehicle.Throttle            = GetSdkValue<float>(d, "Throttle") ?? 0f;
+            t.Vehicle.Brake               = GetSdkValue<float>(d, "Brake") ?? 0f;
+            t.Vehicle.Clutch              = GetSdkValue<float>(d, "Clutch") ?? 0f;
+            t.Vehicle.SteeringWheelAngle  = GetSdkValue<float>(d, "SteeringWheelAngle") ?? 0f;
+            t.Vehicle.Gear                = GetSdkValue<int>(d, "Gear") ?? 0;
+            t.Vehicle.FuelLevel           = GetSdkValue<float>(d, "FuelLevel") ?? 0f;
+            t.Vehicle.FuelLevelPct        = GetSdkValue<float>(d, "FuelLevelPct") ?? 0f;
+            t.FuelCapacity                = t.Vehicle.FuelLevelPct > 0f ? t.Vehicle.FuelLevel / t.Vehicle.FuelLevelPct : 0f;
+            t.Vehicle.WaterTemp           = GetSdkValue<float>(d, "WaterTemp") ?? 0f;
+            t.Vehicle.OilTemp             = GetSdkValue<float>(d, "OilTemp") ?? 0f;
+            t.Vehicle.OilPress            = GetSdkValue<float>(d, "OilPress") ?? 0f;
+            t.Vehicle.FuelPress           = GetSdkValue<float>(d, "FuelPress") ?? 0f;
+            t.Vehicle.ManifoldPress       = GetSdkValue<float>(d, "ManifoldPress") ?? 0f;
+            t.Vehicle.EngineWarnings      = GetSdkValue<int>(d, "EngineWarnings") ?? 0;
+            t.Vehicle.OnPitRoad           = GetSdkValue<bool>(d, "OnPitRoad") ?? false;
+            t.Vehicle.PlayerCarLastPitTime = GetSdkValue<float>(d, "PlayerCarLastPitTime") ?? 0f;
+            t.Vehicle.PlayerCarPitStopCount = GetSdkValue<int>(d, "PlayerCarPitStopCount") ?? 0;
+            t.Vehicle.PitRepairLeft       = GetSdkValue<float>(d, "PitRepairLeft") ?? 0f;
+            t.Vehicle.PitOptRepairLeft    = GetSdkValue<float>(d, "PitOptRepairLeft") ?? 0f;
 
             // CarSpeed para FFB parado
-            t.CarSpeed = t.Speed;
+            t.Vehicle.CarSpeed = t.Vehicle.Speed;
 
             // --- Dados de volta ---
             t.Lap                         = GetSdkValue<int>(d, "Lap") ?? 0;
@@ -404,71 +404,71 @@ namespace SuperBackendNR85IA.Services
             }
 
             // --- Sessão ---
-            t.SessionNum        = GetSdkValue<int>(d, "SessionNum") ?? 0;
-            t.SessionTime       = GetSdkValue<float>(d, "SessionTime") ?? 0f;
-            t.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
+            t.Session.SessionNum        = GetSdkValue<int>(d, "SessionNum") ?? 0;
+            t.Session.SessionTime       = GetSdkValue<float>(d, "SessionTime") ?? 0f;
+            t.Session.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
             bool sessionChanged = false;
             if (t.SessionNum != _lastSessionNum)
             {
                 sessionChanged = true;
-                _lastSessionNum = t.SessionNum;
-                _fuelAtLapStart = t.FuelLevel;
+                _lastSessionNum = t.Session.SessionNum;
+                _fuelAtLapStart = t.Vehicle.FuelLevel;
                 _consumoVoltaAtual = 0f;
                 _consumoUltimaVolta = 0f;
                 _lastLap = t.Lap;
                 _awaitingStoredData = true;
             }
-            t.SessionState      = GetSdkValue<int>(d, "SessionState") ?? 0;
-            t.PaceMode          = GetSdkValue<int>(d, "PaceMode") ?? 0;
-            t.SessionFlags      = GetSdkValue<int>(d, "SessionFlags") ?? 0;
-            t.PlayerCarIdx      = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
-            t.TotalLaps         = GetSdkValue<int>(d, "CurrentSessionTotalLaps") ?? -1;
-            t.LapsRemainingRace = GetSdkValue<int>(d, "LapsRemainingRace")    ?? 0;
+            t.Session.SessionState      = GetSdkValue<int>(d, "SessionState") ?? 0;
+            t.Session.PaceMode          = GetSdkValue<int>(d, "PaceMode") ?? 0;
+            t.Session.SessionFlags      = GetSdkValue<int>(d, "SessionFlags") ?? 0;
+            t.Session.PlayerCarIdx      = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
+            t.Session.TotalLaps         = GetSdkValue<int>(d, "CurrentSessionTotalLaps") ?? -1;
+            t.Session.LapsRemainingRace = GetSdkValue<int>(d, "LapsRemainingRace")    ?? 0;
 
             // --- Pneus e Temperaturas ---
-            t.LfTempCl = GetSdkValue<float>(d, "LFtempCL") ?? 0f;
-            t.LfTempCm = GetSdkValue<float>(d, "LFtempCM") ?? 0f;
-            t.LfTempCr = GetSdkValue<float>(d, "LFtempCR") ?? 0f;
-            t.RfTempCl = GetSdkValue<float>(d, "RFtempCL") ?? 0f;
-            t.RfTempCm = GetSdkValue<float>(d, "RFtempCM") ?? 0f;
-            t.RfTempCr = GetSdkValue<float>(d, "RFtempCR") ?? 0f;
-            t.LrTempCl = GetSdkValue<float>(d, "LRtempCL") ?? 0f;
-            t.LrTempCm = GetSdkValue<float>(d, "LRtempCM") ?? 0f;
-            t.LrTempCr = GetSdkValue<float>(d, "LRtempCR") ?? 0f;
-            t.RrTempCl = GetSdkValue<float>(d, "RRtempCL") ?? 0f;
-            t.RrTempCm = GetSdkValue<float>(d, "RRtempCM") ?? 0f;
-            t.RrTempCr = GetSdkValue<float>(d, "RRtempCR") ?? 0f;
+            t.Tyres.LfTempCl = GetSdkValue<float>(d, "LFtempCL") ?? 0f;
+            t.Tyres.LfTempCm = GetSdkValue<float>(d, "LFtempCM") ?? 0f;
+            t.Tyres.LfTempCr = GetSdkValue<float>(d, "LFtempCR") ?? 0f;
+            t.Tyres.RfTempCl = GetSdkValue<float>(d, "RFtempCL") ?? 0f;
+            t.Tyres.RfTempCm = GetSdkValue<float>(d, "RFtempCM") ?? 0f;
+            t.Tyres.RfTempCr = GetSdkValue<float>(d, "RFtempCR") ?? 0f;
+            t.Tyres.LrTempCl = GetSdkValue<float>(d, "LRtempCL") ?? 0f;
+            t.Tyres.LrTempCm = GetSdkValue<float>(d, "LRtempCM") ?? 0f;
+            t.Tyres.LrTempCr = GetSdkValue<float>(d, "LRtempCR") ?? 0f;
+            t.Tyres.RrTempCl = GetSdkValue<float>(d, "RRtempCL") ?? 0f;
+            t.Tyres.RrTempCm = GetSdkValue<float>(d, "RRtempCM") ?? 0f;
+            t.Tyres.RrTempCr = GetSdkValue<float>(d, "RRtempCR") ?? 0f;
 
-            t.LfPress = GetSdkValue<float>(d, "LFpressure") ?? 0f;
-            t.RfPress = GetSdkValue<float>(d, "RFpressure") ?? 0f;
-            t.LrPress = GetSdkValue<float>(d, "LRpressure") ?? 0f;
-            t.RrPress = GetSdkValue<float>(d, "RRpressure") ?? 0f;
+            t.Tyres.LfPress = GetSdkValue<float>(d, "LFpressure") ?? 0f;
+            t.Tyres.RfPress = GetSdkValue<float>(d, "RFpressure") ?? 0f;
+            t.Tyres.LrPress = GetSdkValue<float>(d, "LRpressure") ?? 0f;
+            t.Tyres.RrPress = GetSdkValue<float>(d, "RRpressure") ?? 0f;
 
-            t.LfWear = new float?[] {
+            t.Tyres.LfWear = new float?[] {
                 GetSdkValue<float>(d, "LFWearL"),
                 GetSdkValue<float>(d, "LFWearM"),
                 GetSdkValue<float>(d, "LFWearR")
             }.Select(v => v ?? 0f).ToArray();
-            t.RfWear = new float?[] {
+            t.Tyres.RfWear = new float?[] {
                 GetSdkValue<float>(d, "RFWearL"),
                 GetSdkValue<float>(d, "RFWearM"),
                 GetSdkValue<float>(d, "RFWearR")
             }.Select(v => v ?? 0f).ToArray();
-            t.LrWear = new float?[] {
+            t.Tyres.LrWear = new float?[] {
                 GetSdkValue<float>(d, "LRWearL"),
                 GetSdkValue<float>(d, "LRWearM"),
                 GetSdkValue<float>(d, "LRWearR")
             }.Select(v => v ?? 0f).ToArray();
-            t.RrWear = new float?[] {
+            t.Tyres.RrWear = new float?[] {
                 GetSdkValue<float>(d, "RRWearL"),
                 GetSdkValue<float>(d, "RRWearM"),
                 GetSdkValue<float>(d, "RRWearR")
             }.Select(v => v ?? 0f).ToArray();
 
-            t.TreadRemainingFl = GetSdkValue<float>(d, "LFWearM") ?? 0f;
-            t.TreadRemainingFr = GetSdkValue<float>(d, "RFWearM") ?? 0f;
-            t.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
-            t.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
+            t.Tyres.TreadRemainingFl = GetSdkValue<float>(d, "LFWearM") ?? 0f;
+            t.Tyres.TreadRemainingFr = GetSdkValue<float>(d, "RFWearM") ?? 0f;
+            t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
+            t.Tyres.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
 
             // --- Freios e controles ---
             t.BrakeTemp        = GetSdkArray<float>(d, "BrakeTemp").Select(v => v ?? 0f).ToArray();
@@ -506,21 +506,21 @@ namespace SuperBackendNR85IA.Services
             t.Roll         = GetSdkValue<float>(d, "Roll") ?? 0f;
 
             // --- Danos ---
-            t.LfDamage        = GetSdkValue<float>(d, "LFdamage") ?? 0f;
-            t.RfDamage        = GetSdkValue<float>(d, "RFdamage") ?? 0f;
-            t.LrDamage        = GetSdkValue<float>(d, "LRdamage") ?? 0f;
-            t.RrDamage        = GetSdkValue<float>(d, "RRdamage") ?? 0f;
-            t.FrontWingDamage = GetSdkValue<float>(d, "FrontWingDamage") ?? 0f;
-            t.RearWingDamage  = GetSdkValue<float>(d, "RearWingDamage") ?? 0f;
-            t.EngineDamage    = GetSdkValue<float>(d, "EngineDamagePct") ?? 0f;
-            t.GearboxDamage   = GetSdkValue<float>(d, "GearBoxDamagePct") ?? 0f;
-            t.SuspensionDamage = (
+            t.Damage.LfDamage        = GetSdkValue<float>(d, "LFdamage") ?? 0f;
+            t.Damage.RfDamage        = GetSdkValue<float>(d, "RFdamage") ?? 0f;
+            t.Damage.LrDamage        = GetSdkValue<float>(d, "LRdamage") ?? 0f;
+            t.Damage.RrDamage        = GetSdkValue<float>(d, "RRdamage") ?? 0f;
+            t.Damage.FrontWingDamage = GetSdkValue<float>(d, "FrontWingDamage") ?? 0f;
+            t.Damage.RearWingDamage  = GetSdkValue<float>(d, "RearWingDamage") ?? 0f;
+            t.Damage.EngineDamage    = GetSdkValue<float>(d, "EngineDamagePct") ?? 0f;
+            t.Damage.GearboxDamage   = GetSdkValue<float>(d, "GearBoxDamagePct") ?? 0f;
+            t.Damage.SuspensionDamage = (
                 (GetSdkValue<float>(d, "LFsuspDamPct") ?? 0f) +
                 (GetSdkValue<float>(d, "RFsuspDamPct") ?? 0f) +
                 (GetSdkValue<float>(d, "LRsuspDamPct") ?? 0f) +
                 (GetSdkValue<float>(d, "RRsuspDamPct") ?? 0f)
             ) / 4f;
-            t.ChassisDamage = t.SuspensionDamage;
+            t.Damage.ChassisDamage = t.Damage.SuspensionDamage;
 
             // --- Sistemas especiais ---
             t.DrsStatus      = GetSdkValue<int>(d, "DrsStatus") ?? 0;
@@ -595,7 +595,7 @@ namespace SuperBackendNR85IA.Services
 
             if (_awaitingStoredData && !string.IsNullOrEmpty(_carPath) && !string.IsNullOrEmpty(_trackName))
             {
-                var saved = _store.Get(_carPath, _trackName);
+                var saved = await _store.GetAsync(_carPath, _trackName);
                 _consumoUltimaVolta = saved.ConsumoUltimaVolta;
                 t.ConsumoMedio = saved.ConsumoMedio;
 
@@ -717,7 +717,7 @@ namespace SuperBackendNR85IA.Services
 
             if (!string.IsNullOrEmpty(_carPath) && !string.IsNullOrEmpty(_trackName))
             {
-                _store.Update(new CarTrackData
+                await _store.UpdateAsync(new CarTrackData
                 {
                     CarPath = _carPath,
                     TrackName = _trackName,
