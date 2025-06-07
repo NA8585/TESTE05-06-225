@@ -1,0 +1,4 @@
+# Ignore build leftovers
+backend/cd
+backend/dotnet
+backend/rmdir
