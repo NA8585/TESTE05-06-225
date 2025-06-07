@@ -242,6 +242,17 @@
 
       <div class="grid grid-cols-2 gap-4 mb-3">
         <div class="text-center">
+          <div id="consumoUltimaVoltaValor" class="text-green-400 text-lg font-bold">0.00L</div>
+          <div class="text-xs text-gray-300">Última Volta</div>
+        </div>
+        <div class="text-center">
+          <div id="voltasRestantesUltimaValor" class="text-blue-400 text-lg font-bold">0</div>
+          <div class="text-xs text-gray-300">Voltas (Última)</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div class="text-center">
           <div id="consumoMedioValor" class="text-green-300 text-lg font-bold">0.00L</div>
           <div class="text-xs text-gray-300">Consumo Médio</div>
         </div>
@@ -596,6 +607,8 @@
     const barraTanque              = document.getElementById('barraTanque');
     const consumoPorVoltaValor     = document.getElementById('consumoPorVoltaValor');
     const voltasRestantesAtualValor= document.getElementById('voltasRestantesAtualValor');
+    const consumoUltimaVoltaValor  = document.getElementById('consumoUltimaVoltaValor');
+    const voltasRestantesUltimaValor = document.getElementById('voltasRestantesUltimaValor');
     const consumoMedioValor        = document.getElementById('consumoMedioValor');
     const voltasRestantesMedioValor= document.getElementById('voltasRestantesMedioValor');
     const necessarioFimValor       = document.getElementById('necessarioFimValor');
@@ -635,6 +648,9 @@
 
         // Voltas Restantes (com base no consumo atual/instantâneo)
         voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? model.LapsRemaining ?? 0); // lapsRemaining
+
+        consumoUltimaVoltaValor.textContent = `${(model.consumoUltimaVolta ?? model.ConsumoUltimaVolta ?? 0).toFixed(2)}L`;
+        voltasRestantesUltimaValor.textContent = Math.floor(model.voltasRestantesUltimaVolta ?? model.VoltasRestantesUltimaVolta ?? 0);
 
         // Consumo Médio
         consumoMedioValor.textContent = `${(model.consumoMedio ?? model.ConsumoMedio ?? 0).toFixed(2)}L`; // consumoMedio
