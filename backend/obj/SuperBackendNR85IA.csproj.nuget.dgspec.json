@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\SuperBackendNR85IA.csproj": {}
+    "C:\\Users\\docto\\Desktop\\TESTE05-06-225\\backend\\SuperBackendNR85IA.csproj": {}
   },
   "projects": {
-    "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\SuperBackendNR85IA.csproj": {
+    "C:\\Users\\docto\\Desktop\\TESTE05-06-225\\backend\\SuperBackendNR85IA.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\SuperBackendNR85IA.csproj",
+        "projectUniqueName": "C:\\Users\\docto\\Desktop\\TESTE05-06-225\\backend\\SuperBackendNR85IA.csproj",
         "projectName": "SuperBackendNR85IA",
-        "projectPath": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\SuperBackendNR85IA.csproj",
+        "projectPath": "C:\\Users\\docto\\Desktop\\TESTE05-06-225\\backend\\SuperBackendNR85IA.csproj",
         "packagesPath": "C:\\Users\\docto\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\obj\\",
+        "outputPath": "C:\\Users\\docto\\Desktop\\TESTE05-06-225\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

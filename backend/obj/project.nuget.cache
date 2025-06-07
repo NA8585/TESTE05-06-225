@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4XEKnROicFA=",
+  "dgSpecHash": "MG4QIpOCn3U=",
   "success": true,
-  "projectFilePath": "C:\\Users\\docto\\SuperBackendNR85IA\\SuperBackendNR85IA\\SuperBackendNR85IA.csproj",
+  "projectFilePath": "C:\\Users\\docto\\Desktop\\TESTE05-06-225\\backend\\SuperBackendNR85IA.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\docto\\.nuget\\packages\\aydsko.iracingdata\\2502.0.0\\aydsko.iracingdata.2502.0.0.nupkg.sha512",
     "C:\\Users\\docto\\.nuget\\packages\\irsdksharper\\1.1.3\\irsdksharper.1.1.3.nupkg.sha512",

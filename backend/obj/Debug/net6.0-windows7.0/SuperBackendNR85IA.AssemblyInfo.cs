@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SuperBackendNR85IA")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+af5a469a309beb9cbf0b58442f5fa8514d522971")]
 [assembly: System.Reflection.AssemblyProductAttribute("SuperBackendNR85IA")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SuperBackendNR85IA")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
