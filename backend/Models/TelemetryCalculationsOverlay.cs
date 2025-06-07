@@ -1,5 +1,6 @@
 // Extensões de cálculo e preenchimento para overlays
 using System;
+using System.Linq;
 using SuperBackendNR85IA.Models;
 
 namespace SuperBackendNR85IA.Calculations
@@ -84,19 +85,76 @@ namespace SuperBackendNR85IA.Calculations
 
         public static void PreencherOverlaySetores(ref TelemetryModel model)
         {
-            if (model.LapAllSectorTimes == null || model.LapAllSectorTimes.Length == 0)
+            if (model.LapAllSectorTimes == null || model.LapAllSectorTimes.Length != model.SectorCount)
                 model.LapAllSectorTimes = new float[model.SectorCount];
 
-            if (model.LapDeltaToSessionBestSectorTimes == null || model.LapDeltaToSessionBestSectorTimes.Length == 0)
+            if (model.LapDeltaToSessionBestSectorTimes == null || model.LapDeltaToSessionBestSectorTimes.Length != model.SectorCount)
                 model.LapDeltaToSessionBestSectorTimes = new float[model.SectorCount];
 
-            if (model.SessionBestSectorTimes == null || model.SessionBestSectorTimes.Length == 0)
+            if (model.SessionBestSectorTimes == null || model.SessionBestSectorTimes.Length != model.SectorCount)
                 model.SessionBestSectorTimes = new float[model.SectorCount];
+
+            if (model.LapAllSectorTimes.All(v => v == 0f) && model.LapLastLapTime > 0 && model.SectorCount > 0)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.LapAllSectorTimes[i] = model.LapLastLapTime / model.SectorCount;
+
+            if (model.SessionBestSectorTimes.All(v => v == 0f) && model.LapBestLapTime > 0 && model.SectorCount > 0)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.SessionBestSectorTimes[i] = model.LapBestLapTime / model.SectorCount;
+
+            if (model.LapDeltaToSessionBestSectorTimes.All(v => v == 0f) && model.LapAllSectorTimes.Length == model.SessionBestSectorTimes.Length)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.LapDeltaToSessionBestSectorTimes[i] = model.LapAllSectorTimes[i] - model.SessionBestSectorTimes[i];
 
             // Estimativa de volta ideal com base em soma dos melhores setores
             model.EstLapTime = 0f;
             foreach (var setor in model.SessionBestSectorTimes)
                 model.EstLapTime += setor;
+        }
+
+        public static void PreencherOverlayDelta(ref TelemetryModel model)
+        {
+            // Tempo até o carro à frente usando CarIdxF2Time
+            if (model.CarIdxF2Time.Length > model.PlayerCarIdx)
+                model.TimeDeltaToCarAhead = model.CarIdxF2Time[model.PlayerCarIdx];
+            else
+                model.TimeDeltaToCarAhead = 0f;
+
+            model.TimeDeltaToCarBehind = 0f;
+            if (model.CarIdxPosition.Length == model.CarIdxF2Time.Length &&
+                model.PlayerCarIdx >= 0 && model.PlayerCarIdx < model.CarIdxPosition.Length)
+            {
+                int myPos = model.CarIdxPosition[model.PlayerCarIdx];
+                for (int i = 0; i < model.CarIdxPosition.Length; i++)
+                {
+                    if (model.CarIdxPosition[i] == myPos + 1)
+                    {
+                        if (i < model.CarIdxF2Time.Length)
+                            model.TimeDeltaToCarBehind = model.CarIdxF2Time[i];
+                        break;
+                    }
+                }
+            }
+
+            model.SectorDeltas = model.LapDeltaToSessionBestSectorTimes ?? Array.Empty<float>();
+
+            if (model.LapAllSectorTimes.Length == model.SessionBestSectorTimes.Length &&
+                model.LapAllSectorTimes.Length > 0)
+            {
+                int len = model.LapAllSectorTimes.Length;
+                var flags = new bool[len];
+                for (int i = 0; i < len; i++)
+                {
+                    float lap = model.LapAllSectorTimes[i];
+                    float best = model.SessionBestSectorTimes[i];
+                    flags[i] = lap > 0 && lap <= best + 1e-4f;
+                }
+                model.SectorIsBest = flags;
+            }
+            else
+            {
+                model.SectorIsBest = Array.Empty<bool>();
+            }
         }
     }
 }
