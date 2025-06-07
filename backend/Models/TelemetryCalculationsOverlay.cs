@@ -39,9 +39,8 @@ namespace SuperBackendNR85IA.Calculations
             float novoConsumoMedio = (lapsEfetivos > 0.5f && model.FuelUsedTotal > 0)
                 ? model.FuelUsedTotal / lapsEfetivos
                 : 0f;
-            if (novoConsumoMedio > 0 && !model.OnPitRoad)
-                model.ConsumoMedio = (float)Math.Round(novoConsumoMedio, 3);
-
+            if (novoConsumoMedio > 0)
+                model.ConsumoMedio = novoConsumoMedio;
             // Agora os cálculos que dependem do ConsumoMedio
             model.VoltasRestantesMedio = model.ConsumoMedio > 0
                 ? model.FuelLevel / model.ConsumoMedio

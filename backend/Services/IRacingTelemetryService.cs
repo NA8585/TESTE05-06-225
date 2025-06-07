@@ -627,7 +627,7 @@ namespace SuperBackendNR85IA.Services
                         ? t.FuelUsedTotal / lapsEfetivos
                         : 0f);
                 if (novoConsumoMedio > 0 && !t.OnPitRoad)
-                    t.ConsumoMedio = (float)Math.Round(novoConsumoMedio, 3);
+                    t.ConsumoMedio = (float)Math.Round(novoConsumoMedio, 3);  
                 t.VoltasRestantesMedio = t.ConsumoMedio > 0
                     ? (t.FuelLevel / t.ConsumoMedio)
                     : 0f;
