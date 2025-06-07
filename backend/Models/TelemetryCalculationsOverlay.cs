@@ -147,7 +147,7 @@ namespace SuperBackendNR85IA.Calculations
                 {
                     float lap = model.LapAllSectorTimes[i];
                     float best = model.SessionBestSectorTimes[i];
-                    flags[i] = lap > 0 && lap <= best + 1e-4f;
+                    flags[i] = lap > 0 && Math.Abs(lap - best) < 1e-4f;
                 }
                 model.SectorIsBest = flags;
             }
