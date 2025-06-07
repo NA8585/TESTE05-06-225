@@ -30,15 +30,19 @@ namespace SuperBackendNR85IA.Services
         private float _consumoUltimaVolta = 0f;
         private readonly Queue<float> _ultimoConsumoVoltas = new();
         private int _lastSessionNum = -1;
-        private readonly CarTrackDataStore _store = new();
+        private readonly CarTrackDataStore _store;
         private string _carPath = string.Empty;
         private string _trackName = string.Empty;
         private bool _awaitingStoredData = false;
 
-        public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
+        public IRacingTelemetryService(
+            ILogger<IRacingTelemetryService> log,
+            TelemetryBroadcaster broadcaster,
+            CarTrackDataStore store)
         {
             _log = log;
             _broadcaster = broadcaster;
+            _store = store;
         }
 
         protected override async Task ExecuteAsync(CancellationToken ct)
