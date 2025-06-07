@@ -16,7 +16,11 @@ namespace SuperBackendNR85IA.Services
 
     public class CarTrackDataStore
     {
-        private const string FilePath = "carTrackData.json";
+        // Salva o arquivo no mesmo diretório do executável para evitar
+        // depender do diretório de trabalho corrente da aplicação
+        private static readonly string FilePath = Path.Combine(
+            AppContext.BaseDirectory,
+            "carTrackData.json");
         private readonly object _lock = new();
         private Dictionary<string, CarTrackData> _data = new();
 
