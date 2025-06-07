@@ -209,6 +209,8 @@ namespace SuperBackendNR85IA.Models
         public int LapsRemaining { get; set; }
         public float ConsumoMedio { get; set; }
         public float VoltasRestantesMedio { get; set; }
+        public float ConsumoUltimaVolta { get; set; }
+        public float VoltasRestantesUltimaVolta { get; set; }
         public float NecessarioFim { get; set; }
         public float RecomendacaoAbastecimento { get; set; }
         public float FuelRemaining { get; set; }
