@@ -72,7 +72,11 @@ namespace SuperBackendNR85IA.Services
                         var telemetryModel = BuildTelemetryModel();
                         if (telemetryModel != null)
                         {
-                            await _broadcaster.BroadcastTelemetry(telemetryModel);
+                            var allDrivers = _cachedYamlData.Drv != null
+                                ? new List<DriverInfo> { _cachedYamlData.Drv }
+                                : new List<DriverInfo>();
+                            var payload = BuildFrontendPayload(telemetryModel, allDrivers);
+                            await _broadcaster.BroadcastTelemetry(payload);
                         }
                         _lastTick = _sdk.Data.TickCount;
                     }
@@ -664,6 +668,54 @@ namespace SuperBackendNR85IA.Services
             });
 
             return t;
+        }
+
+        private FrontendDataPayload BuildFrontendPayload(TelemetryModel t, List<DriverInfo> allDrivers)
+        {
+            if (t == null) return null!;
+
+            var payload = new FrontendDataPayload
+            {
+                Telemetry = new TelemetryPayload
+                {
+                    PlayerCarIdx = t.PlayerCarIdx,
+                    SessionTime = t.SessionTime,
+                    SessionTimeRemain = t.SessionTimeRemain,
+                    LapCompleted = t.Lap,
+                    SessionLapsRemain = t.LapsRemainingRace,
+                    TrackTemp = t.TrackSurfaceTemp,
+                    TrackTempCrew = t.TrackTempCrew,
+                    DcBrakeBias = t.DcBrakeBias,
+                    TrackWetnessPCA = 0f,
+                    PlayerCarMyIncidentCount = t.PlayerCarTeamIncidentCount
+                },
+                WeekendInfo = new WeekendInfoPayload
+                {
+                    TrackDisplayName = t.TrackDisplayName,
+                    TrackAirTemp = t.TrackAirTemp
+                },
+                SessionInfo = new SessionInfoPayload
+                {
+                    SessionType = t.SessionTypeFromYaml,
+                    IncidentLimit = t.IncidentLimit,
+                    CurrentSessionTotalLaps = t.TotalLaps
+                },
+                Drivers = allDrivers?.Select(d => new DriverPayload
+                {
+                    CarIdx = d.CarIdx,
+                    UserName = d.UserName,
+                    IRating = d.IRating,
+                    LicLevel = d.LicLevel,
+                    LicSubLevel = d.LicSubLevel,
+                    CarClassID = d.CarClassID,
+                    CarClassShortName = d.CarClassShortName,
+                    CarPath = d.CarPath,
+                    TeamIncidentCount = 0
+                }).ToList() ?? new List<DriverPayload>(),
+                Results = new List<ResultPayload>()
+            };
+
+            return payload;
         }
     }
 }
