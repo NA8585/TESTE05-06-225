@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace SuperBackendNR85IA.Services
 {
@@ -16,21 +17,24 @@ namespace SuperBackendNR85IA.Services
 
     public class CarTrackDataStore
     {
-        // Salva o arquivo no mesmo diretório do executável para evitar
-        // depender do diretório de trabalho corrente da aplicação
-        private static readonly string FilePath = Path.Combine(
-            AppContext.BaseDirectory,
-            "carTrackData.json");
+        // Caminho para armazenamento do JSON contendo dados por carro/pista
+        private readonly string _filePath;
         private readonly object _lock = new();
         private Dictionary<string, CarTrackData> _data = new();
 
-        public CarTrackDataStore()
+        public CarTrackDataStore(IConfiguration configuration)
         {
+            // Usa caminho configurado ou cai no diretório atual caso não exista
+            var configured = configuration["CarTrackStorePath"];
+            _filePath = string.IsNullOrWhiteSpace(configured)
+                ? Path.Combine(AppContext.BaseDirectory, "carTrackData.json")
+                : configured;
+
             try
             {
-                if (File.Exists(FilePath))
+                if (File.Exists(_filePath))
                 {
-                    var json = File.ReadAllText(FilePath);
+                    var json = File.ReadAllText(_filePath);
                     _data = JsonSerializer.Deserialize<Dictionary<string, CarTrackData>>(json) ?? new();
                 }
             }
@@ -61,7 +65,7 @@ namespace SuperBackendNR85IA.Services
                 try
                 {
                     var json = JsonSerializer.Serialize(_data, new JsonSerializerOptions { WriteIndented = true });
-                    File.WriteAllText(FilePath, json);
+                    File.WriteAllText(_filePath, json);
                 }
                 catch { }
             }
