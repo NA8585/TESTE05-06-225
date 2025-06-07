@@ -281,45 +281,11 @@ namespace SuperBackendNR85IA.Services
             if (t.SessionBestSectorTimes.Length == 0 && sec?.BestSectorTimes?.Length > 0)
                 t.SessionBestSectorTimes = sec.BestSectorTimes;
 
-            // Delta piloto × melhores setores da sessão — pré-2023: "LapDeltaToSessionBestSectorTimes" | 2023+: "SectorTimeDeltaSessionBestLap"
-            if (t.LapAllSectorTimes.Length > 0 && t.SessionBestSectorTimes.Length == t.LapAllSectorTimes.Length)
-            {
-                int count = t.LapAllSectorTimes.Length;
-                var deltas = new float[count];
-                for (int i = 0; i < count; i++)
-                {
-                    var tp = t.LapAllSectorTimes[i];
-                    var ts = t.SessionBestSectorTimes[i];
-                    if (tp > 1e-4f && ts > 1e-4f)
-                        deltas[i] = tp - ts;
-                    else
-                        deltas[i] = 0f;
-                }
-                t.LapDeltaToSessionBestSectorTimes = deltas;
-            }
-            else
-            {
-                t.LapDeltaToSessionBestSectorTimes = Arr("LapDeltaToSessionBestSectorTimes", "SectorTimeDeltaSessionBestLap");
-            }
-
             t.SectorCount = Math.Max(Math.Max(t.LapAllSectorTimes.Length, t.SessionBestSectorTimes.Length), sec?.SectorCount ?? 0);
             if (t.SectorCount <= 0)
                 t.SectorCount = 3;
 
-            if (t.LapAllSectorTimes.Length == 0 && t.LapLastLapTime > 0 && t.SectorCount > 0)
-                t.LapAllSectorTimes = Enumerable.Repeat(t.LapLastLapTime / t.SectorCount, t.SectorCount).ToArray();
-
-            if (t.SessionBestSectorTimes.Length == 0 && t.LapBestLapTime > 0 && t.SectorCount > 0)
-                t.SessionBestSectorTimes = Enumerable.Repeat(t.LapBestLapTime / t.SectorCount, t.SectorCount).ToArray();
-
-            if (t.LapDeltaToSessionBestSectorTimes.Length == 0 && t.LapAllSectorTimes.Length == t.SessionBestSectorTimes.Length)
-            {
-                int count = t.SectorCount;
-                var deltas = new float[count];
-                for (int i = 0; i < count; i++)
-                    deltas[i] = t.LapAllSectorTimes[i] - t.SessionBestSectorTimes[i];
-                t.LapDeltaToSessionBestSectorTimes = deltas;
-            }
+            TelemetryCalculations.UpdateSectorData(ref t);
 
             // Optimal Lap Time — tenta "LapOptimalLapTime" se existir, senão soma dos melhores setores
             var lapOpt = GetSdkValue<float>(d, "LapOptimalLapTime") ?? 0f;
