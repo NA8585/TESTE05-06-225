@@ -78,6 +78,7 @@ namespace SuperBackendNR85IA.Services
                             TelemetryCalculationsOverlay.PreencherOverlayTanque(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlayPneus(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlaySetores(ref telemetryModel);
+                            TelemetryCalculationsOverlay.PreencherOverlayDelta(ref telemetryModel);
 
                             await _broadcaster.BroadcastTelemetry(telemetryModel);
                         }
@@ -272,6 +273,12 @@ namespace SuperBackendNR85IA.Services
             // Melhores setores da sessão — pré-2023: "SessionBestSectorTimes" | 2023+: "SectorTimeSessionFastestLap"
             t.SessionBestSectorTimes = Arr("SessionBestSectorTimes", "SectorTimeSessionFastestLap");
 
+            if (t.LapAllSectorTimes.Length == 0 && sec?.SectorTimes?.Length > 0)
+                t.LapAllSectorTimes = sec.SectorTimes;
+
+            if (t.SessionBestSectorTimes.Length == 0 && sec?.BestSectorTimes?.Length > 0)
+                t.SessionBestSectorTimes = sec.BestSectorTimes;
+
             // Delta piloto × melhores setores da sessão — pré-2023: "LapDeltaToSessionBestSectorTimes" | 2023+: "SectorTimeDeltaSessionBestLap"
             if (t.LapAllSectorTimes.Length > 0 && t.SessionBestSectorTimes.Length == t.LapAllSectorTimes.Length)
             {
@@ -291,6 +298,25 @@ namespace SuperBackendNR85IA.Services
             else
             {
                 t.LapDeltaToSessionBestSectorTimes = Arr("LapDeltaToSessionBestSectorTimes", "SectorTimeDeltaSessionBestLap");
+            }
+
+            t.SectorCount = Math.Max(Math.Max(t.LapAllSectorTimes.Length, t.SessionBestSectorTimes.Length), sec?.SectorCount ?? 0);
+            if (t.SectorCount <= 0)
+                t.SectorCount = 3;
+
+            if (t.LapAllSectorTimes.Length == 0 && t.LapLastLapTime > 0 && t.SectorCount > 0)
+                t.LapAllSectorTimes = Enumerable.Repeat(t.LapLastLapTime / t.SectorCount, t.SectorCount).ToArray();
+
+            if (t.SessionBestSectorTimes.Length == 0 && t.LapBestLapTime > 0 && t.SectorCount > 0)
+                t.SessionBestSectorTimes = Enumerable.Repeat(t.LapBestLapTime / t.SectorCount, t.SectorCount).ToArray();
+
+            if (t.LapDeltaToSessionBestSectorTimes.Length == 0 && t.LapAllSectorTimes.Length == t.SessionBestSectorTimes.Length)
+            {
+                int count = t.SectorCount;
+                var deltas = new float[count];
+                for (int i = 0; i < count; i++)
+                    deltas[i] = t.LapAllSectorTimes[i] - t.SessionBestSectorTimes[i];
+                t.LapDeltaToSessionBestSectorTimes = deltas;
             }
 
             // Optimal Lap Time — tenta "LapOptimalLapTime" se existir, senão soma dos melhores setores

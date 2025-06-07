@@ -249,26 +249,7 @@
         <div id="main-delta-bar-fill" class="bar-fill setor-neutro" style="width:0%; left:50%;"></div>
       </div>
       <div id="main-delta-text" class="text-gray-300">--</div>
-      <div class="sectors-container">
-        <div class="sector-bar-item">
-          <div class="sector-bar-container">
-            <div id="sector-bar-1" class="sector-fill setor-neutro" style="width:0%;"></div>
-          </div>
-          <div id="sector-time-1" class="sector-time-text text-gray-300">--</div>
-        </div>
-        <div class="sector-bar-item">
-          <div class="sector-bar-container">
-            <div id="sector-bar-2" class="sector-fill setor-neutro" style="width:0%;"></div>
-          </div>
-          <div id="sector-time-2" class="sector-time-text text-gray-300">--</div>
-        </div>
-        <div class="sector-bar-item">
-          <div class="sector-bar-container">
-            <div id="sector-bar-3" class="sector-fill setor-neutro" style="width:0%;"></div>
-          </div>
-          <div id="sector-time-3" class="sector-time-text text-gray-300">--</div>
-        </div>
-      </div>
+      <div class="sectors-container" id="sectors-container"></div>
     </div>
   </div>
 
@@ -585,8 +566,36 @@
     const gapFrontEl        = document.getElementById('gap-front');
     const mainDeltaBarFill  = document.getElementById('main-delta-bar-fill');
     const mainDeltaText     = document.getElementById('main-delta-text');
-    const sectorBarEls      = [document.getElementById('sector-bar-1'), document.getElementById('sector-bar-2'), document.getElementById('sector-bar-3')];
-    const sectorTimeEls     = [document.getElementById('sector-time-1'), document.getElementById('sector-time-2'), document.getElementById('sector-time-3')];
+    const sectorContainer   = document.getElementById('sectors-container');
+    let sectorBarEls  = [];
+    let sectorTimeEls = [];
+
+    function ensureSectorElements(count) {
+      if (sectorBarEls.length === count) return;
+      sectorContainer.innerHTML = '';
+      sectorBarEls = [];
+      sectorTimeEls = [];
+      for (let i = 0; i < count; i++) {
+        const item = document.createElement('div');
+        item.className = 'sector-bar-item';
+        const barContainer = document.createElement('div');
+        barContainer.className = 'sector-bar-container';
+        const bar = document.createElement('div');
+        bar.className = 'sector-fill setor-neutro';
+        bar.style.width = '0%';
+        bar.id = `sector-bar-${i+1}`;
+        barContainer.appendChild(bar);
+        const time = document.createElement('div');
+        time.className = 'sector-time-text text-gray-300';
+        time.textContent = '--';
+        time.id = `sector-time-${i+1}`;
+        item.appendChild(barContainer);
+        item.appendChild(time);
+        sectorContainer.appendChild(item);
+        sectorBarEls.push(bar);
+        sectorTimeEls.push(time);
+      }
+    }
 
     function getColorClasses(value, isBest = false) {
       if (isBest) return ['setor-roxo', 'text-purple-400'];
@@ -609,6 +618,7 @@
     }
 
     function updateSectorBars(values = [], bestFlags = []) {
+      ensureSectorElements(values.length);
       values.forEach((v,i) => {
         if(!sectorBarEls[i] || !sectorTimeEls[i]) return;
         const valOrDefault = v ?? 0; // Trata null ou undefined como 0 para os cálculos
@@ -640,11 +650,11 @@
 
                 // --- Processamento específico para os campos da overlay-delta ---
                 // CORREÇÃO PARA CAMELCASE
-                const deltaValue = d.lapDeltaToSessionBestLap ?? d.lapDeltaToBestLap ?? d.sessionDeltaToLeader ?? 0;
-                const timeDeltaAhead = d.timeDeltaToCarAhead; 
-                const timeDeltaBehind = d.timeDeltaToCarBehind; 
-                const sectorDeltas = d.sectorDeltas; 
-                const sectorIsBest = d.sectorIsBest; 
+                const deltaValue = dados.lapDeltaToSessionBestLap ?? dados.lapDeltaToBestLap ?? dados.sessionDeltaToLeader ?? 0;
+                const timeDeltaAhead = dados.timeDeltaToCarAhead;
+                const timeDeltaBehind = dados.timeDeltaToCarBehind;
+                const sectorDeltas = dados.sectorDeltas;
+                const sectorIsBest = dados.sectorIsBest;
 
                 // Atualiza o delta principal
                 mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
@@ -660,7 +670,7 @@
                 if (Array.isArray(sectorDeltas) && Array.isArray(sectorIsBest) && sectorDeltas.length === sectorIsBest.length) {
                     updateSectorBars(sectorDeltas, sectorIsBest);
                 } else {
-                    updateSectorBars([0,0,0], [false,false,false]);
+                    updateSectorBars([], []);
                 }
                 // --- Fim do processamento específico ---
 
@@ -680,8 +690,9 @@
     }
 
     // --- Inicialização ---
-    document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', () => {
       loadAllSettings();
+      ensureSectorElements(3);
       connectWebSocket();
       // Estado inicial dos botões de lock/click-through é ditado por onEditMode se electronAPI estiver presente
       // Se não, eles iniciam como definidos em loadAllSettings
