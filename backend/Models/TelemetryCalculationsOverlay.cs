@@ -98,5 +98,50 @@ namespace SuperBackendNR85IA.Calculations
             foreach (var setor in model.SessionBestSectorTimes)
                 model.EstLapTime += setor;
         }
+
+        public static void PreencherOverlayDelta(ref TelemetryModel model)
+        {
+            // Tempo até o carro à frente usando CarIdxF2Time
+            if (model.CarIdxF2Time.Length > model.PlayerCarIdx)
+                model.TimeDeltaToCarAhead = model.CarIdxF2Time[model.PlayerCarIdx];
+            else
+                model.TimeDeltaToCarAhead = 0f;
+
+            model.TimeDeltaToCarBehind = 0f;
+            if (model.CarIdxPosition.Length == model.CarIdxF2Time.Length &&
+                model.PlayerCarIdx >= 0 && model.PlayerCarIdx < model.CarIdxPosition.Length)
+            {
+                int myPos = model.CarIdxPosition[model.PlayerCarIdx];
+                for (int i = 0; i < model.CarIdxPosition.Length; i++)
+                {
+                    if (model.CarIdxPosition[i] == myPos + 1)
+                    {
+                        if (i < model.CarIdxF2Time.Length)
+                            model.TimeDeltaToCarBehind = model.CarIdxF2Time[i];
+                        break;
+                    }
+                }
+            }
+
+            model.SectorDeltas = model.LapDeltaToSessionBestSectorTimes ?? Array.Empty<float>();
+
+            if (model.LapAllSectorTimes.Length == model.SessionBestSectorTimes.Length &&
+                model.LapAllSectorTimes.Length > 0)
+            {
+                int len = model.LapAllSectorTimes.Length;
+                var flags = new bool[len];
+                for (int i = 0; i < len; i++)
+                {
+                    float lap = model.LapAllSectorTimes[i];
+                    float best = model.SessionBestSectorTimes[i];
+                    flags[i] = lap > 0 && Math.Abs(lap - best) < 1e-4f;
+                }
+                model.SectorIsBest = flags;
+            }
+            else
+            {
+                model.SectorIsBest = Array.Empty<bool>();
+            }
+        }
     }
 }

@@ -78,6 +78,7 @@ namespace SuperBackendNR85IA.Services
                             TelemetryCalculationsOverlay.PreencherOverlayTanque(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlayPneus(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlaySetores(ref telemetryModel);
+                            TelemetryCalculationsOverlay.PreencherOverlayDelta(ref telemetryModel);
 
                             await _broadcaster.BroadcastTelemetry(telemetryModel);
                         }
