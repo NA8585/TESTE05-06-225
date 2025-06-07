@@ -4,6 +4,7 @@ using System.Net.WebSockets;                 // Para WebSocket e WebSocketCloseS
 using System.Collections.Concurrent;           // Para ConcurrentDictionary
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SuperBackendNR85IA.Models;              // Para TelemetryModel
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -77,7 +78,7 @@ namespace SuperBackendNR85IA.Services
             webSocket.Dispose();
         }
 
-        public async Task BroadcastTelemetry(object telemetryData)
+        public async Task BroadcastTelemetry(TelemetryModel telemetryData)
         {
             if (telemetryData == null || !_clients.Any())
                 return;

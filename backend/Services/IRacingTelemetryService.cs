@@ -31,6 +31,7 @@ namespace SuperBackendNR85IA.Services
         private readonly CarTrackDataStore _store = new();
         private string _carPath = string.Empty;
         private string _trackName = string.Empty;
+        private bool _awaitingStoredData = false;
 
         public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
         {
@@ -72,11 +73,11 @@ namespace SuperBackendNR85IA.Services
                         var telemetryModel = BuildTelemetryModel();
                         if (telemetryModel != null)
                         {
-                            var allDrivers = _cachedYamlData.Drv != null
-                                ? new List<DriverInfo> { _cachedYamlData.Drv }
-                                : new List<DriverInfo>();
-                            var payload = BuildFrontendPayload(telemetryModel, allDrivers);
-                            await _broadcaster.BroadcastTelemetry(payload);
+                            TelemetryCalculationsOverlay.PreencherOverlayTanque(ref telemetryModel);
+                            TelemetryCalculationsOverlay.PreencherOverlayPneus(ref telemetryModel);
+                            TelemetryCalculationsOverlay.PreencherOverlaySetores(ref telemetryModel);
+
+                            await _broadcaster.BroadcastTelemetry(telemetryModel);
                         }
                         _lastTick = _sdk.Data.TickCount;
                     }
@@ -373,6 +374,7 @@ namespace SuperBackendNR85IA.Services
                 _consumoVoltaAtual = 0f;
                 _consumoUltimaVolta = 0f;
                 _lastLap = t.Lap;
+                _awaitingStoredData = true;
             }
             t.SessionState      = GetSdkValue<int>(d, "SessionState") ?? 0;
             t.PaceMode          = GetSdkValue<int>(d, "PaceMode") ?? 0;
@@ -544,13 +546,19 @@ namespace SuperBackendNR85IA.Services
                 t.ChanceOfRain        = wkd.ChanceOfRain;
             }
 
-            if (sessionChanged)
+            if (drv != null)
+                _carPath = string.IsNullOrEmpty(drv.CarPath) ? _carPath : drv.CarPath;
+            if (wkd != null)
+                _trackName = string.IsNullOrEmpty(wkd.TrackDisplayName) ? _trackName : wkd.TrackDisplayName;
+
+            if (_awaitingStoredData && !string.IsNullOrEmpty(_carPath) && !string.IsNullOrEmpty(_trackName))
             {
-                _carPath = drv?.CarPath ?? string.Empty;
-                _trackName = wkd?.TrackDisplayName ?? string.Empty;
                 var saved = _store.Get(_carPath, _trackName);
                 _consumoUltimaVolta = saved.ConsumoUltimaVolta;
                 t.ConsumoMedio = saved.ConsumoMedio;
+                if (saved.FuelCapacity > 0)
+                    t.FuelCapacity = saved.FuelCapacity;
+                _awaitingStoredData = false;
             }
 
             if (ses != null)
@@ -658,61 +666,19 @@ namespace SuperBackendNR85IA.Services
                 t.FuelStatus = new FuelStatus { Text = "ERRO", Class = "status-danger" };
             }
 
-            _store.Update(new CarTrackData
+            if (!string.IsNullOrEmpty(_carPath) && !string.IsNullOrEmpty(_trackName))
             {
-                CarPath = _carPath,
-                TrackName = _trackName,
-                ConsumoMedio = t.ConsumoMedio,
-                ConsumoUltimaVolta = _consumoUltimaVolta,
-                FuelCapacity = t.FuelCapacity
-            });
+                _store.Update(new CarTrackData
+                {
+                    CarPath = _carPath,
+                    TrackName = _trackName,
+                    ConsumoMedio = t.ConsumoMedio,
+                    ConsumoUltimaVolta = _consumoUltimaVolta,
+                    FuelCapacity = t.FuelCapacity
+                });
+            }
 
             return t;
         }
 
-        private FrontendDataPayload BuildFrontendPayload(TelemetryModel t, List<DriverInfo> allDrivers)
-        {
-            if (t == null) return null!;
-
-            var payload = new FrontendDataPayload
-            {
-                Telemetry = new TelemetryPayload
-                {
-                    PlayerCarIdx = t.PlayerCarIdx,
-                    SessionTime = t.SessionTime,
-                    SessionTimeRemain = t.SessionTimeRemain,
-                    LapCompleted = t.Lap,
-                    SessionLapsRemain = t.LapsRemainingRace,
-                    TrackTemp = t.TrackSurfaceTemp,
-                    TrackTempCrew = t.TrackTempCrew,
-                    DcBrakeBias = t.DcBrakeBias,
-                    TrackWetnessPCA = 0f,
-                    PlayerCarMyIncidentCount = t.PlayerCarTeamIncidentCount
-                },
-                WeekendInfo = new WeekendInfoPayload
-                {
-                    TrackDisplayName = t.TrackDisplayName,
-                    TrackAirTemp = t.TrackAirTemp
-                },
-                SessionInfo = new SessionInfoPayload
-                {
-                    SessionType = t.SessionTypeFromYaml,
-                    IncidentLimit = t.IncidentLimit,
-                    CurrentSessionTotalLaps = t.TotalLaps
-                },
-                Drivers = allDrivers?.Select(d => new DriverPayload
-                {
-                    CarIdx = d.CarIdx,
-                    UserName = d.UserName,
-                    IRating = d.IRating,
-                    LicLevel = d.LicLevel,
-                    LicSubLevel = d.LicSubLevel,
-                    CarClassID = d.CarClassID,
-                    CarClassShortName = d.CarClassShortName,
-                    CarPath = d.CarPath,
-                    TeamIncidentCount = 0
-                }).ToList() ?? new List<DriverPayload>(),
-                Results = new List<ResultPayload>()
-            };
-         }
 }
