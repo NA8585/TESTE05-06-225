@@ -15,6 +15,7 @@ namespace SuperBackendNR85IA.Services
     public sealed class IRacingTelemetryService : BackgroundService
     {
         private const int TICK_MS = 16; // ~60 Hz
+        private const float MIN_VALID_LAP_FUEL = 0.05f; // ignora voltas sem consumo
         private readonly ILogger<IRacingTelemetryService> _log;
         private readonly TelemetryBroadcaster _broadcaster;
         private readonly IRacingSdk _sdk = new();
@@ -233,9 +234,12 @@ namespace SuperBackendNR85IA.Services
                 if (_lastLap >= 0)
                 {
                     _consumoUltimaVolta = _consumoVoltaAtual;
-                    _ultimoConsumoVoltas.Enqueue(_consumoUltimaVolta);
-                    while (_ultimoConsumoVoltas.Count > 3)
-                        _ultimoConsumoVoltas.Dequeue();
+                    if (_consumoUltimaVolta > MIN_VALID_LAP_FUEL && !t.OnPitRoad)
+                    {
+                        _ultimoConsumoVoltas.Enqueue(_consumoUltimaVolta);
+                        while (_ultimoConsumoVoltas.Count > 3)
+                            _ultimoConsumoVoltas.Dequeue();
+                    }
                 }
                 _lastLap = t.Lap;
                 _fuelAtLapStart = t.FuelLevel;
@@ -622,8 +626,8 @@ namespace SuperBackendNR85IA.Services
                     : (lapsEfetivos > 0.5f && t.FuelUsedTotal > 0
                         ? t.FuelUsedTotal / lapsEfetivos
                         : 0f);
-                if (novoConsumoMedio > 0)
-                    t.ConsumoMedio = novoConsumoMedio;
+                if (novoConsumoMedio > 0 && !t.OnPitRoad)
+                    t.ConsumoMedio = (float)Math.Round(novoConsumoMedio, 3);  
                 t.VoltasRestantesMedio = t.ConsumoMedio > 0
                     ? (t.FuelLevel / t.ConsumoMedio)
                     : 0f;

@@ -1,4 +1,5 @@
 // Extensões de cálculo e preenchimento para overlays
+using System;
 using SuperBackendNR85IA.Models;
 
 namespace SuperBackendNR85IA.Calculations
@@ -16,7 +17,7 @@ namespace SuperBackendNR85IA.Calculations
             );
 
             float diffLap = model.FuelLevelLapStart - model.FuelLevel;
-            if (diffLap > 0)
+            if (diffLap > 0 && !model.OnPitRoad)
                 model.ConsumoVoltaAtual = diffLap;
             if (model.ConsumoVoltaAtual <= 0)
             {
@@ -40,7 +41,6 @@ namespace SuperBackendNR85IA.Calculations
                 : 0f;
             if (novoConsumoMedio > 0)
                 model.ConsumoMedio = novoConsumoMedio;
-
             // Agora os cálculos que dependem do ConsumoMedio
             model.VoltasRestantesMedio = model.ConsumoMedio > 0
                 ? model.FuelLevel / model.ConsumoMedio
