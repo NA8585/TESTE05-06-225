@@ -198,33 +198,47 @@ namespace SuperBackendNR85IA.Services
             var d = _sdk.Data;
             var t = new TelemetryModel();
 
-            // --- Dados básicos do veículo ---
-            t.Vehicle.Speed               = GetSdkValue<float>(d, "Speed") ?? 0f;
-            t.Vehicle.Rpm                 = GetSdkValue<float>(d, "RPM") ?? 0f;
-            t.Vehicle.Throttle            = GetSdkValue<float>(d, "Throttle") ?? 0f;
-            t.Vehicle.Brake               = GetSdkValue<float>(d, "Brake") ?? 0f;
-            t.Vehicle.Clutch              = GetSdkValue<float>(d, "Clutch") ?? 0f;
-            t.Vehicle.SteeringWheelAngle  = GetSdkValue<float>(d, "SteeringWheelAngle") ?? 0f;
-            t.Vehicle.Gear                = GetSdkValue<int>(d, "Gear") ?? 0;
-            t.Vehicle.FuelLevel           = GetSdkValue<float>(d, "FuelLevel") ?? 0f;
-            t.Vehicle.FuelLevelPct        = GetSdkValue<float>(d, "FuelLevelPct") ?? 0f;
-            t.FuelCapacity                = t.Vehicle.FuelLevelPct > 0f ? t.Vehicle.FuelLevel / t.Vehicle.FuelLevelPct : 0f;
-            t.Vehicle.WaterTemp           = GetSdkValue<float>(d, "WaterTemp") ?? 0f;
-            t.Vehicle.OilTemp             = GetSdkValue<float>(d, "OilTemp") ?? 0f;
-            t.Vehicle.OilPress            = GetSdkValue<float>(d, "OilPress") ?? 0f;
-            t.Vehicle.FuelPress           = GetSdkValue<float>(d, "FuelPress") ?? 0f;
-            t.Vehicle.ManifoldPress       = GetSdkValue<float>(d, "ManifoldPress") ?? 0f;
-            t.Vehicle.EngineWarnings      = GetSdkValue<int>(d, "EngineWarnings") ?? 0;
-            t.Vehicle.OnPitRoad           = GetSdkValue<bool>(d, "OnPitRoad") ?? false;
+            PopulateVehicleData(d, t);
+            UpdateLapInfo(d, t);
+            ReadSectorTimes(d, t);
+            ComputeForceFeedback(d, t);
+            ComputeRelativeDistances(d, t);
+            PopulateSessionInfo(d, t);
+            PopulateTyres(d, t);
+            await ApplyYamlData(d, t);
+            RunCustomCalculations(d, t);
+            await PersistCarTrackData(t);
+
+            return t;
+        }
+        private void PopulateVehicleData(IRacingSdkData d, TelemetryModel t)
+        {
+            t.Vehicle.Speed              = GetSdkValue<float>(d, "Speed") ?? 0f;
+            t.Vehicle.Rpm                = GetSdkValue<float>(d, "RPM") ?? 0f;
+            t.Vehicle.Throttle           = GetSdkValue<float>(d, "Throttle") ?? 0f;
+            t.Vehicle.Brake              = GetSdkValue<float>(d, "Brake") ?? 0f;
+            t.Vehicle.Clutch             = GetSdkValue<float>(d, "Clutch") ?? 0f;
+            t.Vehicle.SteeringWheelAngle = GetSdkValue<float>(d, "SteeringWheelAngle") ?? 0f;
+            t.Vehicle.Gear               = GetSdkValue<int>(d, "Gear") ?? 0;
+            t.Vehicle.FuelLevel          = GetSdkValue<float>(d, "FuelLevel") ?? 0f;
+            t.Vehicle.FuelLevelPct       = GetSdkValue<float>(d, "FuelLevelPct") ?? 0f;
+            t.FuelCapacity               = t.Vehicle.FuelLevelPct > 0f ? t.Vehicle.FuelLevel / t.Vehicle.FuelLevelPct : 0f;
+            t.Vehicle.WaterTemp          = GetSdkValue<float>(d, "WaterTemp") ?? 0f;
+            t.Vehicle.OilTemp            = GetSdkValue<float>(d, "OilTemp") ?? 0f;
+            t.Vehicle.OilPress           = GetSdkValue<float>(d, "OilPress") ?? 0f;
+            t.Vehicle.FuelPress          = GetSdkValue<float>(d, "FuelPress") ?? 0f;
+            t.Vehicle.ManifoldPress      = GetSdkValue<float>(d, "ManifoldPress") ?? 0f;
+            t.Vehicle.EngineWarnings     = GetSdkValue<int>(d, "EngineWarnings") ?? 0;
+            t.Vehicle.OnPitRoad          = GetSdkValue<bool>(d, "OnPitRoad") ?? false;
             t.Vehicle.PlayerCarLastPitTime = GetSdkValue<float>(d, "PlayerCarLastPitTime") ?? 0f;
             t.Vehicle.PlayerCarPitStopCount = GetSdkValue<int>(d, "PlayerCarPitStopCount") ?? 0;
-            t.Vehicle.PitRepairLeft       = GetSdkValue<float>(d, "PitRepairLeft") ?? 0f;
-            t.Vehicle.PitOptRepairLeft    = GetSdkValue<float>(d, "PitOptRepairLeft") ?? 0f;
-
-            // CarSpeed para FFB parado
+            t.Vehicle.PitRepairLeft      = GetSdkValue<float>(d, "PitRepairLeft") ?? 0f;
+            t.Vehicle.PitOptRepairLeft   = GetSdkValue<float>(d, "PitOptRepairLeft") ?? 0f;
             t.Vehicle.CarSpeed = t.Vehicle.Speed;
+        }
 
-            // --- Dados de volta ---
+        private void UpdateLapInfo(IRacingSdkData d, TelemetryModel t)
+        {
             t.Lap                         = GetSdkValue<int>(d, "Lap") ?? 0;
             t.LapDistPct                  = GetSdkValue<float>(d, "LapDistPct") ?? 0f;
             t.LapCurrentLapTime           = GetSdkValue<float>(d, "LapCurrentLapTime") ?? 0f;
@@ -247,24 +261,24 @@ namespace SuperBackendNR85IA.Services
                     }
                 }
                 _lastLap = t.Lap;
-                _fuelAtLapStart = t.FuelLevel;
+                _fuelAtLapStart = t.Vehicle.FuelLevel;
                 _consumoVoltaAtual = 0f;
             }
+
             t.FuelLevelLapStart = _fuelAtLapStart;
 
-            float diffLap = _fuelAtLapStart - t.FuelLevel;
+            float diffLap = _fuelAtLapStart - t.Vehicle.FuelLevel;
             if (diffLap > 0)
                 _consumoVoltaAtual = diffLap;
+        }
 
-            // ─────────────────────────────────────────────────────────────────────────
-            // Coleta de SETORES (arrays prontas do SDK)
-            // ─────────────────────────────────────────────────────────────────────────
-
+        private void ReadSectorTimes(IRacingSdkData d, TelemetryModel t)
+        {
             float[] Arr(params string[] names)
             {
-                foreach (var nomeVar in names)
+                foreach (var n in names)
                 {
-                    var raw = GetSdkArray<float>(d, nomeVar);
+                    var raw = GetSdkArray<float>(d, n);
                     if (raw != null && raw.Length > 0 && raw.Any(v => v.HasValue))
                         return raw.Select(v => v ?? 0f).ToArray();
                 }
@@ -272,82 +286,66 @@ namespace SuperBackendNR85IA.Services
             }
 
             var sec = _cachedYamlData.Sec;
-
-            // Última volta (setores) — pré-2023: "LapLastLapSectorTimes" | 2023+: "SectorTimeSessionLastLap"
             t.LapAllSectorTimes = Arr("LapLastLapSectorTimes", "SectorTimeSessionLastLap");
-
-            // Melhores setores da sessão — pré-2023: "SessionBestSectorTimes" | 2023+: "SectorTimeSessionFastestLap"
             t.SessionBestSectorTimes = Arr("SessionBestSectorTimes", "SectorTimeSessionFastestLap");
 
             if (t.LapAllSectorTimes.Length == 0 && sec?.SectorTimes?.Length > 0)
                 t.LapAllSectorTimes = sec.SectorTimes;
-
             if (t.SessionBestSectorTimes.Length == 0 && sec?.BestSectorTimes?.Length > 0)
                 t.SessionBestSectorTimes = sec.BestSectorTimes;
 
             t.SectorCount = Math.Max(Math.Max(t.LapAllSectorTimes.Length, t.SessionBestSectorTimes.Length), sec?.SectorCount ?? 0);
-            if (t.SectorCount <= 0)
-                t.SectorCount = 3;
+            if (t.SectorCount <= 0) t.SectorCount = 3;
 
             TelemetryCalculations.UpdateSectorData(ref t);
 
-            // Optimal Lap Time — tenta "LapOptimalLapTime" se existir, senão soma dos melhores setores
             var lapOpt = GetSdkValue<float>(d, "LapOptimalLapTime") ?? 0f;
             t.EstLapTime = lapOpt > 1e-4f ? lapOpt : t.LapBestLapTime;
+        }
 
-            // ─────────────────────────────────────────────────────────────────────────
-            // Force Feedback (FFB)
-            // ─────────────────────────────────────────────────────────────────────────
-
+        private void ComputeForceFeedback(IRacingSdkData d, TelemetryModel t)
+        {
             t.FfbPercent = GetSdkValue<float>(d, "ForceFeedbackPct") ?? 0f;
             t.FfbClip    = GetSdkValue<bool>(d, "ForceFeedbackClip") ?? false;
-
             if (t.FfbPercent <= 0f)
             {
-                // Se não existir ou for zero, calcular pelo torque
                 var torqueNm = GetSdkValue<float>(d, "SteeringWheelTorque") ?? 0f;
                 var maxForceNm = GetSdkValue<float>(d, "SteeringWheelMaxForce") ?? 6f;
                 if (maxForceNm <= 0f) maxForceNm = 6f;
                 t.FfbPercent = MathF.Min(MathF.Abs(torqueNm) / maxForceNm, 1f);
                 t.FfbClip = t.FfbPercent >= 0.98f;
             }
+        }
 
-            // ─────────────────────────────────────────────────────────────────────────
-            // Distância Relativa (frente / trás)
-            // ─────────────────────────────────────────────────────────────────────────
-
-            var lapPctArr        = GetSdkArray<float>(d, "CarIdxLapDistPct")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
-            var posArr           = GetSdkArray<int>(d, "CarIdxPosition")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
-            var lapArr           = GetSdkArray<int>(d, "CarIdxLap")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
-            var onPitArr         = GetSdkArray<bool>(d, "CarIdxOnPitRoad")?.Select(v => v ?? false).ToArray() ?? Array.Empty<bool>();
-            var trackSurfaceArr  = GetSdkArray<int>(d, "CarIdxTrackSurface")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
-            var lastLapArr       = GetSdkArray<float>(d, "CarIdxLastLapTime")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
-            var f2TimeArr        = GetSdkArray<float>(d, "CarIdxF2Time")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
-            int myIdx     = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
+        private void ComputeRelativeDistances(IRacingSdkData d, TelemetryModel t)
+        {
+            var lapPctArr       = GetSdkArray<float>(d, "CarIdxLapDistPct")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
+            var posArr          = GetSdkArray<int>(d, "CarIdxPosition")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
+            var lapArr          = GetSdkArray<int>(d, "CarIdxLap")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
+            var onPitArr        = GetSdkArray<bool>(d, "CarIdxOnPitRoad")?.Select(v => v ?? false).ToArray() ?? Array.Empty<bool>();
+            var trackSurfaceArr = GetSdkArray<int>(d, "CarIdxTrackSurface")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
+            var lastLapArr      = GetSdkArray<float>(d, "CarIdxLastLapTime")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
+            var f2TimeArr       = GetSdkArray<float>(d, "CarIdxF2Time")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
+            int myIdx           = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
 
             if (myIdx >= 0 && myIdx < lapPctArr.Length && lapPctArr.Length == posArr.Length)
             {
                 float myPct = lapPctArr[myIdx];
-                float trackKm = GetSdkValue<float>(d, "TrackLength") ?? 1f; // já em km
+                float trackKm = GetSdkValue<float>(d, "TrackLength") ?? 1f;
                 float bestA = 1f, bestB = 1f;
-
                 for (int i = 0; i < lapPctArr.Length; i++)
                 {
                     if (i == myIdx) continue;
                     float otherPct = lapPctArr[i];
                     if (otherPct <= 0f) continue;
-
                     float delta = otherPct - myPct;
                     if (delta < -0.5f) delta += 1f;
-                    if (delta >  0.5f) delta -= 1f;
-
+                    if (delta > 0.5f) delta -= 1f;
                     if (delta > 0f && delta < bestA) bestA = delta;
                     if (delta < 0f && -delta < bestB) bestB = -delta;
                 }
-
                 t.DistanceAhead  = float.IsInfinity(bestA)  ? -1f : bestA  * trackKm * 1000f;
                 t.DistanceBehind = float.IsInfinity(bestB) ? -1f : bestB * trackKm * 1000f;
-
                 t.CarIdxLapDistPct  = lapPctArr;
                 t.CarIdxPosition    = posArr;
                 t.CarIdxLap         = lapArr;
@@ -368,15 +366,15 @@ namespace SuperBackendNR85IA.Services
                 t.CarIdxLastLapTime= Array.Empty<float>();
                 t.CarIdxF2Time     = Array.Empty<float>();
             }
+        }
 
-            // --- Sessão ---
+        private void PopulateSessionInfo(IRacingSdkData d, TelemetryModel t)
+        {
             t.Session.SessionNum        = GetSdkValue<int>(d, "SessionNum") ?? 0;
             t.Session.SessionTime       = GetSdkValue<float>(d, "SessionTime") ?? 0f;
             t.Session.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
-            bool sessionChanged = false;
             if (t.SessionNum != _lastSessionNum)
             {
-                sessionChanged = true;
                 _lastSessionNum = t.Session.SessionNum;
                 _fuelAtLapStart = t.Vehicle.FuelLevel;
                 _consumoVoltaAtual = 0f;
@@ -389,9 +387,11 @@ namespace SuperBackendNR85IA.Services
             t.Session.SessionFlags      = GetSdkValue<int>(d, "SessionFlags") ?? 0;
             t.Session.PlayerCarIdx      = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
             t.Session.TotalLaps         = GetSdkValue<int>(d, "CurrentSessionTotalLaps") ?? -1;
-            t.Session.LapsRemainingRace = GetSdkValue<int>(d, "LapsRemainingRace")    ?? 0;
+            t.Session.LapsRemainingRace = GetSdkValue<int>(d, "LapsRemainingRace") ?? 0;
+        }
 
-            // --- Pneus e Temperaturas ---
+        private void PopulateTyres(IRacingSdkData d, TelemetryModel t)
+        {
             t.Tyres.LfTempCl = GetSdkValue<float>(d, "LFtempCL") ?? 0f;
             t.Tyres.LfTempCm = GetSdkValue<float>(d, "LFtempCM") ?? 0f;
             t.Tyres.LfTempCr = GetSdkValue<float>(d, "LFtempCR") ?? 0f;
@@ -436,7 +436,6 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
             t.Tyres.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
 
-            // --- Freios e controles ---
             t.BrakeTemp        = GetSdkArray<float>(d, "BrakeTemp").Select(v => v ?? 0f).ToArray();
             t.LfBrakeLinePress = GetSdkValue<float>(d, "LFbrakeLinePress") ?? 0f;
             t.RfBrakeLinePress = GetSdkValue<float>(d, "RFbrakeLinePress") ?? 0f;
@@ -451,7 +450,6 @@ namespace SuperBackendNR85IA.Services
             t.DcDiffMiddle     = GetSdkValue<int>(d, "dcDiffMiddle") ?? 0;
             t.DcDiffExit       = GetSdkValue<int>(d, "dcDiffExit") ?? 0;
 
-            // --- Dinâmica do veículo ---
             t.LfSuspPos    = GetSdkValue<float>(d, "LFsuspPos") ?? 0f;
             t.RfSuspPos    = GetSdkValue<float>(d, "RFsuspPos") ?? 0f;
             t.LrSuspPos    = GetSdkValue<float>(d, "LRsuspPos") ?? 0f;
@@ -471,7 +469,6 @@ namespace SuperBackendNR85IA.Services
             t.Pitch        = GetSdkValue<float>(d, "Pitch") ?? 0f;
             t.Roll         = GetSdkValue<float>(d, "Roll") ?? 0f;
 
-            // --- Danos ---
             t.Damage.LfDamage        = GetSdkValue<float>(d, "LFdamage") ?? 0f;
             t.Damage.RfDamage        = GetSdkValue<float>(d, "RFdamage") ?? 0f;
             t.Damage.LrDamage        = GetSdkValue<float>(d, "LRdamage") ?? 0f;
@@ -488,31 +485,27 @@ namespace SuperBackendNR85IA.Services
             ) / 4f;
             t.Damage.ChassisDamage = t.Damage.SuspensionDamage;
 
-            // --- Sistemas especiais ---
             t.DrsStatus      = GetSdkValue<int>(d, "DrsStatus") ?? 0;
             t.CarIdxP2PCount = GetSdkArray<int>(d, "CarIdxP2P_Count").Select(v => v ?? 0).ToArray();
             t.CarIdxP2PStatus= GetSdkArray<int>(d, "CarIdxP2P_Status").Select(v => v ?? 0).ToArray();
             t.DcEnginePower  = GetSdkValue<int>(d, "dcMGUKDeploymentMode") ?? 0;
 
-            // --- Condições da pista ---
             t.TrackSurfaceTemp = GetSdkValue<float>(d, "TrackTemp") ?? 0f;
             t.TrackTempCrew    = GetSdkValue<float>(d, "TrackTempCrew") ?? 0f;
             t.TempUnits        = (GetSdkValue<bool>(d, "DisplayUnits") ?? false) ? 1 : 0;
             t.SessionTimeOfDay = GetSdkValue<float>(d, "SessionTimeOfDay") ?? 0f;
             t.TrackSurfaceMaterial = 0;
-            // Como não existe GetTrackGripStatus, deixamos em branco:
             t.TrackGripStatus  = string.Empty;
             t.TrackStatus      = string.Join(", ", EnumTranslations.TranslateSessionFlags(t.SessionFlags));
 
-            // --- Combustível ---
             t.FuelUsePerHour = GetSdkValue<float>(d, "FuelUsePerHour") ?? 0f;
             t.FuelUsePerLap  = GetSdkValue<float>(d, "FuelUsePerLap") ?? 0f;
             t.FuelPerLap     = t.FuelUsePerLap;
+        }
 
-            // --- YAML Raw ---
+        private async Task ApplyYamlData(IRacingSdkData d, TelemetryModel t)
+        {
             t.SessionInfoYaml = _sdk.Data?.SessionInfoYaml ?? string.Empty;
-
-            // --- Parse YAML (com cache) ---
             if (!string.IsNullOrEmpty(t.SessionInfoYaml) && t.SessionInfoYaml != _lastYaml)
             {
                 _log.LogDebug($"Atualizando cache do YAML. PlayerCarIdx: {t.PlayerCarIdx}, SessionNum: {t.SessionNum}");
@@ -524,8 +517,7 @@ namespace SuperBackendNR85IA.Services
                 _lastYaml = t.SessionInfoYaml;
             }
 
-            var (drv, wkd, ses, sec) = _cachedYamlData;
-
+            var (drv, wkd, ses, _) = _cachedYamlData;
             if (drv != null)
             {
                 t.UserName           = drv.UserName;
@@ -547,8 +539,8 @@ namespace SuperBackendNR85IA.Services
                 t.Skies               = EnumTranslations.TranslateSkies(GetSdkValue<int>(d, "Skies") ?? 0);
                 t.ForecastType        = wkd.ForecastType;
                 t.TrackWindVel        = wkd.TrackWindVel;
-				t.TrackAirTemp        = wkd.TrackAirTemp;
-				t.TrackNumTurns       = wkd.TrackNumTurns;
+                t.TrackAirTemp        = wkd.TrackAirTemp;
+                t.TrackNumTurns       = wkd.TrackNumTurns;
                 t.AirPressure         = wkd.AirPressure;
                 t.RelativeHumidity    = wkd.RelativeHumidity;
                 t.ChanceOfRain        = wkd.ChanceOfRain;
@@ -564,7 +556,6 @@ namespace SuperBackendNR85IA.Services
                 var saved = await _store.GetAsync(_carPath, _trackName);
                 _consumoUltimaVolta = saved.ConsumoUltimaVolta;
                 t.ConsumoMedio = saved.ConsumoMedio;
-
                 if (saved.FuelCapacity > 0)
                     t.FuelCapacity = saved.FuelCapacity;
                 _awaitingStoredData = false;
@@ -576,7 +567,6 @@ namespace SuperBackendNR85IA.Services
                 t.TotalLaps = ses.CurrentSessionTotalLaps > 0
                     ? ses.CurrentSessionTotalLaps
                     : ((ses.SessionType?.ToLower().Contains("race") ?? false) ? 0 : -1);
-
                 if (string.IsNullOrEmpty(t.SessionTypeFromYaml))
                     t.SessionTypeFromYaml = ses.SessionType ?? string.Empty;
             }
@@ -584,17 +574,16 @@ namespace SuperBackendNR85IA.Services
             {
                 t.TotalLaps = -1;
             }
+        }
 
-            // --- Dados para cálculos ---
+        private void RunCustomCalculations(IRacingSdkData d, TelemetryModel t)
+        {
             t.LapDistTotal  = GetSdkValue<float>(d, "LapDist") ?? 0f;
             t.FuelUsedTotal = GetSdkValue<float>(d, "SessionFuelUsed") ?? 0f;
-
-            // --- Cálculos personalizados ---
             try
             {
                 t.FuelUsePerLapCalc = t.FuelUsePerLap;
                 t.EstLapTimeCalc    = t.EstLapTime;
-
                 t.ConsumoVoltaAtual = _consumoVoltaAtual;
                 if (t.ConsumoVoltaAtual <= 0)
                 {
@@ -608,7 +597,6 @@ namespace SuperBackendNR85IA.Services
                         }
                     }
                 }
-
                 double lapsLeftWithCurrentFuel = TelemetryCalculations.GetFuelLapsLeft(
                     t.FuelLevel,
                     t.ConsumoVoltaAtual
@@ -617,7 +605,6 @@ namespace SuperBackendNR85IA.Services
                 t.ConsumoUltimaVolta = _consumoUltimaVolta;
                 t.VoltasRestantesUltimaVolta = _consumoUltimaVolta > 0 ?
                     t.FuelLevel / _consumoUltimaVolta : 0f;
-
                 float lapsEfetivos = t.Lap + t.LapDistPct;
                 float novoConsumoMedio = _ultimoConsumoVoltas.Count > 0
                     ? _ultimoConsumoVoltas.Average()
@@ -625,11 +612,10 @@ namespace SuperBackendNR85IA.Services
                         ? t.FuelUsedTotal / lapsEfetivos
                         : 0f);
                 if (novoConsumoMedio > 0 && !t.OnPitRoad)
-                    t.ConsumoMedio = (float)Math.Round(novoConsumoMedio, 3);  
+                    t.ConsumoMedio = (float)Math.Round(novoConsumoMedio, 3);
                 t.VoltasRestantesMedio = t.ConsumoMedio > 0
                     ? (t.FuelLevel / t.ConsumoMedio)
                     : 0f;
-
                 if (t.TotalLaps > 0)
                 {
                     t.LapsRemainingRace = t.TotalLaps - t.Lap;
@@ -641,33 +627,21 @@ namespace SuperBackendNR85IA.Services
                         ? (int)Math.Floor(t.SessionTimeRemain / t.EstLapTime)
                         : 0;
                 }
-
                 float fuelNeededForRaceLaps = (t.LapsRemainingRace > 0 && t.ConsumoMedio > 0)
                     ? (t.LapsRemainingRace * t.ConsumoMedio) : 0;
                 t.NecessarioFim = fuelNeededForRaceLaps;
-
                 float faltante = fuelNeededForRaceLaps - t.FuelLevel;
                 t.RecomendacaoAbastecimento = Math.Max(0, faltante);
-
                 t.FuelRemaining = t.FuelLevel;
                 t.FuelEta       = t.LapsRemaining * t.EstLapTime;
-
                 if (t.FuelLevel <= 0)
-                {
                     t.FuelStatus = new FuelStatus { Text = "VAZIO", Class = "status-danger" };
-                }
                 else if (t.LapsRemaining <= 1)
-                {
                     t.FuelStatus = new FuelStatus { Text = "PERIGO", Class = "status-danger" };
-                }
                 else if (t.LapsRemaining < 5)
-                {
                     t.FuelStatus = new FuelStatus { Text = "ALERTA", Class = "status-warning" };
-                }
                 else
-                {
                     t.FuelStatus = new FuelStatus { Text = "OK", Class = "status-ok" };
-                }
             }
             catch (Exception calcEx)
             {
@@ -680,7 +654,10 @@ namespace SuperBackendNR85IA.Services
                 t.RecomendacaoAbastecimento = 0;
                 t.FuelStatus = new FuelStatus { Text = "ERRO", Class = "status-danger" };
             }
+        }
 
+        private async Task PersistCarTrackData(TelemetryModel t)
+        {
             if (!string.IsNullOrEmpty(_carPath) && !string.IsNullOrEmpty(_trackName))
             {
                 await _store.UpdateAsync(new CarTrackData
@@ -692,8 +669,6 @@ namespace SuperBackendNR85IA.Services
                     FuelCapacity = t.FuelCapacity
                 });
             }
-
-            return t;
         }
     }
 
