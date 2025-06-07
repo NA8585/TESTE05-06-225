@@ -85,13 +85,13 @@ namespace SuperBackendNR85IA.Calculations
 
         public static void PreencherOverlaySetores(ref TelemetryModel model)
         {
-            if (model.LapAllSectorTimes == null || model.LapAllSectorTimes.Length == 0)
+            if (model.LapAllSectorTimes == null || model.LapAllSectorTimes.Length != model.SectorCount)
                 model.LapAllSectorTimes = new float[model.SectorCount];
 
-            if (model.LapDeltaToSessionBestSectorTimes == null || model.LapDeltaToSessionBestSectorTimes.Length == 0)
+            if (model.LapDeltaToSessionBestSectorTimes == null || model.LapDeltaToSessionBestSectorTimes.Length != model.SectorCount)
                 model.LapDeltaToSessionBestSectorTimes = new float[model.SectorCount];
 
-            if (model.SessionBestSectorTimes == null || model.SessionBestSectorTimes.Length == 0)
+            if (model.SessionBestSectorTimes == null || model.SessionBestSectorTimes.Length != model.SectorCount)
                 model.SessionBestSectorTimes = new float[model.SectorCount];
 
             if (model.LapAllSectorTimes.All(v => v == 0f) && model.LapLastLapTime > 0 && model.SectorCount > 0)
