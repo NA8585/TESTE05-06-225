@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SuperBackendNR85IA.Models;
 
 namespace SuperBackendNR85IA.Calculations
 {
@@ -139,6 +140,84 @@ namespace SuperBackendNR85IA.Calculations
                 status = trackSurface[playerIdx];
 
             return (pct, status);
+        }
+
+        // --- FUNÇÕES UTILIZADAS POR OVERLAYS ---
+        public static void UpdateFuelData(ref TelemetryModel model)
+        {
+            model.FuelUsePerLap = CalculateFuelPerLap(
+                model.FuelUsedTotal,
+                model.LapDistPct,
+                model.LapLastLapTime,
+                model.Lap,
+                model.FuelUsePerLap
+            );
+
+            float diffLap = model.FuelLevelLapStart - model.FuelLevel;
+            if (diffLap > 0 && !model.OnPitRoad)
+                model.ConsumoVoltaAtual = diffLap;
+
+            if (model.ConsumoVoltaAtual <= 0)
+            {
+                float[] opts = { model.FuelUsePerLap, model.FuelPerLap, model.FuelUsePerLapCalc };
+                foreach (var opt in opts)
+                {
+                    if (opt > 0)
+                    {
+                        model.ConsumoVoltaAtual = opt;
+                        break;
+                    }
+                }
+            }
+
+            model.LapsRemaining = (int)GetFuelLapsLeft(model.FuelLevel, model.ConsumoVoltaAtual);
+
+            float lapsEfetivos = model.Lap + model.LapDistPct;
+            float novoConsumoMedio = (lapsEfetivos > 0.5f && model.FuelUsedTotal > 0)
+                ? model.FuelUsedTotal / lapsEfetivos
+                : 0f;
+            if (novoConsumoMedio > 0)
+                model.ConsumoMedio = novoConsumoMedio;
+
+            model.VoltasRestantesMedio = model.ConsumoMedio > 0
+                ? model.FuelLevel / model.ConsumoMedio
+                : 0;
+
+            model.NecessarioFim = (float)GetFuelForTargetLaps(model.LapsRemainingRace, model.ConsumoMedio);
+
+            float faltante = model.NecessarioFim - model.FuelLevel;
+            model.RecomendacaoAbastecimento = MathF.Max(0, faltante);
+        }
+
+        public static void UpdateSectorData(ref TelemetryModel model)
+        {
+            if (model.SectorCount <= 0)
+                model.SectorCount = Math.Max(Math.Max(model.LapAllSectorTimes?.Length ?? 0,
+                                                     model.SessionBestSectorTimes?.Length ?? 0),
+                                             3);
+
+            if (model.LapAllSectorTimes == null || model.LapAllSectorTimes.Length != model.SectorCount)
+                model.LapAllSectorTimes = new float[model.SectorCount];
+
+            if (model.LapDeltaToSessionBestSectorTimes == null || model.LapDeltaToSessionBestSectorTimes.Length != model.SectorCount)
+                model.LapDeltaToSessionBestSectorTimes = new float[model.SectorCount];
+
+            if (model.SessionBestSectorTimes == null || model.SessionBestSectorTimes.Length != model.SectorCount)
+                model.SessionBestSectorTimes = new float[model.SectorCount];
+
+            if (model.LapAllSectorTimes.All(v => v == 0f) && model.LapLastLapTime > 0 && model.SectorCount > 0)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.LapAllSectorTimes[i] = model.LapLastLapTime / model.SectorCount;
+
+            if (model.SessionBestSectorTimes.All(v => v == 0f) && model.LapBestLapTime > 0 && model.SectorCount > 0)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.SessionBestSectorTimes[i] = model.LapBestLapTime / model.SectorCount;
+
+            if (model.LapDeltaToSessionBestSectorTimes.All(v => v == 0f) && model.LapAllSectorTimes.Length == model.SessionBestSectorTimes.Length)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.LapDeltaToSessionBestSectorTimes[i] = model.LapAllSectorTimes[i] - model.SessionBestSectorTimes[i];
+
+            model.EstLapTime = model.SessionBestSectorTimes.Sum();
         }
 
         // --- RADAR / ALERTAS ---
