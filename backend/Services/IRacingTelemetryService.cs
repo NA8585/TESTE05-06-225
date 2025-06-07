@@ -601,7 +601,7 @@ namespace SuperBackendNR85IA.Services
                 t.VoltasRestantesUltimaVolta = _consumoUltimaVolta > 0 ?
                     t.FuelLevel / _consumoUltimaVolta : 0f;
 
-                float lapsEfetivos = t.Lap + t.LapDistPct;
+                float lapsEfetivos = (t.Lap > 0) ? ((t.Lap - 1) + t.LapDistPct) : t.LapDistPct;
                 t.ConsumoMedio = (lapsEfetivos > 0 && t.FuelUsedTotal > 0)
                     ? (t.FuelUsedTotal / lapsEfetivos)
                     : 0;
