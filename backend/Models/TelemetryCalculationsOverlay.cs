@@ -1,5 +1,6 @@
 // Extensões de cálculo e preenchimento para overlays
 using System;
+using System.Linq;
 using SuperBackendNR85IA.Models;
 
 namespace SuperBackendNR85IA.Calculations
@@ -92,6 +93,18 @@ namespace SuperBackendNR85IA.Calculations
 
             if (model.SessionBestSectorTimes == null || model.SessionBestSectorTimes.Length == 0)
                 model.SessionBestSectorTimes = new float[model.SectorCount];
+
+            if (model.LapAllSectorTimes.All(v => v == 0f) && model.LapLastLapTime > 0 && model.SectorCount > 0)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.LapAllSectorTimes[i] = model.LapLastLapTime / model.SectorCount;
+
+            if (model.SessionBestSectorTimes.All(v => v == 0f) && model.LapBestLapTime > 0 && model.SectorCount > 0)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.SessionBestSectorTimes[i] = model.LapBestLapTime / model.SectorCount;
+
+            if (model.LapDeltaToSessionBestSectorTimes.All(v => v == 0f) && model.LapAllSectorTimes.Length == model.SessionBestSectorTimes.Length)
+                for (int i = 0; i < model.SectorCount; i++)
+                    model.LapDeltaToSessionBestSectorTimes[i] = model.LapAllSectorTimes[i] - model.SessionBestSectorTimes[i];
 
             // Estimativa de volta ideal com base em soma dos melhores setores
             model.EstLapTime = 0f;
