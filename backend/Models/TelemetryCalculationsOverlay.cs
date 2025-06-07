@@ -33,12 +33,13 @@ namespace SuperBackendNR85IA.Calculations
 
             model.LapsRemaining = (int)TelemetryCalculations.GetFuelLapsLeft(model.FuelLevel, model.ConsumoVoltaAtual);
 
+            // --- Cálculo de Consumo Médio ---
             float lapsEfetivos = model.Lap + model.LapDistPct;
             float novoConsumoMedio = (lapsEfetivos > 0.5f && model.FuelUsedTotal > 0)
                 ? model.FuelUsedTotal / lapsEfetivos
                 : 0f;
             if (novoConsumoMedio > 0)
-                model.ConsumoMedio = novoConsumoMedio;
+                model.ConsumoMedio = novoConsumoMedio;d7-coexcorrigir-envio-de-dados-no-
             model.VoltasRestantesMedio = model.ConsumoMedio > 0
                 ? model.FuelLevel / model.ConsumoMedio
                 : 0;

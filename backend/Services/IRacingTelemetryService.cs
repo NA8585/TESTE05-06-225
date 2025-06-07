@@ -27,6 +27,7 @@ namespace SuperBackendNR85IA.Services
         private float _fuelAtLapStart = 0f;
         private float _consumoVoltaAtual = 0f;
         private float _consumoUltimaVolta = 0f;
+        private readonly Queue<float> _ultimoConsumoVoltas = new();
         private int _lastSessionNum = -1;
         private readonly CarTrackDataStore _store = new();
         private string _carPath = string.Empty;
@@ -230,7 +231,12 @@ namespace SuperBackendNR85IA.Services
             if (t.Lap != _lastLap)
             {
                 if (_lastLap >= 0)
+                {
                     _consumoUltimaVolta = _consumoVoltaAtual;
+                    _ultimoConsumoVoltas.Enqueue(_consumoUltimaVolta);
+                    while (_ultimoConsumoVoltas.Count > 3)
+                        _ultimoConsumoVoltas.Dequeue();
+                }
                 _lastLap = t.Lap;
                 _fuelAtLapStart = t.FuelLevel;
                 _consumoVoltaAtual = 0f;
@@ -556,6 +562,7 @@ namespace SuperBackendNR85IA.Services
                 var saved = _store.Get(_carPath, _trackName);
                 _consumoUltimaVolta = saved.ConsumoUltimaVolta;
                 t.ConsumoMedio = saved.ConsumoMedio;
+
                 if (saved.FuelCapacity > 0)
                     t.FuelCapacity = saved.FuelCapacity;
                 _awaitingStoredData = false;
@@ -609,10 +616,7 @@ namespace SuperBackendNR85IA.Services
                 t.VoltasRestantesUltimaVolta = _consumoUltimaVolta > 0 ?
                     t.FuelLevel / _consumoUltimaVolta : 0f;
 
-                float lapsEfetivos = t.Lap + t.LapDistPct;
-                float novoConsumoMedio = (lapsEfetivos > 0.5f && t.FuelUsedTotal > 0)
-                    ? (t.FuelUsedTotal / lapsEfetivos)
-                    : 0f;
+                float lapsEfetivos = t.Lap + t.LapD>>>>>>> main
                 if (novoConsumoMedio > 0)
                     t.ConsumoMedio = novoConsumoMedio;
                 t.VoltasRestantesMedio = t.ConsumoMedio > 0
@@ -684,5 +688,6 @@ namespace SuperBackendNR85IA.Services
 
             return t;
         }
+    }
 
 }
