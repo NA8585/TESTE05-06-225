@@ -640,11 +640,11 @@
 
                 // --- Processamento específico para os campos da overlay-delta ---
                 // CORREÇÃO PARA CAMELCASE
-                const deltaValue = d.lapDeltaToSessionBestLap ?? d.lapDeltaToBestLap ?? d.sessionDeltaToLeader ?? 0;
-                const timeDeltaAhead = d.timeDeltaToCarAhead; 
-                const timeDeltaBehind = d.timeDeltaToCarBehind; 
-                const sectorDeltas = d.sectorDeltas; 
-                const sectorIsBest = d.sectorIsBest; 
+                const deltaValue = dados.lapDeltaToSessionBestLap ?? dados.lapDeltaToBestLap ?? dados.sessionDeltaToLeader ?? 0;
+                const timeDeltaAhead = dados.timeDeltaToCarAhead;
+                const timeDeltaBehind = dados.timeDeltaToCarBehind;
+                const sectorDeltas = dados.sectorDeltas;
+                const sectorIsBest = dados.sectorIsBest;
 
                 // Atualiza o delta principal
                 mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;

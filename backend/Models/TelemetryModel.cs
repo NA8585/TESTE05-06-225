@@ -68,6 +68,8 @@ namespace SuperBackendNR85IA.Models
         public float[] SessionBestSectorTimes { get; set; } = Array.Empty<float>();
         public float EstLapTime { get; set; }  // Ótima soma de setores ou LapOptimalLapTime
         public int SectorCount { get; set; }
+        public float[] SectorDeltas { get; set; } = Array.Empty<float>();
+        public bool[] SectorIsBest { get; set; } = Array.Empty<bool>();
 
         // ─────────────────────────────────────────────────────────────────────────
         // Force Feedback (FFB)
@@ -87,6 +89,8 @@ namespace SuperBackendNR85IA.Models
         public float[] CarIdxF2Time { get; set; } = Array.Empty<float>();
         public float DistanceAhead { get; set; }  // em metros (ou -1 se não houver)
         public float DistanceBehind { get; set; }  // em metros (ou -1 se não houver)
+        public float TimeDeltaToCarAhead { get; set; }
+        public float TimeDeltaToCarBehind { get; set; }
 
         // ─────────────────────────────────────────────────────────────────────────
         // Pneus e temperaturas
