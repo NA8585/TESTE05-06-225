@@ -267,6 +267,8 @@ namespace SuperBackendNR85IA.Services
                 return Array.Empty<float>();
             }
 
+            var sec = _cachedYamlData.Sec;
+
             // Última volta (setores) — pré-2023: "LapLastLapSectorTimes" | 2023+: "SectorTimeSessionLastLap"
             t.LapAllSectorTimes = Arr("LapLastLapSectorTimes", "SectorTimeSessionLastLap");
 
