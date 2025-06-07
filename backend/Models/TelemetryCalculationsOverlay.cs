@@ -39,9 +39,7 @@ namespace SuperBackendNR85IA.Calculations
                 ? model.FuelUsedTotal / lapsEfetivos
                 : 0f;
             if (novoConsumoMedio > 0)
-                model.ConsumoMedio = novoConsumoMedio;
-
-            // Agora os cálculos que dependem do ConsumoMedio
+                model.ConsumoMedio = novoConsumoMedio;d7-coexcorrigir-envio-de-dados-no-
             model.VoltasRestantesMedio = model.ConsumoMedio > 0
                 ? model.FuelLevel / model.ConsumoMedio
                 : 0;

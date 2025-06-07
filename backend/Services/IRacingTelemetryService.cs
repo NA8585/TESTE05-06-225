@@ -562,11 +562,7 @@ namespace SuperBackendNR85IA.Services
                 var saved = _store.Get(_carPath, _trackName);
                 _consumoUltimaVolta = saved.ConsumoUltimaVolta;
                 t.ConsumoMedio = saved.ConsumoMedio;
-                _ultimoConsumoVoltas.Clear();
-                if (saved.ConsumoMedio > 0)
-                {
-                    for (int i = 0; i < 3; i++) _ultimoConsumoVoltas.Enqueue(saved.ConsumoMedio);
-                }
+
                 if (saved.FuelCapacity > 0)
                     t.FuelCapacity = saved.FuelCapacity;
                 _awaitingStoredData = false;
@@ -620,12 +616,7 @@ namespace SuperBackendNR85IA.Services
                 t.VoltasRestantesUltimaVolta = _consumoUltimaVolta > 0 ?
                     t.FuelLevel / _consumoUltimaVolta : 0f;
 
-                float lapsEfetivos = t.Lap + t.LapDistPct;
-                float novoConsumoMedio = _ultimoConsumoVoltas.Count > 0
-                    ? _ultimoConsumoVoltas.Average()
-                    : (lapsEfetivos > 0.5f && t.FuelUsedTotal > 0
-                        ? t.FuelUsedTotal / lapsEfetivos
-                        : 0f);
+                float lapsEfetivos = t.Lap + t.LapD>>>>>>> main
                 if (novoConsumoMedio > 0)
                     t.ConsumoMedio = novoConsumoMedio;
                 t.VoltasRestantesMedio = t.ConsumoMedio > 0
@@ -697,6 +688,6 @@ namespace SuperBackendNR85IA.Services
 
             return t;
         }
-
     }
+
 }
