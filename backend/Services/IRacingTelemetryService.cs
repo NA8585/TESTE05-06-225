@@ -714,9 +714,5 @@ namespace SuperBackendNR85IA.Services
                 }).ToList() ?? new List<DriverPayload>(),
                 Results = new List<ResultPayload>()
             };
-
-            return payload;
-        }
-
-    }
+         }
 }
