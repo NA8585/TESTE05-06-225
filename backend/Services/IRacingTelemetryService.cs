@@ -17,6 +17,7 @@ namespace SuperBackendNR85IA.Services
         private const int TICK_MS = 16; // ~60 Hz
         private readonly ILogger<IRacingTelemetryService> _log;
         private readonly TelemetryBroadcaster _broadcaster;
+        private readonly CarTrackDataStore _store;
         private readonly IRacingSdk _sdk = new();
         private readonly SessionYamlParser _yamlParser = new();
 
@@ -25,11 +26,16 @@ namespace SuperBackendNR85IA.Services
         private int _lastTick = -1;
         private int _lastLap = -1;
         private float _fuelAtLapStart = 0f;
+        private float _consumoVoltaAtual = 0f;
+        private float _consumoVoltaPassada = 0f;
+        private int _lastSessionNum = -1;
+        private bool _sessionDataLoaded = false;
 
-        public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster)
+        public IRacingTelemetryService(ILogger<IRacingTelemetryService> log, TelemetryBroadcaster broadcaster, CarTrackDataStore store)
         {
             _log = log;
             _broadcaster = broadcaster;
+            _store = store;
         }
 
         protected override async Task ExecuteAsync(CancellationToken ct)
@@ -218,10 +224,22 @@ namespace SuperBackendNR85IA.Services
 
             if (t.Lap != _lastLap)
             {
+                if (_lastLap >= 0)
+                {
+                    float lapUso = _fuelAtLapStart - t.FuelLevel;
+                    if (lapUso > 0)
+                    {
+                        _consumoVoltaAtual = lapUso - _consumoVoltaPassada;
+                        _consumoVoltaPassada = lapUso;
+                    }
+                }
+
                 _lastLap = t.Lap;
                 _fuelAtLapStart = t.FuelLevel;
             }
             t.FuelLevelLapStart = _fuelAtLapStart;
+
+            float diffLap = _fuelAtLapStart - t.FuelLevel;
 
             // ─────────────────────────────────────────────────────────────────────────
             // Coleta de SETORES (arrays prontas do SDK)
@@ -347,6 +365,15 @@ namespace SuperBackendNR85IA.Services
             t.SessionNum        = GetSdkValue<int>(d, "SessionNum") ?? 0;
             t.SessionTime       = GetSdkValue<float>(d, "SessionTime") ?? 0f;
             t.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
+            if (t.SessionNum != _lastSessionNum)
+            {
+                _lastSessionNum = t.SessionNum;
+                _fuelAtLapStart = t.FuelLevel;
+                _consumoVoltaAtual = 0f;
+                _consumoVoltaPassada = 0f;
+                _lastLap = t.Lap;
+                _sessionDataLoaded = false;
+            }
             t.SessionState      = GetSdkValue<int>(d, "SessionState") ?? 0;
             t.PaceMode          = GetSdkValue<int>(d, "PaceMode") ?? 0;
             t.SessionFlags      = GetSdkValue<int>(d, "SessionFlags") ?? 0;
@@ -489,6 +516,16 @@ namespace SuperBackendNR85IA.Services
 
             var (drv, wkd, ses, sec) = _cachedYamlData;
 
+            if (!_sessionDataLoaded && drv != null && wkd != null)
+            {
+                var record = _store.Get(drv.CarPath, wkd.TrackName, wkd.TrackConfigName);
+                if (record != null)
+                {
+                    _consumoVoltaPassada = record.ConsumoUltimaVolta;
+                }
+                _sessionDataLoaded = true;
+            }
+
             if (drv != null)
             {
                 t.UserName           = drv.UserName;
@@ -542,7 +579,20 @@ namespace SuperBackendNR85IA.Services
                 t.FuelUsePerLapCalc = t.FuelUsePerLap;
                 t.EstLapTimeCalc    = t.EstLapTime;
 
-                t.ConsumoVoltaAtual = _fuelAtLapStart - t.FuelLevel;
+                t.ConsumoVoltaPassada = _consumoVoltaPassada;
+                t.ConsumoVoltaAtual = _consumoVoltaAtual;
+                if (t.ConsumoVoltaAtual <= 0)
+                {
+                    float[] opts = { t.FuelUsePerLap, t.FuelPerLap, t.FuelUsePerLapCalc };
+                    foreach (var opt in opts)
+                    {
+                        if (opt > 0)
+                        {
+                            t.ConsumoVoltaAtual = opt;
+                            break;
+                        }
+                    }
+                }
 
                 double lapsLeftWithCurrentFuel = TelemetryCalculations.GetFuelLapsLeft(
                     t.FuelLevel,
@@ -555,6 +605,7 @@ namespace SuperBackendNR85IA.Services
                     ? (t.FuelUsedTotal / lapsEfetivos)
                     : 0;
                 t.VoltasRestantesMedio = (t.ConsumoMedio > 0) ? (t.FuelLevel / t.ConsumoMedio) : 0;
+                t.VoltasRestantesUltima = (_consumoVoltaPassada > 0) ? (t.FuelLevel / _consumoVoltaPassada) : 0;
 
                 if (t.TotalLaps > 0)
                 {
@@ -594,6 +645,18 @@ namespace SuperBackendNR85IA.Services
                 {
                     t.FuelStatus = new FuelStatus { Text = "OK", Class = "status-ok" };
                 }
+
+                if (_sessionDataLoaded && drv != null && wkd != null)
+                {
+                    _store.Update(new CarTrackData
+                    {
+                        CarPath = drv.CarPath,
+                        TrackName = wkd.TrackName,
+                        TrackConfig = wkd.TrackConfigName,
+                        ConsumoMedio = t.ConsumoMedio,
+                        ConsumoUltimaVolta = _consumoVoltaPassada
+                    });
+                }
             }
             catch (Exception calcEx)
             {
@@ -601,6 +664,7 @@ namespace SuperBackendNR85IA.Services
                 t.LapsRemaining = 0;
                 t.ConsumoMedio = 0;
                 t.VoltasRestantesMedio = 0;
+                t.VoltasRestantesUltima = 0;
                 t.LapsRemainingRace = 0;
                 t.NecessarioFim = 0;
                 t.RecomendacaoAbastecimento = 0;
