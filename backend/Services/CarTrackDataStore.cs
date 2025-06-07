@@ -70,5 +70,36 @@ namespace SuperBackendNR85IA.Services
                 catch { }
             }
         }
+
+        public Task<CarTrackData> GetAsync(string carPath, string trackName)
+        {
+            lock (_lock)
+            {
+                var key = Key(carPath, trackName);
+                if (_data.TryGetValue(key, out var d))
+                    return Task.FromResult(d);
+                d = new CarTrackData { CarPath = carPath, TrackName = trackName };
+                _data[key] = d;
+                return Task.FromResult(d);
+            }
+        }
+
+        public async Task UpdateAsync(CarTrackData d)
+        {
+            Dictionary<string, CarTrackData> snapshot;
+            lock (_lock)
+            {
+                var key = Key(d.CarPath, d.TrackName);
+                _data[key] = d;
+                snapshot = new Dictionary<string, CarTrackData>(_data);
+            }
+
+            try
+            {
+                var json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(_filePath, json);
+            }
+            catch { }
+        }
     }
 }
