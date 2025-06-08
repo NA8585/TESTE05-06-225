@@ -140,22 +140,22 @@ function updateOverlay(data) {
     console.log('Dados completos recebidos:', data);
     
     // Atualizações básicas - verifique se os campos existem no objeto
-    const sessionTime = data.SessionTime ?? data.sessionTime;
+    const sessionTime = data.sessionTime;
     if (sessionTime !== undefined) {
         document.getElementById('raceTime').textContent = formatTime(sessionTime);
     }
 
-    const trackTemp = data.TrackSurfaceTemp ?? data.trackSurfaceTemp;
+    const trackTemp = data.trackSurfaceTemp;
     if (trackTemp !== undefined) {
         document.getElementById('trackTemp').textContent = Math.round(trackTemp);
     }
 
-    const sessionRemain = data.SessionTimeRemain ?? data.sessionTimeRemain;
+    const sessionRemain = data.sessionTimeRemain;
     if (sessionRemain !== undefined) {
         document.getElementById('sessionTimeRemaining').textContent = formatTime(sessionRemain);
     }
 
-    const lap = data.Lap ?? data.lap;
+    const lap = data.lap;
     if (lap !== undefined) {
         document.getElementById('lapsCompleted').textContent = lap;
     }
