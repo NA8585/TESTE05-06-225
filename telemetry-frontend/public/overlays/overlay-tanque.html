@@ -699,6 +699,7 @@
             statusText = 'OK';
             statusClass = 'status-ok';
         }
+
         statusValor.textContent = statusText;
         statusValor.className = `text-lg font-bold ${statusClass}`;
         statusValor.classList.toggle('blink', statusText === 'PERIGO');
