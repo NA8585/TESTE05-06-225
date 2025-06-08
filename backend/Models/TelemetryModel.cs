@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SuperBackendNR85IA.Models
 {
@@ -216,6 +217,12 @@ namespace SuperBackendNR85IA.Models
         public float ChanceOfRain { get; set; }
         public int IncidentLimit { get; set; }
         public float TrackAirTemp { get; set; }
+        // Parsed YAML objects
+        public WeekendInfo? YamlWeekendInfo { get; set; }
+        public SessionInfo? YamlSessionInfo { get; set; }
+        public SectorInfo? YamlSectorInfo { get; set; }
+        public DriverInfo? YamlPlayerDriver { get; set; }
+        public List<DriverInfo> YamlDrivers { get; set; } = new();
         public string SessionInfoYaml { get; set; } = string.Empty;
 
         public static string FormatTime(float seconds)

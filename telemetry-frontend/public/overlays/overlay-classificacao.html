@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classificação - NR85 IA</title>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <style>
+    html,body{margin:0;padding:0;height:100%;font-family:'Poppins',sans-serif;background:rgba(15,23,42,0.9);color:#e2e8f0;overflow:hidden;font-size:0.85rem;}
+    table{width:100%;border-collapse:collapse;}
+    th,td{padding:4px 6px;}
+    thead{background:#2563eb;color:#fff;position:sticky;top:0;}
+    tbody tr:nth-child(even){background:rgba(30,41,59,0.6);}
+    tbody tr:nth-child(odd){background:rgba(30,41,59,0.4);}
+    .pit-timer{border:1px solid #facc15;padding:0 4px;border-radius:3px;color:#facc15;}
+  </style>
+</head>
+<body>
+<table>
+  <thead>
+    <tr>
+      <th>Pos</th>
+      <th>#</th>
+      <th>Marca</th>
+      <th>SR</th>
+      <th>IR</th>
+      <th>Piloto</th>
+      <th>Melhor</th>
+      <th>Última</th>
+      <th>Líder</th>
+      <th>Gap</th>
+      <th>Pit</th>
+      <th>Pneu</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+<script type="module">
+import { initOverlayWebSocket } from '../overlay-common.js';
+let lastYaml='';
+let parsed={};
+const pitStart={};
+function fmtTime(s){if(typeof s!=='number'||!isFinite(s)||s<=0)return'--';const m=Math.floor(s/60);const sec=Math.floor(s%60);return`${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;}
+function brandFromPath(path){if(!path)return'';let b=path.split('/').pop();b=b.split('_')[0];return b;}
+function update(data){data={...data,...(data.session||{}),...(data.vehicle||{})};if(data.sessionInfoYaml&&data.sessionInfoYaml!==lastYaml){parsed=jsyaml.load(data.sessionInfoYaml)||{};lastYaml=data.sessionInfoYaml;}
+const drivers=parsed?.DriverInfo?.Drivers||[];
+const session=(parsed?.SessionInfo?.Sessions||[]).find(s=>s.SessionNum===data.sessionNum)||{};
+const results=(session?.ResultsPositions||[]).slice().sort((a,b)=>a.Position-b.Position);
+const f2=data.carIdxF2Time||[];
+const onPit=data.carIdxOnPitRoad||[];
+const tbody=document.getElementById('tbody');
+tbody.innerHTML='';
+if(results.length===0)return;
+const leaderIdx=results[0].CarIdx;
+const leaderF2=f2[leaderIdx]??0;
+for(let i=0;i<results.length;i++){
+ const r=results[i];
+ const drv=drivers.find(d=>d.CarIdx===r.CarIdx)||{};
+ const tr=document.createElement('tr');
+ const thisF2=f2[r.CarIdx]??0;
+ const aheadF2=i>0?f2[results[i-1].CarIdx]??thisF2:thisF2;
+ const diffLeader=i===0?'---':(thisF2-leaderF2).toFixed(1);
+ const gapAhead=i===0?'---':(thisF2-aheadF2).toFixed(1);
+ let pitCell='';
+ if(onPit[r.CarIdx]){pitStart[r.CarIdx]=pitStart[r.CarIdx]??data.sessionTime;pitCell=`<span class="pit-timer">${fmtTime(data.sessionTime-pitStart[r.CarIdx])}</span>`;} else {delete pitStart[r.CarIdx];}
+ tr.innerHTML=`<td>${r.Position}</td><td>${drv.CarNumber||''}</td><td>${brandFromPath(drv.CarPath)}</td><td>${drv.LicString||''}</td><td>${drv.IRating||''}</td><td>${drv.UserName||''}</td><td>${fmtTime(r.FastestTime)}</td><td>${fmtTime(r.LastTime)}</td><td>${diffLeader}</td><td>${gapAhead}</td><td>${pitCell}</td><td>${drv.CarSetup?.Tires?.CompoundName||''}</td>`;
+ tbody.appendChild(tr);
+}
+}
+initOverlayWebSocket(update);
+</script>
+</body>
+</html>
