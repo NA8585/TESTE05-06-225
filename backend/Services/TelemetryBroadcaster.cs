@@ -21,11 +21,9 @@ namespace SuperBackendNR85IA.Services
         {
             _logger = logger;
 
-            // Adicionamos AllowNamedFloatingPointLiterals para permitir “Infinity” e “NaN”
             _jsonSerializerOptions = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
         }
 

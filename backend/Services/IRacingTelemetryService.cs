@@ -84,6 +84,8 @@ namespace SuperBackendNR85IA.Services
                             TelemetryCalculationsOverlay.PreencherOverlaySetores(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlayDelta(ref telemetryModel);
 
+                            TelemetryCalculations.SanitizeModel(telemetryModel);
+
                             await _broadcaster.BroadcastTelemetry(telemetryModel);
                         }
                         _lastTick = _sdk.Data.TickCount;
