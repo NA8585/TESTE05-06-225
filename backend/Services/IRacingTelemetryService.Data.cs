@@ -221,7 +221,7 @@ namespace SuperBackendNR85IA.Services
             {
                 float myPct = lapPctArr[myIdx];
                 float trackKm = GetSdkValue<float>(d, "TrackLength") ?? 1f;
-                float bestA = 1f, bestB = 1f;
+                float bestA = float.PositiveInfinity, bestB = float.PositiveInfinity;
                 for (int i = 0; i < lapPctArr.Length; i++)
                 {
                     if (i == myIdx) continue;

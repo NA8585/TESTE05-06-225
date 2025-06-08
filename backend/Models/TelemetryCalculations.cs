@@ -264,6 +264,12 @@ namespace SuperBackendNR85IA.Calculations
                                 arr[i] = 0f;
                     }
                 }
+                else if (prop.PropertyType.IsArray)
+                {
+                    // Skip arrays of non-float types to avoid reflective
+                    // recursion (e.g., System.Array.SyncRoot references itself)
+                    continue;
+                }
                 else if (!prop.PropertyType.IsPrimitive && prop.PropertyType != typeof(string) && !prop.PropertyType.IsEnum)
                 {
                     var child = prop.GetValue(obj);
