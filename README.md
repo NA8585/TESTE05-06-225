@@ -26,6 +26,18 @@ npm run dev
 
 The `dev` script launches the backend, the Vite development server and Electron simultaneously. When Electron starts, a menu will appear listing the available overlays.
 
+## Session YAML Exposure
+
+Every WebSocket payload includes the raw `sessionInfoYaml` string from iRacing **and** several parsed objects derived from that YAML. The backend exposes these objects directly so overlays do not need to parse the YAML themselves. Available fields are:
+
+- `yamlPlayerDriver` – information about the current player driver
+- `yamlWeekendInfo` – track and weather details for the event
+- `yamlSessionInfo` – data for the current session, including lap counts
+- `yamlSectorInfo` – sector configuration and best sector times
+- `yamlDrivers` – an array with basic info on all drivers
+
+A sample payload is available in `ws/messages/overlay_message.json` and the latest YAML dump is written to `yamls/input_current.yaml` whenever the backend updates.
+
 ## Overlays
 
 Each overlay corresponds to an HTML file in `telemetry-frontend/public/overlays` and can be opened from the Electron menu. A brief description of each overlay follows:
@@ -38,6 +50,7 @@ Each overlay corresponds to an HTML file in `telemetry-frontend/public/overlays`
 - **Tires & Freio** – tire temperatures and brake information with ABS/TC.
 - **Tires Garage** – garage view of tire and brake data.
 - **Standings** – table of race standings and session info.
+- **Classificação** – shows full race classification with lap gaps.
 - **Calculadora** – another compact fuel calculator.
 - **Base** – basic classification template overlay.
 - **Teste Final** – diagnostic overlay combining various widgets.

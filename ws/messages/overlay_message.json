@@ -1,3 +1,21 @@
 {
-  "sessionInfoYaml": ""
+  "sessionInfoYaml": "",
+  "yamlPlayerDriver": {
+    "carIdx": 0,
+    "userName": "Driver One"
+  },
+  "yamlWeekendInfo": {
+    "trackDisplayName": "Interlagos",
+    "trackConfigName": "Grand Prix"
+  },
+  "yamlSessionInfo": {
+    "sessionNum": 0,
+    "sessionType": "Practice"
+  },
+  "yamlSectorInfo": {
+    "sectorCount": 3
+  },
+  "yamlDrivers": [
+    { "carIdx": 0, "userName": "Driver One" }
+  ]
 }

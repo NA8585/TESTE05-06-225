@@ -408,7 +408,12 @@ namespace SuperBackendNR85IA.Services
                 _lastYaml = t.SessionInfoYaml;
             }
 
-            var (drv, wkd, ses, _, drivers) = _cachedYamlData;
+            var (drv, wkd, ses, sec, drivers) = _cachedYamlData;
+            t.YamlPlayerDriver = drv;
+            t.YamlWeekendInfo  = wkd;
+            t.YamlSessionInfo  = ses;
+            t.YamlSectorInfo   = sec;
+            t.YamlDrivers      = drivers;
             if (drv != null)
             {
                 t.UserName           = drv.UserName;
