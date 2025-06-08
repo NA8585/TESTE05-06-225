@@ -682,24 +682,30 @@
             voltasRestantesAtualValor.classList.add('text-blue-400');
         }
 
-        // Necessário para o Fim
-        necessarioFimValor.textContent = `${(model.necessarioFim ?? 0).toFixed(1)}L`; // necessarioFim
+        // Necessário para o Fim (nunca negativo)
+        const necessario = Math.max(0, model.necessarioFim ?? 0);
+        necessarioFimValor.textContent = `${necessario.toFixed(1)}L`;
 
-        // Status do Combustível
-        const status = model.fuelStatus ?? {};
-        statusValor.textContent = status.text ?? '--';
-        // Remove todas as classes de status antes de adicionar a nova
-        statusValor.className = 'text-lg font-bold'; // Reseta para classes base
-        const statusClass = status.class;
-        if (statusClass) {
-            statusValor.classList.add(statusClass);
+        // Status do Combustível baseado nas voltas restantes
+        const lapsDisplay = lapsForWarning;
+        let statusText, statusClass;
+        if (lapsDisplay <= 1) {
+            statusText = 'PERIGO';
+            statusClass = 'status-danger';
+        } else if (lapsDisplay <= 3) {
+            statusText = 'ALERTA';
+            statusClass = 'status-warning';
         } else {
-            statusValor.classList.add('status-ok'); // Fallback
+            statusText = 'OK';
+            statusClass = 'status-ok';
         }
+        statusValor.textContent = `${statusText} (${lapsDisplay})`;
+        statusValor.className = `text-lg font-bold ${statusClass}`;
 
-        // Recomendação de Abastecimento
-        const rec = model.recomendacaoAbastecimento ?? model.RecomendacaoAbastecimento ?? 0; // recomendacaoAbastecimento
-        recomendacaoAbastecimentoValor.textContent = `${rec >= 0 ? '+' : ''}${rec.toFixed(1)}L`;
+        // Recomendação de Abastecimento (nunca negativa)
+        const recRaw = model.recomendacaoAbastecimento ?? model.RecomendacaoAbastecimento ?? 0;
+        const rec = Math.max(0, recRaw);
+        recomendacaoAbastecimentoValor.textContent = `+${rec.toFixed(1)}L`;
         recomendacaoAbastecimentoValor.className = `text-lg font-bold ${rec > 0 ? 'text-blue-500' : 'text-green-600'}`;
     }
 
