@@ -727,7 +727,7 @@
             try {
                 const d = JSON.parse(data);
 
-                const tires = d.tyres || d.tires;
+                const tires = d.tyres;
                 if (tires) {
                     tireMap.forEach(({id, iRacingKey}) => {
                         if (tires[iRacingKey]) {

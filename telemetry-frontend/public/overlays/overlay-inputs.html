@@ -644,13 +644,12 @@
         if (resizableOverlayWrapper) { resizeObserver.observe(resizableOverlayWrapper); }
 
         function updateOverlayData(d) {
-            // Aceita camelCase ou PascalCase vindos do backend
-            throttle = Math.min(1, Math.max(0, parseFloat(d.throttle ?? d.Throttle ?? 0)));
-            brake    = Math.min(1, Math.max(0, parseFloat(d.brake    ?? d.Brake    ?? 0)));
-            steer    = Math.min(1, Math.max(-1, parseFloat(d.steeringWheelAngle ?? d.SteeringWheelAngle ?? 0)));
+            throttle = Math.min(1, Math.max(0, parseFloat(d.throttle ?? 0)));
+            brake    = Math.min(1, Math.max(0, parseFloat(d.brake    ?? 0)));
+            steer    = Math.min(1, Math.max(-1, parseFloat(d.steeringWheelAngle ?? 0)));
             
             let newGearDisplay = currentGear;
-            const gearRaw = (d.gear ?? d.Gear);
+            const gearRaw = d.gear;
             if (typeof gearRaw !== 'undefined') {
                 const rawGear = parseInt(gearRaw, 10);
                 if (!isNaN(rawGear)) {
