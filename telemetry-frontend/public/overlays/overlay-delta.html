@@ -652,8 +652,14 @@
             0;
           const timeDeltaAhead = dados.timeDeltaToCarAhead;
           const timeDeltaBehind = dados.timeDeltaToCarBehind;
-          const sectorDeltas = dados.sectorDeltas;
-          const sectorIsBest = dados.sectorIsBest;
+          const sectorDeltas = Array.isArray(dados.lapDeltaToSessionBestSectorTimes) ? dados.lapDeltaToSessionBestSectorTimes : [];
+          const currentSectorTimes = Array.isArray(dados.lapAllSectorTimes) ? dados.lapAllSectorTimes : [];
+          const sessionBestSectorTimes = Array.isArray(dados.sessionBestSectorTimes) ? dados.sessionBestSectorTimes : [];
+          const sectorIsBest = sectorDeltas.map((_, i) => {
+              const current = currentSectorTimes[i];
+              const best    = sessionBestSectorTimes[i];
+              return (typeof current === 'number' && typeof best === 'number' && Math.abs(current - best) < 0.0001);
+          });
 
           mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
           const [_, deltaColorClass] = getColorClasses(deltaValue);
@@ -663,11 +669,7 @@
           gapFrontEl.textContent = (timeDeltaAhead != null && typeof timeDeltaAhead === 'number') ? `${timeDeltaAhead >= 0 ? '+' : ''}${timeDeltaAhead.toFixed(2)}s` : '--';
           gapBehindEl.textContent = (timeDeltaBehind != null && typeof timeDeltaBehind === 'number') ? `${timeDeltaBehind >= 0 ? '+' : ''}${timeDeltaBehind.toFixed(2)}s` : '--';
 
-          if (Array.isArray(sectorDeltas) && Array.isArray(sectorIsBest) && sectorDeltas.length === sectorIsBest.length) {
-              updateSectorBars(sectorDeltas, sectorIsBest);
-          } else {
-              updateSectorBars([], []);
-          }
+          updateSectorBars(sectorDeltas, sectorIsBest);
       });
       // Estado inicial dos botões de lock/click-through é ditado por onEditMode se electronAPI estiver presente
       // Se não, eles iniciam como definidos em loadAllSettings
