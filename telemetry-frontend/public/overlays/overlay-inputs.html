@@ -644,26 +644,27 @@
         if (resizableOverlayWrapper) { resizeObserver.observe(resizableOverlayWrapper); }
 
         function updateOverlayData(d) {
-            // Correção para camelCase
-            throttle = Math.min(1, Math.max(0, (parseFloat(d.throttle) || 0))); // d.Throttle -> d.throttle
-            brake = Math.min(1, Math.max(0, (parseFloat(d.brake) || 0)));       // d.Brake -> d.brake
-            steer = Math.min(1, Math.max(-1, (parseFloat(d.steeringWheelAngle) || 0))); // d.SteeringWheelAngle -> d.steeringWheelAngle
+            // Aceita camelCase ou PascalCase vindos do backend
+            throttle = Math.min(1, Math.max(0, parseFloat(d.throttle ?? d.Throttle ?? 0)));
+            brake    = Math.min(1, Math.max(0, parseFloat(d.brake    ?? d.Brake    ?? 0)));
+            steer    = Math.min(1, Math.max(-1, parseFloat(d.steeringWheelAngle ?? d.SteeringWheelAngle ?? 0)));
             
             let newGearDisplay = currentGear;
-            if (typeof d.gear !== 'undefined') { // d.Gear -> d.gear
-                const rawGear = parseInt(d.gear, 10); // d.Gear -> d.gear
+            const gearRaw = (d.gear ?? d.Gear);
+            if (typeof gearRaw !== 'undefined') {
+                const rawGear = parseInt(gearRaw, 10);
                 if (!isNaN(rawGear)) {
-                    if (rawGear === -1 || d.gear.toString().toUpperCase() === 'R') { // d.Gear -> d.gear
+                    if (rawGear === -1 || gearRaw.toString().toUpperCase() === 'R') {
                         newGearDisplay = "R";
-                    } else if (rawGear === 0 || d.gear.toString().toUpperCase() === 'N') { // d.Gear -> d.gear
+                    } else if (rawGear === 0 || gearRaw.toString().toUpperCase() === 'N') {
                         newGearDisplay = "N";
                     } else if (rawGear > 0) {
                         newGearDisplay = rawGear.toString();
                     }
-                } else if (d.gear.toString().toUpperCase() === 'R') {  // d.Gear -> d.gear
-                     newGearDisplay = "R";
-                } else if (d.gear.toString().toUpperCase() === 'N') {  // d.Gear -> d.gear
-                     newGearDisplay = "N";
+                } else if (gearRaw.toString().toUpperCase() === 'R') {
+                    newGearDisplay = "R";
+                } else if (gearRaw.toString().toUpperCase() === 'N') {
+                    newGearDisplay = "N";
                 }
             }
             currentGear = newGearDisplay;
