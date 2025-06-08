@@ -678,6 +678,18 @@
       return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${hund.toString().padStart(2, '0')}`;
     }
 
+    function getLapDelta(d) {
+      let v = d.lapDeltaToDriverBestLap;
+      if (typeof v !== 'number' || isNaN(v)) v = d.lapDeltaToBestLap;
+      if (typeof v !== 'number' || isNaN(v)) v = d.lapDeltaToSessionBestLap;
+      if (typeof v !== 'number' || isNaN(v)) {
+        if (typeof d.lapCurrentLapTime === 'number' && typeof d.lapBestLapTime === 'number' && d.lapCurrentLapTime > 0)
+          v = d.lapCurrentLapTime - d.lapBestLapTime;
+      }
+      if (typeof v !== 'number' || !isFinite(v)) return 0;
+      return v;
+    }
+
     // --- Inicialização ---
   document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
@@ -687,12 +699,7 @@
       function render() {
         if (!latest) return;
         const dados = latest;
-        const deltaValue =
-          dados.lapDeltaToDriverBestLap ??
-          dados.lapDeltaToSessionBestLap ??
-          dados.lapDeltaToBestLap ??
-          dados.sessionDeltaToLeader ??
-          0;
+        const deltaValue = getLapDelta(dados);
         const timeDeltaAhead = dados.timeDeltaToCarAhead;
         const timeDeltaBehind = dados.timeDeltaToCarBehind;
         const sectorDeltas = Array.isArray(dados.lapDeltaToSessionBestSectorTimes) ? dados.lapDeltaToSessionBestSectorTimes : [];
