@@ -43,3 +43,7 @@ Each overlay corresponds to an HTML file in `telemetry-frontend/public/overlays`
 - **Teste Final** – diagnostic overlay combining various widgets.
 
 To open an overlay, start the Electron application and click its name in the menu. Windows can be moved, pinned or closed individually.
+
+## Tests
+
+No automated tests are currently configured for this project. Running `npm test` in `telemetry-frontend` simply prints a placeholder message.
