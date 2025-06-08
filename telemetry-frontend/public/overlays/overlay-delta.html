@@ -657,36 +657,50 @@
   document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
       ensureSectorElements(0);
+
+      let latest = null;
+      function render() {
+        if (!latest) return;
+        const dados = latest;
+        const deltaValue =
+          dados.lapDeltaToDriverBestLap ??
+          dados.lapDeltaToSessionBestLap ??
+          dados.lapDeltaToBestLap ??
+          dados.sessionDeltaToLeader ??
+          0;
+        const timeDeltaAhead = dados.timeDeltaToCarAhead;
+        const timeDeltaBehind = dados.timeDeltaToCarBehind;
+        const sectorDeltas = Array.isArray(dados.lapDeltaToSessionBestSectorTimes) ? dados.lapDeltaToSessionBestSectorTimes : [];
+        const currentSectorTimes = Array.isArray(dados.lapAllSectorTimes) ? dados.lapAllSectorTimes : [];
+        const sessionBestSectorTimes = Array.isArray(dados.sessionBestSectorTimes) ? dados.sessionBestSectorTimes : [];
+        const sectorIsBest = sectorDeltas.map((_, i) => {
+            const current = currentSectorTimes[i];
+            const best    = sessionBestSectorTimes[i];
+            return (typeof current === 'number' && typeof best === 'number' && Math.abs(current - best) < 0.0001);
+        });
+
+        mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
+        const [_, deltaColorClass] = getColorClasses(deltaValue);
+        mainDeltaText.className = `main-delta-text ${deltaColorClass}`;
+        updateMainDeltaBar(deltaValue / 2.0);
+
+        gapFrontEl.textContent = (timeDeltaAhead != null && typeof timeDeltaAhead === 'number') ? `${timeDeltaAhead >= 0 ? '+' : ''}${timeDeltaAhead.toFixed(2)}s` : '--';
+        gapBehindEl.textContent = (timeDeltaBehind != null && typeof timeDeltaBehind === 'number') ? `${timeDeltaBehind >= 0 ? '+' : ''}${timeDeltaBehind.toFixed(2)}s` : '--';
+
+        updateSectorBars(sectorDeltas, sectorIsBest);
+      }
+
+      function animationLoop() {
+        render();
+        window.requestAnimationFrame(animationLoop);
+      }
+
       const { initOverlayWebSocket } = await import('../overlay-common.js');
       initOverlayWebSocket(d => {
-          const dados = d.casper || d;
-          const deltaValue =
-            dados.lapDeltaToDriverBestLap ??
-            dados.lapDeltaToSessionBestLap ??
-            dados.lapDeltaToBestLap ??
-            dados.sessionDeltaToLeader ??
-            0;
-          const timeDeltaAhead = dados.timeDeltaToCarAhead;
-          const timeDeltaBehind = dados.timeDeltaToCarBehind;
-          const sectorDeltas = Array.isArray(dados.lapDeltaToSessionBestSectorTimes) ? dados.lapDeltaToSessionBestSectorTimes : [];
-          const currentSectorTimes = Array.isArray(dados.lapAllSectorTimes) ? dados.lapAllSectorTimes : [];
-          const sessionBestSectorTimes = Array.isArray(dados.sessionBestSectorTimes) ? dados.sessionBestSectorTimes : [];
-          const sectorIsBest = sectorDeltas.map((_, i) => {
-              const current = currentSectorTimes[i];
-              const best    = sessionBestSectorTimes[i];
-              return (typeof current === 'number' && typeof best === 'number' && Math.abs(current - best) < 0.0001);
-          });
-
-          mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
-          const [_, deltaColorClass] = getColorClasses(deltaValue);
-          mainDeltaText.className = `main-delta-text ${deltaColorClass}`;
-          updateMainDeltaBar(deltaValue / 2.0);
-
-          gapFrontEl.textContent = (timeDeltaAhead != null && typeof timeDeltaAhead === 'number') ? `${timeDeltaAhead >= 0 ? '+' : ''}${timeDeltaAhead.toFixed(2)}s` : '--';
-          gapBehindEl.textContent = (timeDeltaBehind != null && typeof timeDeltaBehind === 'number') ? `${timeDeltaBehind >= 0 ? '+' : ''}${timeDeltaBehind.toFixed(2)}s` : '--';
-
-          updateSectorBars(sectorDeltas, sectorIsBest);
+          latest = d.casper || d;
       });
+
+      animationLoop();
       // Estado inicial dos botões de lock/click-through é ditado por onEditMode se electronAPI estiver presente
       // Se não, eles iniciam como definidos em loadAllSettings
       if (!window.electronAPI?.onEditMode) {
