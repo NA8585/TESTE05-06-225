@@ -140,20 +140,24 @@ function updateOverlay(data) {
     console.log('Dados completos recebidos:', data);
     
     // Atualizações básicas - verifique se os campos existem no objeto
-    if (data.SessionTime !== undefined) {
-        document.getElementById('raceTime').textContent = formatTime(data.SessionTime);
+    const sessionTime = data.SessionTime ?? data.sessionTime;
+    if (sessionTime !== undefined) {
+        document.getElementById('raceTime').textContent = formatTime(sessionTime);
     }
-    
-    if (data.TrackSurfaceTemp !== undefined) {
-        document.getElementById('trackTemp').textContent = Math.round(data.TrackSurfaceTemp);
+
+    const trackTemp = data.TrackSurfaceTemp ?? data.trackSurfaceTemp;
+    if (trackTemp !== undefined) {
+        document.getElementById('trackTemp').textContent = Math.round(trackTemp);
     }
-    
-    if (data.SessionTimeRemain !== undefined) {
-        document.getElementById('sessionTimeRemaining').textContent = formatTime(data.SessionTimeRemain);
+
+    const sessionRemain = data.SessionTimeRemain ?? data.sessionTimeRemain;
+    if (sessionRemain !== undefined) {
+        document.getElementById('sessionTimeRemaining').textContent = formatTime(sessionRemain);
     }
-    
-    if (data.Lap !== undefined) {
-        document.getElementById('lapsCompleted').textContent = data.Lap;
+
+    const lap = data.Lap ?? data.lap;
+    if (lap !== undefined) {
+        document.getElementById('lapsCompleted').textContent = lap;
     }
     
     // Adicione mais campos conforme necessário, verificando sempre se existem
