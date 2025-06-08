@@ -29,7 +29,7 @@ namespace SuperBackendNR85IA.Services
             };
         }
 
-        public async Task AddClient(WebSocket webSocket)
+        public async Task AddClient(WebSocket webSocket, CancellationToken cancellationToken)
         {
             var clientId = Guid.NewGuid();
             _clients.TryAdd(clientId, webSocket);
@@ -38,12 +38,24 @@ namespace SuperBackendNR85IA.Services
             try
             {
                 var buffer = new byte[1024 * 4];
-                WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                while (!result.CloseStatus.HasValue)
+                WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                while (!result.CloseStatus.HasValue && !cancellationToken.IsCancellationRequested)
                 {
-                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
                 }
-                await RemoveClient(clientId, webSocket, result.CloseStatus.Value, result.CloseStatusDescription);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    await RemoveClient(clientId, webSocket, WebSocketCloseStatus.NormalClosure, "Operação cancelada");
+                }
+                else
+                {
+                    await RemoveClient(clientId, webSocket, result.CloseStatus!.Value, result.CloseStatusDescription);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                await RemoveClient(clientId, webSocket, WebSocketCloseStatus.NormalClosure, "Operação cancelada");
             }
             catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely ||
                                                 ex.InnerException is System.Net.Sockets.SocketException)
