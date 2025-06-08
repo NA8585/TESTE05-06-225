@@ -202,20 +202,24 @@
       const [voltasSimuladas, setVoltasSimuladas] = useState('');
       const [resultado, setResultado]       = useState('');
 
-      // WebSocket para atualizar currentLap e fuelLeft
+      // WebSocket para atualizar dados de telemetria
       useEffect(() => {
-        const socket = new WebSocket("ws://localhost:5221/ws");
-        socket.addEventListener("open", () => console.log("WS FuelCalculator conectado"));
-        socket.addEventListener("message", ({data}) => {
+        const host = window.location.hostname || 'localhost';
+        const url = window.OVERLAY_WS_URL || `ws://${host}:5221/ws`;
+        const socket = new WebSocket(url);
+        socket.addEventListener('open', () => console.log('WS FuelCalculator conectado'));
+        socket.addEventListener('message', ({ data }) => {
           const d = JSON.parse(data);
-          // atualiza volta atual
           setCurrentLap(d.lap ?? 0);
-          // atualiza combustível restante (assume FuelLevelPct é fração 0–1)
-          const pct = d.fuelLevelPct ?? 0;
-          setFuelLeft(pct * tankCapacity);
+
+          const fuel = d.fuelLevel ?? (d.fuelLevelPct ?? 0) * (d.fuelCapacity ?? tankCapacity);
+          setFuelLeft(fuel);
+
+          if (d.fuelCapacity) setTankCapacity(d.fuelCapacity);
+          if (d.consumoMedio) setLapConsumption(d.consumoMedio);
         });
         return () => socket.close();
-      }, [tankCapacity]);
+      }, []);
 
       // Função de cálculo rápido
       const calcular = () => {

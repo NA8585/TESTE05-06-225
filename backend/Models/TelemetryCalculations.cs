@@ -186,7 +186,7 @@ namespace SuperBackendNR85IA.Calculations
             model.NecessarioFim = (float)GetFuelForTargetLaps(model.LapsRemainingRace, model.ConsumoMedio);
 
             float faltante = model.NecessarioFim - model.FuelLevel;
-            model.RecomendacaoAbastecimento = MathF.Max(0, faltante);
+            model.RecomendacaoAbastecimento = faltante;
         }
 
         public static void UpdateSectorData(ref TelemetryModel model)

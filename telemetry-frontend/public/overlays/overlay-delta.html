@@ -215,6 +215,11 @@
       font-size: 0.875rem;
       font-weight: 600;
     }
+    .best-lap-delta {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: center;
+    }
     /* Cores Tailwind redefinidas para classes CSS */
     .text-blue-400 { color: #60a5fa; }
     .text-purple-400 { color: #c084fc; }
@@ -262,6 +267,7 @@
         <div id="delta-thin-fill" class="bar-fill setor-neutro" style="width:0%; left:50%;"></div>
       </div>
       <div id="main-delta-text" class="text-gray-300">--</div>
+      <div id="best-lap-delta" class="best-lap-delta text-gray-300">--</div>
       <div class="sectors-container" id="sectors-container"></div>
     </div>
   </div>
@@ -579,6 +585,7 @@
     const mainDeltaBarFill  = document.getElementById('main-delta-bar-fill');
     const thinDeltaBarFill  = document.getElementById('delta-thin-fill');
     const mainDeltaText     = document.getElementById('main-delta-text');
+    const bestLapDeltaEl    = document.getElementById('best-lap-delta');
     const sectorContainer   = document.getElementById('sectors-container');
     let sectorBarEls  = [];
     let sectorTimeEls = [];
@@ -681,10 +688,21 @@
             return (typeof current === 'number' && typeof best === 'number' && Math.abs(current - best) < 0.0001);
         });
 
+        const bestLapDelta = dados.lapDeltaToDriverBestLap;
+
         mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
         const [_, deltaColorClass] = getColorClasses(deltaValue);
         mainDeltaText.className = `main-delta-text ${deltaColorClass}`;
         updateMainDeltaBar(deltaValue / 2.0);
+
+        if (bestLapDelta != null && !isNaN(bestLapDelta)) {
+          const [, bestColorClass] = getColorClasses(bestLapDelta);
+          bestLapDeltaEl.textContent = `${bestLapDelta >= 0 ? '+' : ''}${bestLapDelta.toFixed(3)}s`;
+          bestLapDeltaEl.className = `best-lap-delta ${bestColorClass}`;
+        } else {
+          bestLapDeltaEl.textContent = '--';
+          bestLapDeltaEl.className = 'best-lap-delta text-gray-300';
+        }
 
         const nameFront = dados.carAheadName ?? '';
         const nameBehind = dados.carBehindName ?? '';
