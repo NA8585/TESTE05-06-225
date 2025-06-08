@@ -105,19 +105,23 @@ namespace SuperBackendNR85IA.Calculations
                 {
                     if (!aheadFound && model.CarIdxPosition[i] == myPos - 1)
                     {
-                        float dist = ((model.CarIdxLap[i] - myLap) + (model.CarIdxLapDistPct[i] - myPct)) * trackMeters;
-                        if (Math.Abs(dist) > 0.01f && speed > 0f)
+                        float otherPct = model.CarIdxLap[i] + model.CarIdxLapDistPct[i];
+                        float myPctAbs = myLap + myPct;
+                        float t = GetDeltaTime(myPctAbs, otherPct, trackMeters, speed);
+                        if (Math.Abs(t) > 0.001f)
                         {
-                            model.TimeDeltaToCarAhead = -dist / speed;
+                            model.TimeDeltaToCarAhead = t;
                             aheadFound = true;
                         }
                     }
                     else if (!behindFound && model.CarIdxPosition[i] == myPos + 1)
                     {
-                        float dist = ((model.CarIdxLap[i] - myLap) + (model.CarIdxLapDistPct[i] - myPct)) * trackMeters;
-                        if (Math.Abs(dist) > 0.01f && speed > 0f)
+                        float otherPct = model.CarIdxLap[i] + model.CarIdxLapDistPct[i];
+                        float myPctAbs = myLap + myPct;
+                        float t = GetDeltaTime(myPctAbs, otherPct, trackMeters, speed);
+                        if (Math.Abs(t) > 0.001f)
                         {
-                            model.TimeDeltaToCarBehind = dist / speed;
+                            model.TimeDeltaToCarBehind = t;
                             behindFound = true;
                         }
                     }
@@ -153,6 +157,20 @@ namespace SuperBackendNR85IA.Calculations
             {
                 model.SectorIsBest = Array.Empty<bool>();
             }
+        }
+
+        private static float GetDeltaTime(float fromPct, float toPct, float trackMeters, float speed)
+        {
+            if (trackMeters <= 0f || speed <= 0f)
+                return 0f;
+
+            float delta = toPct - fromPct;
+            if (delta > 0.5f)
+                delta -= 1f;
+            else if (delta < -0.5f)
+                delta += 1f;
+
+            return -(delta * trackMeters) / speed;
         }
     }
 }
