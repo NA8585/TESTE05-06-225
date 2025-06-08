@@ -217,10 +217,12 @@
       font-size: 0.875rem;
       font-weight: 600;
     }
-    .best-lap-delta {
+    .lap-times {
       font-size: 1rem;
       font-weight: 600;
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
     }
     /* Cores Tailwind redefinidas para classes CSS */
     .text-blue-400 { color: #60a5fa; }
@@ -269,7 +271,10 @@
         <div id="delta-thin-fill" class="bar-fill setor-neutro" style="width:0%; left:50%;"></div>
       </div>
       <div id="main-delta-text" class="text-gray-300">--</div>
-      <div id="best-lap-delta" class="best-lap-delta text-gray-300">--</div>
+      <div class="lap-times">
+        <span id="best-lap-time" class="text-purple-400">--</span>
+        <span id="last-lap-time" class="text-green-400">--</span>
+      </div>
       <div class="sectors-container" id="sectors-container"></div>
     </div>
   </div>
@@ -587,7 +592,8 @@
     const mainDeltaBarFill  = document.getElementById('main-delta-bar-fill');
     const thinDeltaBarFill  = document.getElementById('delta-thin-fill');
     const mainDeltaText     = document.getElementById('main-delta-text');
-    const bestLapDeltaEl    = document.getElementById('best-lap-delta');
+    const bestLapTimeEl     = document.getElementById('best-lap-time');
+    const lastLapTimeEl     = document.getElementById('last-lap-time');
     const sectorContainer   = document.getElementById('sectors-container');
     let sectorBarEls  = [];
     let sectorTimeEls = [];
@@ -664,6 +670,14 @@
       });
     }
 
+    function fmtTimeSimple(s) {
+      if (typeof s !== 'number' || !isFinite(s) || s < 0) return '--';
+      const m = Math.floor((s % 3600) / 60);
+      const secs = Math.floor(s % 60);
+      const hund = Math.floor((s * 100) % 100);
+      return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${hund.toString().padStart(2, '0')}`;
+    }
+
     // --- Inicialização ---
   document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
@@ -690,24 +704,13 @@
             return (typeof current === 'number' && typeof best === 'number' && Math.abs(current - best) < 0.0001);
         });
 
-        const bestLapDelta =
-          dados.lapDeltaToSessionBestLap ??
-          dados.lapDeltaToBestLap ??
-          dados.lapDeltaToDriverBestLap;
-
         mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
         const [_, deltaColorClass] = getColorClasses(deltaValue);
         mainDeltaText.className = `main-delta-text ${deltaColorClass}`;
         updateMainDeltaBar(deltaValue / 2.0);
 
-        if (bestLapDelta != null && !isNaN(bestLapDelta)) {
-          const [, bestColorClass] = getColorClasses(bestLapDelta);
-          bestLapDeltaEl.textContent = `${bestLapDelta >= 0 ? '+' : ''}${bestLapDelta.toFixed(3)}s`;
-          bestLapDeltaEl.className = `best-lap-delta ${bestColorClass}`;
-        } else {
-          bestLapDeltaEl.textContent = '--';
-          bestLapDeltaEl.className = 'best-lap-delta text-gray-300';
-        }
+        bestLapTimeEl.textContent = fmtTimeSimple(dados.lapBestLapTime);
+        lastLapTimeEl.textContent = fmtTimeSimple(dados.lapLastLapTime);
 
         const nameFront = dados.carAheadName ?? '';
         const nameBehind = dados.carBehindName ?? '';
