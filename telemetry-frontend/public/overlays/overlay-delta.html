@@ -455,9 +455,10 @@
       }
     });
 
-    rangeOpacity.oninput = (e) => {
-      const opacity = parseFloat(e.target.value);
+   rangeOpacity.oninput = (e) => {
+     const opacity = parseFloat(e.target.value);
       resizableOverlayWrapper.style.setProperty('--overlay-opacity', opacity);
+      resizableOverlayWrapper.style.opacity = opacity;
       saveSetting('opacity', opacity);
     };
     rangeContrast.oninput = (e) => {
@@ -525,6 +526,7 @@
       const opacity = loadSetting('opacity', 0.98);
       rangeOpacity.value = opacity;
       resizableOverlayWrapper.style.setProperty('--overlay-opacity', opacity);
+      resizableOverlayWrapper.style.opacity = opacity;
 
       const contrast = loadSetting('contrast', 1);
       rangeContrast.value = contrast;
