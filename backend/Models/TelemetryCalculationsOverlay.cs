@@ -49,24 +49,25 @@ namespace SuperBackendNR85IA.Calculations
 
         public static void PreencherOverlayDelta(ref TelemetryModel model)
         {
-            // Tempo até o carro à frente usando CarIdxF2Time
-            if (model.CarIdxF2Time.Length > model.PlayerCarIdx)
-                model.TimeDeltaToCarAhead = model.CarIdxF2Time[model.PlayerCarIdx];
-            else
-                model.TimeDeltaToCarAhead = 0f;
-
+            // Delta de tempo para o carro imediatamente à frente e atrás
+            model.TimeDeltaToCarAhead = 0f;
             model.TimeDeltaToCarBehind = 0f;
+
             if (model.CarIdxPosition.Length == model.CarIdxF2Time.Length &&
                 model.PlayerCarIdx >= 0 && model.PlayerCarIdx < model.CarIdxPosition.Length)
             {
                 int myPos = model.CarIdxPosition[model.PlayerCarIdx];
+
                 for (int i = 0; i < model.CarIdxPosition.Length; i++)
                 {
-                    if (model.CarIdxPosition[i] == myPos + 1)
+                    if (model.CarIdxPosition[i] == myPos - 1 && i < model.CarIdxF2Time.Length)
                     {
-                        if (i < model.CarIdxF2Time.Length)
-                            model.TimeDeltaToCarBehind = model.CarIdxF2Time[i];
-                        break;
+                        // CarIdxF2Time[i] representa a diferença do carro i para o jogador
+                        model.TimeDeltaToCarAhead = -model.CarIdxF2Time[i];
+                    }
+                    else if (model.CarIdxPosition[i] == myPos + 1 && i < model.CarIdxF2Time.Length)
+                    {
+                        model.TimeDeltaToCarBehind = model.CarIdxF2Time[i];
                     }
                 }
             }
