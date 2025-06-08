@@ -1,7 +1,8 @@
 let socket;
 
 function initOverlayWebSocket(onData) {
-  const url = window.OVERLAY_WS_URL || `ws://${window.location.hostname}:5221/ws`;
+  const host = window.location.hostname || 'localhost';
+  const url = window.OVERLAY_WS_URL || `ws://${host}:5221/ws`;
   function connect() {
     socket = new WebSocket(url);
     socket.onmessage = (e) => {
