@@ -1,0 +1,13 @@
+export default [
+  { name: 'Inputs', file: 'overlay-inputs.html' },
+  { name: 'Delta', file: 'overlay-delta.html' },
+  { name: 'Relative', file: 'overlay-relative.html' },
+  { name: 'Sessao', file: 'overlay-sessao.html' },
+  { name: 'Combustivel', file: 'overlay-tanque.html' },
+  { name: 'Tires & Freio', file: 'overlay-tiresandbrakes.html' },
+  { name: 'Tires Garage', file: 'overlay-tiresgarage.html' },
+  { name: 'Standings', file: 'overlay-standings.html' },
+  { name: 'Calculadora', file: 'overlay-calculadora.html' },
+  { name: 'Base', file: 'overlaybase.html' },
+  { name: 'Teste Final', file: 'overlay-testefinal.html' }
+];

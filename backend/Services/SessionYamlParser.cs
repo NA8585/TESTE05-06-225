@@ -8,16 +8,6 @@ using SuperBackendNR85IA.Models; // Assuming SectorInfo will be or is part of Mo
 
 namespace SuperBackendNR85IA.Services
 {
-    // Add this class definition (if not already defined elsewhere, e.g., in Models)
-    // If SectorInfo is in SuperBackendNR85IA.Models, this separate definition is not needed here.
-    // For the purpose of this update, I'll assume it might be defined here or you'll move it.
-    public class SectorInfo
-    {
-        public int SectorCount { get; set; }
-        public float[] SectorTimes { get; set; } = Array.Empty<float>();
-        public float[] BestSectorTimes { get; set; } = Array.Empty<float>();
-    }
-
     public class SessionYamlParser
     {
         public (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?) ParseSessionInfo(string yaml, int playerCarIdx, int currentSessionNum)
