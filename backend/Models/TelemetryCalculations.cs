@@ -254,6 +254,8 @@ namespace SuperBackendNR85IA.Calculations
         {
             foreach (var prop in obj.GetType().GetProperties())
             {
+                if (prop.GetIndexParameters().Length > 0)
+                    continue; // skip indexer properties like List<T>.Item
                 if (prop.PropertyType == typeof(float))
                 {
                     float val = (float)(prop.GetValue(obj) ?? 0f);
