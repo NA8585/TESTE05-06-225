@@ -644,7 +644,12 @@
       const { initOverlayWebSocket } = await import('../overlay-common.js');
       initOverlayWebSocket(d => {
           const dados = d.casper || d;
-          const deltaValue = dados.lapDeltaToSessionBestLap ?? dados.lapDeltaToBestLap ?? dados.sessionDeltaToLeader ?? 0;
+          const deltaValue =
+            dados.lapDeltaToDriverBestLap ??
+            dados.lapDeltaToSessionBestLap ??
+            dados.lapDeltaToBestLap ??
+            dados.sessionDeltaToLeader ??
+            0;
           const timeDeltaAhead = dados.timeDeltaToCarAhead;
           const timeDeltaBehind = dados.timeDeltaToCarBehind;
           const sectorDeltas = dados.sectorDeltas;
