@@ -604,35 +604,35 @@
                     const compEl   = el.querySelector('.compound-indicator');
 
                     // Freio
-                    if (Array.isArray(d.TireBrakes) && brakeEl) {
-                        const v = d.TireBrakes[idx] ?? 0;
+                    if (Array.isArray(d.tireBrakes) && brakeEl) {
+                        const v = d.tireBrakes[idx] ?? 0;
                         brakeEl.textContent = v.toFixed(1);
                         brakeEl.classList.remove('text-status-cold','text-status-ideal','text-status-warning','text-status-hot');
                         brakeEl.classList.add(getStatusClass(v, 250, 550, 700));
                     }
                     // Temperatura
-                    if (Array.isArray(d.TireTemps) && tempEl) {
-                        const v = d.TireTemps[idx] ?? 0;
+                    if (Array.isArray(d.tireTemps) && tempEl) {
+                        const v = d.tireTemps[idx] ?? 0;
                         tempEl.textContent = v.toFixed(1) + '°C';
                         tempEl.classList.remove('text-status-cold','text-status-ideal','text-status-warning','text-status-hot');
                         tempEl.classList.add(getStatusClass(v, 85, 100, 110));
                     }
                     // Pressão
-                    if (Array.isArray(d.TirePressures) && pressEl) {
-                        const v = d.TirePressures[idx] ?? 0;
+                    if (Array.isArray(d.tirePressures) && pressEl) {
+                        const v = d.tirePressures[idx] ?? 0;
                         pressEl.textContent = v.toFixed(1);
                         pressEl.classList.remove('text-status-cold','text-status-ideal','text-status-warning','text-status-hot');
                         pressEl.classList.add(getStatusClass(v, 26.5, 27.5, 28.5));
                     }
                     // ABS/TC
-                    if (Array.isArray(d.TireAssistOn) && assistEl) {
-                        assistEl.textContent = d.TireAssistOn[idx] ? 'ON' : 'OFF';
-                        el.classList.toggle('animate-pulse-active', d.TireAssistOn[idx]);
-                        el.classList.toggle('bg-assist-active',   d.TireAssistOn[idx]);
+                    if (Array.isArray(d.tireAssistOn) && assistEl) {
+                        assistEl.textContent = d.tireAssistOn[idx] ? 'ON' : 'OFF';
+                        el.classList.toggle('animate-pulse-active', d.tireAssistOn[idx]);
+                        el.classList.toggle('bg-assist-active',   d.tireAssistOn[idx]);
                     }
                     // Composto
-                    if (Array.isArray(d.TireCompound) && compEl) {
-                        const c = d.TireCompound[idx] ?? '';
+                    if (Array.isArray(d.tireCompound) && compEl) {
+                        const c = d.tireCompound[idx] ?? '';
                         compEl.textContent = c.charAt(0).toUpperCase();
                         el.classList.remove('border-soft','border-medium','border-hard','border-wet','border-unknown');
                         el.classList.add(getCompoundClass(c));

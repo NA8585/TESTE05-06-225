@@ -618,9 +618,9 @@
 
     function updateFuelCalculator(model) {
         model = { ...model, ...(model.session || {}), ...(model.vehicle || {}), ...(model.tyres || {}), ...(model.damage || {}) };
-        capacidadeTotalTanque = model.fuelCapacity ?? model.FuelCapacity ?? capacidadeTotalTanque;
+        capacidadeTotalTanque = model.fuelCapacity ?? capacidadeTotalTanque;
         // Tanque Atual e Barra
-        const atual = model.fuelLevel ?? model.FuelLevel ?? 0; // camelCase ou PascalCase
+        const atual = model.fuelLevel ?? 0; // camelCase
         tanqueAtualValor.textContent = `${atual.toFixed(1)}L`;
         const pct = Math.max(0, Math.min(100, (atual / capacidadeTotalTanque) * 100));
         barraTanque.style.width = `${pct}%`;
@@ -637,37 +637,36 @@
 
 
         // Consumo da volta atual
-        const lapStart = model.fuelLevelLapStart ?? model.FuelLevelLapStart ?? atual;
+        const lapStart = model.fuelLevelLapStart ?? atual;
         let fuelLap = lapStart - atual;
         if (fuelLap <= 0) {
-            fuelLap = model.consumoVoltaAtual ?? model.ConsumoVoltaAtual ??
+            fuelLap = model.consumoVoltaAtual ??
                        model.fuelUsePerLap ?? model.fuelPerLap ??
-                       model.FuelUsePerLap ?? model.FuelPerLap ??
-                       model.fuelUsePerLapCalc ?? model.FuelUsePerLapCalc ?? 0;
+                       model.fuelUsePerLapCalc ?? 0;
         }
         consumoPorVoltaValor.textContent = `${fuelLap.toFixed(2)}L`;
 
         // Voltas Restantes (com base no consumo atual/instantâneo)
-        voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? model.LapsRemaining ?? 0); // lapsRemaining
+        voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? 0);
 
-        consumoUltimaVoltaValor.textContent = `${(model.consumoUltimaVolta ?? model.ConsumoUltimaVolta ?? 0).toFixed(2)}L`;
-        voltasRestantesUltimaValor.textContent = Math.floor(model.voltasRestantesUltimaVolta ?? model.VoltasRestantesUltimaVolta ?? 0);
+        consumoUltimaVoltaValor.textContent = `${(model.consumoUltimaVolta ?? 0).toFixed(2)}L`;
+        voltasRestantesUltimaValor.textContent = Math.floor(model.voltasRestantesUltimaVolta ?? 0);
 
         // Consumo Médio
-        consumoMedioValor.textContent = `${(model.consumoMedio ?? model.ConsumoMedio ?? 0).toFixed(2)}L`; // consumoMedio
+        consumoMedioValor.textContent = `${(model.consumoMedio ?? 0).toFixed(2)}L`; // consumoMedio
 
         // Voltas Restantes (com base no consumo médio)
-        voltasRestantesMedioValor.textContent = Math.floor(model.voltasRestantesMedio ?? model.VoltasRestantesMedio ?? 0); // voltasRestantesMedio
+        voltasRestantesMedioValor.textContent = Math.floor(model.voltasRestantesMedio ?? 0); // voltasRestantesMedio
 
         // Necessário para o Fim
-        necessarioFimValor.textContent = `${(model.necessarioFim ?? model.NecessarioFim ?? 0).toFixed(1)}L`; // necessarioFim
+        necessarioFimValor.textContent = `${(model.necessarioFim ?? 0).toFixed(1)}L`; // necessarioFim
 
         // Status do Combustível
-        const status = model.fuelStatus ?? model.FuelStatus ?? {}; // fuelStatus
-        statusValor.textContent = status.text ?? status.Text ?? '--';
+        const status = model.fuelStatus ?? {};
+        statusValor.textContent = status.text ?? '--';
         // Remove todas as classes de status antes de adicionar a nova
         statusValor.className = 'text-lg font-bold'; // Reseta para classes base
-        const statusClass = status.class ?? status.Class;
+        const statusClass = status.class;
         if (statusClass) {
             statusValor.classList.add(statusClass);
         } else {
