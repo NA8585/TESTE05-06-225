@@ -11,7 +11,8 @@
     "dev": "concurrently \"npm run backend\" \"npm run dev:vite\" \"npm run dev:electron\"",
     "build": "vite build",
     "start": "electron .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo \"No tests configured\""
   },
   "dependencies": {
     "electron-store": "^10.0.1",
