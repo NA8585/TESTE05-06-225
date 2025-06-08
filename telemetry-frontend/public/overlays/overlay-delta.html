@@ -187,7 +187,7 @@
       transition: width 0.1s ease-out, left 0.1s ease-out;
     }
     #main-delta-text {
-      font-size: 2rem;
+      font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
     }
@@ -679,15 +679,13 @@
     }
 
     function getLapDelta(d) {
-      let v = d.lapDeltaToDriverBestLap;
-      if (typeof v !== 'number' || isNaN(v)) v = d.lapDeltaToBestLap;
-      if (typeof v !== 'number' || isNaN(v)) v = d.lapDeltaToSessionBestLap;
-      if (typeof v !== 'number' || isNaN(v)) {
-        if (typeof d.lapCurrentLapTime === 'number' && typeof d.lapBestLapTime === 'number' && d.lapCurrentLapTime > 0)
-          v = d.lapCurrentLapTime - d.lapBestLapTime;
+      const candidates = [d.lapDeltaToDriverBestLap, d.lapDeltaToBestLap, d.lapDeltaToSessionBestLap];
+      for (const val of candidates) {
+        if (typeof val === 'number' && isFinite(val) && val !== 0) return val;
       }
-      if (typeof v !== 'number' || !isFinite(v)) return 0;
-      return v;
+      if (typeof d.lapCurrentLapTime === 'number' && typeof d.lapBestLapTime === 'number' && d.lapCurrentLapTime > 0)
+        return d.lapCurrentLapTime - d.lapBestLapTime;
+      return 0;
     }
 
     // --- Inicialização ---
