@@ -151,8 +151,6 @@
 <script>
 // Objeto global para interagir com a API da overlay (se houver)
 const overlayAPI = window.overlayAPI || window.api || {};
-// URL do WebSocket para o backend
-const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
 // Elemento raiz onde o conteúdo será renderizado
 const rootElement = document.getElementById('root');
 
@@ -705,29 +703,9 @@ function render(data) {
     });
 }
 
-function connect() {
-  const ws = new WebSocket(WS_URL);
-  ws.onopen = () => { 
-    console.log(`Conectado a ${WS_URL}`);
-    if(rootElement.innerHTML.includes('Desconectado')) rootElement.innerHTML = ''; 
-  };
-  ws.onmessage = event => {
-    try {
-      const parsedData = JSON.parse(event.data); 
-      if (parsedData) render(parsedData); 
-    } catch (e) { 
-      console.error("Erro ao processar mensagem WebSocket:", e, "Dados brutos:", event.data); 
-    }
-  };
-  ws.onclose = () => { 
-    console.log(`Desconectado. Reconectando em 3s...`); 
-    if(rootElement) rootElement.innerHTML = '<div class="section" style="color: #f87171; grid-column: 1 / -1;">Desconectado... Tentando reconectar.</div>'; 
-    setTimeout(connect, 3000); 
-  };
-  ws.onerror = error => { 
-    console.error("Erro WebSocket:", error); 
-    ws.close(); 
-  };
+
+function handleData(parsedData) {
+  if (parsedData) render(parsedData);
 }
 
 if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)' ||
@@ -736,7 +714,8 @@ if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)
     document.body.classList.add('opaque-fallback');
 }
 
-connect();
+const { initOverlayWebSocket } = await import('../overlay-common.js');
+initOverlayWebSocket(handleData);
 </script>
 </body>
 </html>
