@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 using IRSDKSharper;
 using SuperBackendNR85IA.Models;
 using SuperBackendNR85IA.Calculations;
@@ -403,6 +404,7 @@ namespace SuperBackendNR85IA.Services
                     t.PlayerCarIdx,
                     t.SessionNum
                 );
+                LogYamlDump(t.SessionInfoYaml);
                 _lastYaml = t.SessionInfoYaml;
             }
 
@@ -467,6 +469,23 @@ namespace SuperBackendNR85IA.Services
             else
             {
                 t.TotalLaps = -1;
+            }
+        }
+
+        private void LogYamlDump(string yaml)
+        {
+            try
+            {
+                Directory.CreateDirectory("logs");
+                Directory.CreateDirectory("yamls");
+                File.WriteAllText(Path.Combine("yamls", "input_current.yaml"), yaml);
+                var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+                var logFile = Path.Combine("logs", $"yaml_dump_{timestamp}.txt");
+                File.WriteAllText(logFile, yaml);
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning(ex, "Falha ao registrar YAML.");
             }
         }
     }
