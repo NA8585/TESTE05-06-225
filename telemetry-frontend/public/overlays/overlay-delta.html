@@ -637,63 +637,33 @@
       });
     }
 
-    const WS_URL = window.OVERLAY_WS_URL || "ws://localhost:5221/ws";
-    let ws;
-    function connectWebSocket() {
-        ws = new WebSocket(WS_URL);
-        ws.onopen = () => console.log(`${OVERLAY_NAME} - WS Conectado a ${WS_URL}`);
-        
-        ws.onmessage = ({data}) => {
-            try {
-                const d = JSON.parse(data);
-                const dados = d.casper || d;
-
-                // --- Processamento específico para os campos da overlay-delta ---
-                // CORREÇÃO PARA CAMELCASE
-                const deltaValue = dados.lapDeltaToSessionBestLap ?? dados.lapDeltaToBestLap ?? dados.sessionDeltaToLeader ?? 0;
-                const timeDeltaAhead = dados.timeDeltaToCarAhead;
-                const timeDeltaBehind = dados.timeDeltaToCarBehind;
-                const sectorDeltas = dados.sectorDeltas;
-                const sectorIsBest = dados.sectorIsBest;
-
-                // Atualiza o delta principal
-                mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
-                const [_, deltaColorClass] = getColorClasses(deltaValue); // Ignora a classe de background para o texto
-                mainDeltaText.className = `main-delta-text ${deltaColorClass}`; // Removido text-lg font-bold para manter do CSS
-                updateMainDeltaBar(deltaValue / 2.0); // Escala para a barra (-1 a +1 para a função)
-
-                // Atualiza gaps
-                gapFrontEl.textContent = (timeDeltaAhead != null && typeof timeDeltaAhead === 'number') ? `${timeDeltaAhead >= 0 ? '+' : ''}${timeDeltaAhead.toFixed(2)}s` : '--';
-                gapBehindEl.textContent = (timeDeltaBehind != null && typeof timeDeltaBehind === 'number') ? `${timeDeltaBehind >= 0 ? '+' : ''}${timeDeltaBehind.toFixed(2)}s` : '--';
-                
-                // Atualiza setores
-                if (Array.isArray(sectorDeltas) && Array.isArray(sectorIsBest) && sectorDeltas.length === sectorIsBest.length) {
-                    updateSectorBars(sectorDeltas, sectorIsBest);
-                } else {
-                    updateSectorBars([], []);
-                }
-                // --- Fim do processamento específico ---
-
-            } catch (err) {
-                 console.error(`${OVERLAY_NAME} - Erro ao processar mensagem WS: ${err.message}. Dados recebidos:`, data, "Objeto de erro:", err);
-            }
-        };
-        
-        ws.onclose = (event) => { 
-            console.log(`${OVERLAY_NAME} - WS Desconectado. Código: ${event.code}, Motivo: ${event.reason}. Tentando reconectar...`);
-            setTimeout(connectWebSocket, 3000);
-        };
-        
-        ws.onerror = (event) => { 
-            console.error(`${OVERLAY_NAME} - Falha na conexão WebSocket com ${WS_URL}. Verifique se o servidor WebSocket está em execução e acessível.`);
-        };
-    }
-
     // --- Inicialização ---
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
       ensureSectorElements(3);
-      connectWebSocket();
+      const { initOverlayWebSocket } = await import('../overlay-common.js');
+      initOverlayWebSocket(d => {
+          const dados = d.casper || d;
+          const deltaValue = dados.lapDeltaToSessionBestLap ?? dados.lapDeltaToBestLap ?? dados.sessionDeltaToLeader ?? 0;
+          const timeDeltaAhead = dados.timeDeltaToCarAhead;
+          const timeDeltaBehind = dados.timeDeltaToCarBehind;
+          const sectorDeltas = dados.sectorDeltas;
+          const sectorIsBest = dados.sectorIsBest;
+
+          mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
+          const [_, deltaColorClass] = getColorClasses(deltaValue);
+          mainDeltaText.className = `main-delta-text ${deltaColorClass}`;
+          updateMainDeltaBar(deltaValue / 2.0);
+
+          gapFrontEl.textContent = (timeDeltaAhead != null && typeof timeDeltaAhead === 'number') ? `${timeDeltaAhead >= 0 ? '+' : ''}${timeDeltaAhead.toFixed(2)}s` : '--';
+          gapBehindEl.textContent = (timeDeltaBehind != null && typeof timeDeltaBehind === 'number') ? `${timeDeltaBehind >= 0 ? '+' : ''}${timeDeltaBehind.toFixed(2)}s` : '--';
+
+          if (Array.isArray(sectorDeltas) && Array.isArray(sectorIsBest) && sectorDeltas.length === sectorIsBest.length) {
+              updateSectorBars(sectorDeltas, sectorIsBest);
+          } else {
+              updateSectorBars([], []);
+          }
+      });
       // Estado inicial dos botões de lock/click-through é ditado por onEditMode se electronAPI estiver presente
       // Se não, eles iniciam como definidos em loadAllSettings
       if (!window.electronAPI?.onEditMode) {
