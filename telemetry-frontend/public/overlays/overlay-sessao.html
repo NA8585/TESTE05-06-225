@@ -583,7 +583,7 @@
     }
 
     function updateUI(d) {
-        if (!d || typeof d.IsConnected === 'undefined' && typeof d.trackDisplayName === 'undefined' && typeof d.TrackDisplayName === 'undefined') {
+        if (!d || typeof d.isConnected === 'undefined' && typeof d.trackDisplayName === 'undefined') {
             console.warn("updateUI chamado com dados inválidos ou incompletos.");
             if (!q('#connection-status-display').classList.contains('status-connecting') &&
                 !q('#connection-status-display').classList.contains('status-disconnected')) {
@@ -592,7 +592,7 @@
             return;
         }
         // Se IsConnected existe e é false, tratar desconexão do SDK
-        if (d.IsConnected === false) {
+        if (d.isConnected === false) {
             if (!q('#connection-status-display').classList.contains('status-disconnected')) {
                  updateConnectionStatus('Desconectado (SDK)', 'status-disconnected');
             }
@@ -612,64 +612,64 @@
         }
 
         // --- Pista & Sessão (campos de nova-tester) ---
-        updateText('#track-name', d.TrackDisplayName || d.trackDisplayName);
-        updateText('#track-layout', d.TrackConfigName || d.trackConfigName);
-        updateText('#track-length', d.TrackLengthKm || d.trackLength, len => `${(len ?? 0).toFixed(3)} km`);
-        updateText('#session-type', d.SessionTypeFromYaml || d.sessionTypeFromYaml);
-        updateText('#session-num', d.SessionNum || d.sessionNum);
-        updateText('#session-time-elapsed', d.SessionTime || d.sessionTime, t => fmtTime(t, false, true, true));
-        updateText('#session-time-remaining', d.SessionTimeRemain || d.sessionTimeRemain, t => fmtTime(t, false, false, true));
-        const sessionStateTranslated = translateSessionState(d.SessionState || d.sessionState);
+        updateText('#track-name', d.trackDisplayName);
+        updateText('#track-layout', d.trackConfigName);
+        updateText('#track-length', d.trackLength, len => `${(len ?? 0).toFixed(3)} km`);
+        updateText('#session-type', d.sessionTypeFromYaml);
+        updateText('#session-num', d.sessionNum);
+        updateText('#session-time-elapsed', d.sessionTime, t => fmtTime(t, false, true, true));
+        updateText('#session-time-remaining', d.sessionTimeRemain, t => fmtTime(t, false, false, true));
+        const sessionStateTranslated = translateSessionState(d.sessionState);
         updateText('#session-state-text', sessionStateTranslated, null); // O title já tem (traduzido)
-        q('#session-state-text').setAttribute('title', `SessionState: ${d.SessionState || d.sessionState} (traduzido)`); // Força tooltip correto
-        
-        const totalLaps = d.TotalLaps || d.totalLaps;
-        const sessionType = d.SessionTypeFromYaml || d.sessionTypeFromYaml || "";
+        q('#session-state-text').setAttribute('title', `SessionState: ${d.sessionState} (traduzido)`); // Força tooltip correto
+
+        const totalLaps = d.totalLaps;
+        const sessionType = d.sessionTypeFromYaml || "";
         updateText('#session-laps-total', (totalLaps === -1 || totalLaps === 0) && (sessionType.toLowerCase().includes('practice') || sessionType.toLowerCase().includes('qualify')) ? 'Ilimitado' : (totalLaps <= 0 ? 'N/A' : totalLaps));
-        updateText('#session-laps-remaining', (d.LapsRemainingRace || d.lapsRemainingRace) < 0 ? 'N/A' : (d.LapsRemainingRace || d.lapsRemainingRace));
+        updateText('#session-laps-remaining', (d.lapsRemainingRace) < 0 ? 'N/A' : d.lapsRemainingRace);
 
         // --- Piloto (campos de nova-tester) ---
-        updateText('#driver-name', d.UserName || d.userName);
-        updateText('#driver-team-name', d.TeamName || d.teamName || 'N/A');
-        updateText('#driver-car-number', d.CarNumber || d.carNumber);
-        updateText('#driver-irating', d.IRating || d.iRating);
-        updateText('#driver-license', d.LicString || d.licString);
-        updateText('#driver-safety-rating', d.LicSafetyRating || d.licSafetyRating, sr => (sr ?? 0).toFixed(2));
-        updateText('#driver-car-class-id', d.PlayerCarClassID || d.playerCarClassID);
-        const playerInc = d.PlayerCarTeamIncidentCount || d.playerCarTeamIncidentCount;
-        const limitInc = d.IncidentLimit || d.incidentLimit;
+        updateText('#driver-name', d.userName);
+        updateText('#driver-team-name', d.teamName || 'N/A');
+        updateText('#driver-car-number', d.carNumber);
+        updateText('#driver-irating', d.iRating);
+        updateText('#driver-license', d.licString);
+        updateText('#driver-safety-rating', d.licSafetyRating, sr => (sr ?? 0).toFixed(2));
+        updateText('#driver-car-class-id', d.playerCarClassID);
+        const playerInc = d.playerCarTeamIncidentCount;
+        const limitInc = d.incidentLimit;
         updateText('#driver-incidents', `${playerInc} / ${(limitInc === 0 || limitInc > 500 || limitInc === -1 || limitInc === 255) ? 'N/A' : limitInc}`, null);
         q('#driver-incidents').setAttribute('title', `Player: ${playerInc}, Limit: ${limitInc}`);
 
 
         // --- Condições da Pista (campos de nova-tester) ---
-        updateText('#air-temp', d.AirTemp || d.airTemp, temp => `${(temp ?? 0).toFixed(1)}°C`); // YAML AirTemp
-        updateText('#track-temp-live', d.TrackSurfaceTemp || d.trackSurfaceTemp, temp => `${(temp ?? 0).toFixed(1)}°C`); // SDK TrackSurfaceTemp
-        updateText('#track-temp-official', d.TrackTempCrew || d.trackTempCrew, temp => `${(temp ?? 0).toFixed(1)}°C`); // SDK TrackTempCrew
-        updateText('#skies-status', d.Skies || d.skies); // Skies (traduzido no backend ou aqui se necessário)
-        updateText('#wind-speed', d.WindSpeed || d.windSpeed, ws => `${(ws ?? 0).toFixed(1)} m/s`); // YAML WindSpeed
-        updateText('#wind-direction', d.WindDir || d.windDir, wd => `${(wd ?? 0).toFixed(1)} rad`); // YAML WindDir
-        updateText('#relative-humidity', d.RelativeHumidity || d.relativeHumidity, rh => fmtPercentage(rh, 1, false)); // YAML RelativeHumidity (não é fração)
-        updateText('#air-pressure', d.AirPressure || d.airPressure, ap => `${(ap ?? 0).toFixed(2)} kPa`); // YAML AirPressure
-        updateText('#rain-chance', d.ChanceOfRain || d.chanceOfRain, cr => fmtPercentage(cr, 0, false)); // YAML ChanceOfRain (não é fração)
-        updateText('#session-time-of-day', d.SessionTimeOfDay || d.sessionTimeOfDay, fmtTimeOfDay); // SDK SessionTimeOfDay
+        updateText('#air-temp', d.airTemp, temp => `${(temp ?? 0).toFixed(1)}°C`); // YAML AirTemp
+        updateText('#track-temp-live', d.trackSurfaceTemp, temp => `${(temp ?? 0).toFixed(1)}°C`); // SDK TrackSurfaceTemp
+        updateText('#track-temp-official', d.trackTempCrew, temp => `${(temp ?? 0).toFixed(1)}°C`); // SDK TrackTempCrew
+        updateText('#skies-status', d.skies); // Skies (traduzido no backend ou aqui se necessário)
+        updateText('#wind-speed', d.windSpeed, ws => `${(ws ?? 0).toFixed(1)} m/s`); // YAML WindSpeed
+        updateText('#wind-direction', d.windDir, wd => `${(wd ?? 0).toFixed(1)} rad`); // YAML WindDir
+        updateText('#relative-humidity', d.relativeHumidity, rh => fmtPercentage(rh, 1, false)); // YAML RelativeHumidity (não é fração)
+        updateText('#air-pressure', d.airPressure, ap => `${(ap ?? 0).toFixed(2)} kPa`); // YAML AirPressure
+        updateText('#rain-chance', d.chanceOfRain, cr => fmtPercentage(cr, 0, false)); // YAML ChanceOfRain (não é fração)
+        updateText('#session-time-of-day', d.sessionTimeOfDay, fmtTimeOfDay); // SDK SessionTimeOfDay
 
         // --- Volta & Delta (campos de nova-tester) ---
-        updateText('#lap-current', d.Lap || d.lap);
-        updateText('#lap-dist-pct', d.LapDistPct || d.lapDistPct, pct => fmtPercentage(pct, 1, true));
-        updateText('#lap-time-current', d.LapCurrentLapTime || d.lapCurrentLapTime, t => fmtTime(t, true));
-        updateText('#lap-time-last', d.LapLastLapTime || d.lapLastLapTime, t => fmtTime(t, true));
-        updateText('#lap-time-best-session', d.LapBestLapTime || d.lapBestLapTime, t => fmtTime(t, true));
-        updateText('#delta-best-session', d.LapDeltaToSessionBestLap || d.lapDeltaToSessionBestLap, fmtDelta);
-        updateDeltaClass('#delta-best-session', d.LapDeltaToSessionBestLap || d.lapDeltaToSessionBestLap);
-        updateText('#delta-optimal-session', d.LapDeltaToSessionOptimalLap || d.lapDeltaToSessionOptimalLap, fmtDelta);
-        updateDeltaClass('#delta-optimal-session', d.LapDeltaToSessionOptimalLap || d.lapDeltaToSessionOptimalLap);
-        updateText('#delta-driver-best', d.LapDeltaToDriverBestLap || d.lapDeltaToDriverBestLap, fmtDelta);
-        updateDeltaClass('#delta-driver-best', d.LapDeltaToDriverBestLap || d.lapDeltaToDriverBestLap);
-        updateText('#lap-time-optimal-est', d.EstLapTimeCalc || d.estLapTimeCalc, t => fmtTime(t, true));
+        updateText('#lap-current', d.lap);
+        updateText('#lap-dist-pct', d.lapDistPct, pct => fmtPercentage(pct, 1, true));
+        updateText('#lap-time-current', d.lapCurrentLapTime, t => fmtTime(t, true));
+        updateText('#lap-time-last', d.lapLastLapTime, t => fmtTime(t, true));
+        updateText('#lap-time-best-session', d.lapBestLapTime, t => fmtTime(t, true));
+        updateText('#delta-best-session', d.lapDeltaToSessionBestLap, fmtDelta);
+        updateDeltaClass('#delta-best-session', d.lapDeltaToSessionBestLap);
+        updateText('#delta-optimal-session', d.lapDeltaToSessionOptimalLap, fmtDelta);
+        updateDeltaClass('#delta-optimal-session', d.lapDeltaToSessionOptimalLap);
+        updateText('#delta-driver-best', d.lapDeltaToDriverBestLap, fmtDelta);
+        updateDeltaClass('#delta-driver-best', d.lapDeltaToDriverBestLap);
+        updateText('#lap-time-optimal-est', d.estLapTimeCalc, t => fmtTime(t, true));
 
         // --- Controle de Pista (campos de nova-tester) ---
-        const sessionFlags = d.SessionFlags || d.sessionFlags;
+        const sessionFlags = d.sessionFlags;
         const flagInfo = getFlagClasses(sessionFlags, sessionStateTranslated); // Passa o texto traduzido do estado da sessão
         const flagStatusEl = q('#flag-status');
         if (flagStatusEl) {
@@ -677,9 +677,9 @@
             flagStatusEl.className = `flag-status-span ${flagInfo.class}`;
             flagStatusEl.setAttribute('title', `SessionFlags: ${sessionFlags} (traduzido)`);
         }
-        const paceModeTranslated = translatePaceMode(d.PaceMode || d.paceMode);
+        const paceModeTranslated = translatePaceMode(d.paceMode);
         updateText('#pace-car-mode', paceModeTranslated, null);
-        q('#pace-car-mode').setAttribute('title', `PaceMode: ${d.PaceMode || d.paceMode} (traduzido)`);
+        q('#pace-car-mode').setAttribute('title', `PaceMode: ${d.paceMode} (traduzido)`);
 
 
         // --- Setores (lógica de nova-tester) ---
@@ -687,9 +687,9 @@
         if (sectorTableBody) {
             sectorTableBody.innerHTML = ''; // Limpa a tabela antes de popular
             // Verifica se os dados dos setores são válidos e existem
-            const areSectorsValid = d.AreSectorsValid || d.areSectorsValid;
-            const currentSectors = d.LapAllSectorTimes || d.lapAllSectorTimes;
-            const deltas = d.LapDeltaToSessionBestSectorTimes || d.lapDeltaToSessionBestSectorTimes || [];
+            const areSectorsValid = d.areSectorsValid;
+            const currentSectors = d.lapAllSectorTimes;
+            const deltas = d.lapDeltaToSessionBestSectorTimes || [];
 
             if (areSectorsValid && currentSectors && currentSectors.length > 0) {
                 for (let i = 0; i < currentSectors.length; i++) {
@@ -714,9 +714,9 @@
                 cell.textContent = 'Setores indisponíveis';
             }
         }
-        updateText('#sector-debug-info', d.SectorTimesDebug || d.sectorTimesDebug || 'N/A', null);
-        if (d.SectorTimesDebug || d.sectorTimesDebug) {
-            q('#sector-debug-info').setAttribute('title', `SectorTimesDebug Raw: ${d.SectorTimesDebug || d.sectorTimesDebug}`);
+        updateText('#sector-debug-info', d.sectorTimesDebug || 'N/A', null);
+        if (d.sectorTimesDebug) {
+            q('#sector-debug-info').setAttribute('title', `SectorTimesDebug Raw: ${d.sectorTimesDebug}`);
         }
     }
     

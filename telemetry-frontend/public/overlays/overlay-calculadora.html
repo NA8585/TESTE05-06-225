@@ -209,9 +209,9 @@
         socket.addEventListener("message", ({data}) => {
           const d = JSON.parse(data);
           // atualiza volta atual
-          setCurrentLap(d.Lap ?? 0);
+          setCurrentLap(d.lap ?? 0);
           // atualiza combustível restante (assume FuelLevelPct é fração 0–1)
-          const pct = d.FuelLevelPct ?? 0;
+          const pct = d.fuelLevelPct ?? 0;
           setFuelLeft(pct * tankCapacity);
         });
         return () => socket.close();
