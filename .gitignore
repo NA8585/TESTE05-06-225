@@ -2,3 +2,4 @@
 backend/cd
 backend/dotnet
 backend/rmdir
+backend/package-lock.json
