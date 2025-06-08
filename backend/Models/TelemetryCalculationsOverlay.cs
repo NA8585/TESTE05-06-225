@@ -49,27 +49,50 @@ namespace SuperBackendNR85IA.Calculations
 
         public static void PreencherOverlayDelta(ref TelemetryModel model)
         {
-            // Tempo até o carro à frente usando CarIdxF2Time
-            if (model.CarIdxF2Time.Length > model.PlayerCarIdx)
-                model.TimeDeltaToCarAhead = model.CarIdxF2Time[model.PlayerCarIdx];
-            else
-                model.TimeDeltaToCarAhead = 0f;
-
+            // Delta de tempo para o carro imediatamente à frente e atrás
+            model.TimeDeltaToCarAhead = 0f;
             model.TimeDeltaToCarBehind = 0f;
+
+            bool aheadFound = false, behindFound = false;
+
             if (model.CarIdxPosition.Length == model.CarIdxF2Time.Length &&
                 model.PlayerCarIdx >= 0 && model.PlayerCarIdx < model.CarIdxPosition.Length)
             {
                 int myPos = model.CarIdxPosition[model.PlayerCarIdx];
+
                 for (int i = 0; i < model.CarIdxPosition.Length; i++)
                 {
-                    if (model.CarIdxPosition[i] == myPos + 1)
+                    if (!aheadFound && model.CarIdxPosition[i] == myPos - 1 && i < model.CarIdxF2Time.Length)
                     {
-                        if (i < model.CarIdxF2Time.Length)
-                            model.TimeDeltaToCarBehind = model.CarIdxF2Time[i];
-                        break;
+                        // CarIdxF2Time[i] representa a diferença do carro i para o jogador
+                        float val = -model.CarIdxF2Time[i];
+                        if (Math.Abs(val) < 300f)
+                        {
+                            model.TimeDeltaToCarAhead = val;
+                            aheadFound = true;
+                        }
                     }
+                    else if (!behindFound && model.CarIdxPosition[i] == myPos + 1 && i < model.CarIdxF2Time.Length)
+                    {
+                        float val = model.CarIdxF2Time[i];
+                        if (Math.Abs(val) < 300f)
+                        {
+                            model.TimeDeltaToCarBehind = val;
+                            behindFound = true;
+                        }
+                    }
+
+                    if (aheadFound && behindFound)
+                        break;
                 }
             }
+
+            // Fallback usando distâncias se F2Time não estiver disponível ou parecer incorreto
+            float speed = model.CarSpeed > 0.1f ? model.CarSpeed : 0f;
+            if (!aheadFound && model.DistanceAhead > 0f && speed > 0f)
+                model.TimeDeltaToCarAhead = model.DistanceAhead / speed;
+            if (!behindFound && model.DistanceBehind > 0f && speed > 0f)
+                model.TimeDeltaToCarBehind = model.DistanceBehind / speed;
 
             model.SectorDeltas = model.LapDeltaToSessionBestSectorTimes ?? Array.Empty<float>();
 
