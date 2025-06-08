@@ -657,6 +657,7 @@
   document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
       ensureSectorElements(0);
+
       let latest = null;
       function render() {
         if (!latest) return;

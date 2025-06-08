@@ -71,6 +71,7 @@ namespace SuperBackendNR85IA.Calculations
                             model.TimeDeltaToCarAhead = val;
                             aheadFound = true;
                         }
+
                     }
                     else if (!behindFound && model.CarIdxPosition[i] == myPos + 1 && i < model.CarIdxF2Time.Length)
                     {
