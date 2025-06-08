@@ -699,8 +699,9 @@
             statusText = 'OK';
             statusClass = 'status-ok';
         }
-        statusValor.textContent = `${statusText} (${lapsDisplay})`;
+        statusValor.textContent = statusText;
         statusValor.className = `text-lg font-bold ${statusClass}`;
+        statusValor.classList.toggle('blink', statusText === 'PERIGO');
 
         // Recomendação de Abastecimento (nunca negativa)
         const recRaw = model.recomendacaoAbastecimento ?? model.RecomendacaoAbastecimento ?? 0;
