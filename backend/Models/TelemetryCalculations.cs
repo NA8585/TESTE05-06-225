@@ -192,7 +192,7 @@ namespace SuperBackendNR85IA.Calculations
                 consumoParaCalculo);
 
             float faltante = model.NecessarioFim - model.FuelLevel;
-            model.RecomendacaoAbastecimento = MathF.Max(0, faltante);
+            model.RecomendacaoAbastecimento = faltante;
         }
 
         public static void UpdateSectorData(ref TelemetryModel model)

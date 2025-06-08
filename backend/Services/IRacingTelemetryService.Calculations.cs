@@ -63,7 +63,7 @@ namespace SuperBackendNR85IA.Services
                     ? (t.LapsRemainingRace * t.ConsumoMedio) : 0;
                 t.NecessarioFim = fuelNeededForRaceLaps;
                 float faltante = fuelNeededForRaceLaps - t.FuelLevel;
-                t.RecomendacaoAbastecimento = Math.Max(0, faltante);
+                t.RecomendacaoAbastecimento = faltante;
                 t.FuelRemaining = t.FuelLevel;
                 t.FuelEta       = t.LapsRemaining * t.EstLapTime;
                 if (t.FuelLevel <= 0)
