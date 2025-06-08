@@ -406,7 +406,7 @@ namespace SuperBackendNR85IA.Services
                 _lastYaml = t.SessionInfoYaml;
             }
 
-            var (drv, wkd, ses, _) = _cachedYamlData;
+            var (drv, wkd, ses, _, drivers) = _cachedYamlData;
             if (drv != null)
             {
                 t.UserName           = drv.UserName;
@@ -418,6 +418,11 @@ namespace SuperBackendNR85IA.Services
                 t.PlayerCarClassID   = drv.CarClassID;
             }
             t.PlayerCarTeamIncidentCount = GetSdkValue<int>(d, "PlayerCarTeamIncidentCount") ?? 0;
+
+            t.CarIdxUserNames = drivers
+                .OrderBy(di => di.CarIdx)
+                .Select(di => di.UserName)
+                .ToArray();
 
             if (wkd != null)
             {

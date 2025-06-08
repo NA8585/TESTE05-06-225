@@ -10,10 +10,10 @@ namespace SuperBackendNR85IA.Services
 {
     public class SessionYamlParser
     {
-        public (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?) ParseSessionInfo(string yaml, int playerCarIdx, int currentSessionNum)
+        public (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?, List<DriverInfo>) ParseSessionInfo(string yaml, int playerCarIdx, int currentSessionNum)
         {
             if (string.IsNullOrWhiteSpace(yaml))
-                return (null, null, null, null);
+                return (null, null, null, null, new List<DriverInfo>());
 
             var ys = new YamlStream();
             ys.Load(new StringReader(yaml));
@@ -24,8 +24,9 @@ namespace SuperBackendNR85IA.Services
             var session = ParseCurrentSessionDetails(root, currentSessionNum);
             // Novo objeto para setores
             var sectors = ParseSectorInfo(root, currentSessionNum);
-            
-            return (driver, weekend, session, sectors);
+            var drivers = ParseAllDrivers(root);
+
+            return (driver, weekend, session, sectors, drivers);
         }
 
         private DriverInfo? ParsePlayerDriverInfo(YamlMappingNode root, int idx)
@@ -54,6 +55,25 @@ namespace SuperBackendNR85IA.Services
                 CarClassShortName = GetStr(node, "CarClassShortName"),
                 CarClassRelSpeed  = GetFloat(node, "CarClassRelSpeed")
             };
+        }
+
+        private List<DriverInfo> ParseAllDrivers(YamlMappingNode root)
+        {
+            var list = new List<DriverInfo>();
+            if (!root.Children.ContainsKey(new YamlScalarNode("DriverInfo"))) return list;
+            var driverNode = (YamlMappingNode)root.Children[new YamlScalarNode("DriverInfo")];
+            if (!driverNode.Children.ContainsKey(new YamlScalarNode("Drivers")) || !(driverNode.Children[new YamlScalarNode("Drivers")] is YamlSequenceNode seq)) return list;
+
+            foreach (var child in seq.Children.OfType<YamlMappingNode>())
+            {
+                list.Add(new DriverInfo
+                {
+                    CarIdx   = GetInt(child, "CarIdx"),
+                    UserName = GetStr(child, "UserName")
+                });
+            }
+
+            return list;
         }
 
         private WeekendInfo? ParseWeekendInfo(YamlMappingNode root)

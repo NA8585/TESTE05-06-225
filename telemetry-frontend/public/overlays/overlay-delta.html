@@ -686,8 +686,14 @@
         mainDeltaText.className = `main-delta-text ${deltaColorClass}`;
         updateMainDeltaBar(deltaValue / 2.0);
 
-        gapFrontEl.textContent = (timeDeltaAhead != null && typeof timeDeltaAhead === 'number') ? `${timeDeltaAhead >= 0 ? '+' : ''}${timeDeltaAhead.toFixed(2)}s` : '--';
-        gapBehindEl.textContent = (timeDeltaBehind != null && typeof timeDeltaBehind === 'number') ? `${timeDeltaBehind >= 0 ? '+' : ''}${timeDeltaBehind.toFixed(2)}s` : '--';
+        const nameFront = dados.carAheadName ?? '';
+        const nameBehind = dados.carBehindName ?? '';
+        gapFrontEl.textContent = (timeDeltaAhead != null && typeof timeDeltaAhead === 'number')
+          ? `${nameFront ? nameFront + ' ' : ''}${timeDeltaAhead >= 0 ? '+' : ''}${timeDeltaAhead.toFixed(2)}s`
+          : (nameFront || '--');
+        gapBehindEl.textContent = (timeDeltaBehind != null && typeof timeDeltaBehind === 'number')
+          ? `${nameBehind ? nameBehind + ' ' : ''}${timeDeltaBehind >= 0 ? '+' : ''}${timeDeltaBehind.toFixed(2)}s`
+          : (nameBehind || '--');
 
         updateSectorBars(sectorDeltas, sectorIsBest);
       }
