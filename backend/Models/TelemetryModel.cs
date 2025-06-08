@@ -123,6 +123,9 @@ namespace SuperBackendNR85IA.Models
         public float DistanceBehind { get; set; }
         public float TimeDeltaToCarAhead { get; set; }
         public float TimeDeltaToCarBehind { get; set; }
+        public string[] CarIdxUserNames { get; set; } = Array.Empty<string>();
+        public string CarAheadName { get; set; } = string.Empty;
+        public string CarBehindName { get; set; } = string.Empty;
 
         public float[] BrakeTemp { get; set; } = Array.Empty<float>();
         public float LfBrakeLinePress { get; set; }

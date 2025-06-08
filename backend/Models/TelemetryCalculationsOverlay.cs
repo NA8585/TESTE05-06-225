@@ -52,8 +52,11 @@ namespace SuperBackendNR85IA.Calculations
             // Delta de tempo para o carro imediatamente à frente e atrás
             model.TimeDeltaToCarAhead = 0f;
             model.TimeDeltaToCarBehind = 0f;
+            model.CarAheadName = string.Empty;
+            model.CarBehindName = string.Empty;
 
             bool aheadFound = false, behindFound = false;
+            int aheadIdx = -1, behindIdx = -1;
 
             if (model.CarIdxPosition.Length == model.CarIdxF2Time.Length &&
                 model.PlayerCarIdx >= 0 && model.PlayerCarIdx < model.CarIdxPosition.Length)
@@ -70,6 +73,7 @@ namespace SuperBackendNR85IA.Calculations
                         {
                             model.TimeDeltaToCarAhead = val;
                             aheadFound = true;
+                            aheadIdx = i;
                         }
 
                     }
@@ -80,6 +84,7 @@ namespace SuperBackendNR85IA.Calculations
                         {
                             model.TimeDeltaToCarBehind = val;
                             behindFound = true;
+                            behindIdx = i;
                         }
                     }
 
@@ -108,22 +113,24 @@ namespace SuperBackendNR85IA.Calculations
                         float otherPct = model.CarIdxLap[i] + model.CarIdxLapDistPct[i];
                         float myPctAbs = myLap + myPct;
                         float t = GetDeltaTime(myPctAbs, otherPct, trackMeters, speed);
-                        if (Math.Abs(t) > 0.001f)
-                        {
-                            model.TimeDeltaToCarAhead = t;
-                            aheadFound = true;
-                        }
+                            if (Math.Abs(t) > 0.001f)
+                            {
+                                model.TimeDeltaToCarAhead = t;
+                                aheadFound = true;
+                                aheadIdx = i;
+                            }
                     }
                     else if (!behindFound && model.CarIdxPosition[i] == myPos + 1)
                     {
                         float otherPct = model.CarIdxLap[i] + model.CarIdxLapDistPct[i];
                         float myPctAbs = myLap + myPct;
                         float t = GetDeltaTime(myPctAbs, otherPct, trackMeters, speed);
-                        if (Math.Abs(t) > 0.001f)
-                        {
-                            model.TimeDeltaToCarBehind = t;
-                            behindFound = true;
-                        }
+                            if (Math.Abs(t) > 0.001f)
+                            {
+                                model.TimeDeltaToCarBehind = t;
+                                behindFound = true;
+                                behindIdx = i;
+                            }
                     }
 
                     if (aheadFound && behindFound)
@@ -137,6 +144,11 @@ namespace SuperBackendNR85IA.Calculations
                 model.TimeDeltaToCarAhead = model.DistanceAhead / fallbackSpeed;
             if (!behindFound && model.DistanceBehind > 0f && fallbackSpeed > 0f)
                 model.TimeDeltaToCarBehind = model.DistanceBehind / fallbackSpeed;
+
+            if (aheadIdx >= 0 && aheadIdx < model.CarIdxUserNames.Length)
+                model.CarAheadName = model.CarIdxUserNames[aheadIdx];
+            if (behindIdx >= 0 && behindIdx < model.CarIdxUserNames.Length)
+                model.CarBehindName = model.CarIdxUserNames[behindIdx];
 
             model.SectorDeltas = model.LapDeltaToSessionBestSectorTimes ?? Array.Empty<float>();
 

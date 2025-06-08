@@ -22,7 +22,7 @@ namespace SuperBackendNR85IA.Services
         private readonly SessionYamlParser _yamlParser = new();
 
         private string _lastYaml = string.Empty;
-        private (DriverInfo? Drv, WeekendInfo? Wkd, SessionInfo? Ses,SectorInfo Sec) _cachedYamlData;
+        private (DriverInfo? Drv, WeekendInfo? Wkd, SessionInfo? Ses, SectorInfo Sec, List<DriverInfo> Drivers) _cachedYamlData;
         private int _lastTick = -1;
         private int _lastLap = -1;
         private float _fuelAtLapStart = 0f;
