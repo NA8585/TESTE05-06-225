@@ -727,10 +727,11 @@
             try {
                 const d = JSON.parse(data);
 
-                if (d.tires) {
+                const tires = d.tyres || d.tires;
+                if (tires) {
                     tireMap.forEach(({id, iRacingKey}) => {
-                        if (d.tires[iRacingKey]) {
-                            updateTireUI(id, d.tires[iRacingKey]);
+                        if (tires[iRacingKey]) {
+                            updateTireUI(id, tires[iRacingKey]);
                         }
                     });
                 }
