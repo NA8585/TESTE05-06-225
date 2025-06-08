@@ -3,6 +3,7 @@ import './App.css';
 import paiImg from './assets/images/pai.jpg';
 import filhoImg from './assets/images/filho.jpg';
 import alcoraoImg from './assets/images/alcorao.jpg';
+import overlayList from './overlayList';
 
 export default function App() {
   const [started, setStarted] = useState(false);
@@ -14,27 +15,7 @@ export default function App() {
   const engineSoundRef = useRef(new Audio('/sounds/engine-start.mp3'));
   engineSoundRef.current.volume = 0.5;
 
-  const overlays = [
-  { name: 'Inputs', file: 'overlay-inputs.html' },
-  { name: 'Delta', file: 'overlay-delta.html' },
-  { name: 'Relative', file: 'overlay-relative.html' },
-  { name: 'Sessão', file: 'overlay-sessao.html' },
-  { name: 'Combustível', file: 'overlay-tanque.html' },
-  { name: 'Tires & Freio', file: 'overlay-tiresandbrakes.html' },
-  { name: 'Tires Garage', file: 'overlay-tiresgarage.html' },
-  { name: 'Standings', file: 'overlay-standings.html' },
-  { name: 'Calculadora', file: 'overlay-calculadora.html' },
-  { name: 'Base', file: 'overlaybase.html' },
-  { name: 'Teste Final', file: 'overlay-testefinal.html' }
-    { name: 'Inputs', file: 'overlay-inputs.html' },
-    { name: 'Delta', file: 'overlay-delta.html' },
-    { name: 'Mapa Pista', file: 'overlay-mapa.html' },
-    { name: 'Relative', file: 'overlay-relative.html' },
-    { name: 'Sessão', file: 'overlay-status.html' },
-    { name: 'Combustível', file: 'overlay-tanque.html' },
-    { name: 'Tires & Freio', file: 'overlay-tiresandbrakes.html' },
-    { name: 'Tires Garage', file: 'overlay-tiresgarage.html' },
-  ];
+  const overlays = overlayList;
 
   const openOverlay = useCallback((name, file) => {
     const audio = clickSoundRef.current;

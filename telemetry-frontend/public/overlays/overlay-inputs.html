@@ -696,49 +696,14 @@
             drawTimeline(throttle, brake, steer);
         }
         
-        const WS_URL = window.OVERLAY_WS_URL || "ws://localhost:5221/ws";
-        let socket;
-        function initWebSocket() {
-            socket = new WebSocket(WS_URL);
-            socket.onopen = () => console.log("🟢 Conectado ao WebSocket");
-            socket.onmessage = e => {
-                try {
-                    const msg = JSON.parse(e.data);
-                    // Correção para camelCase na condição
-                    if (msg && typeof msg.throttle !== 'undefined') { // msg.Throttle -> msg.throttle
-                            updateOverlayData(msg);
-                    } else if (msg) { // Se não tem throttle, mas tem msg, loga para ver o que é
-                        console.log("Mensagem recebida sem 'throttle', mas com dados:", msg);
-                        // Você pode querer chamar updateOverlayData(msg) mesmo assim se outros dados forem úteis
-                        // ou adicionar uma lógica para tratar diferentes tipos de mensagens.
-                        // Por enquanto, vamos assumir que queremos os dados de input.
-                    }
-                } catch (err) { console.warn("Falha ao parsear JSON:", e.data, err); }
-            };
-            socket.onclose = (event) => { // Adicionado 'event' para logar detalhes
-                let reason = "";
-                if (event.code) reason += ` Código: ${event.code}`;
-                if (event.reason) reason += ` Motivo: ${event.reason}`;
-                if (!reason && !event.wasClean) reason = " Conexão perdida abruptamente.";
-                console.log(`🔴 Desconectado do WebSocket.${reason} Reconectando em 3s...`);
-                if (!document.hidden && (!socket || socket.readyState === WebSocket.CLOSED)) { 
-                     setTimeout(initWebSocket, 3000);
+        window.addEventListener('load', async () => {
+            await loadSettings();
+            const { initOverlayWebSocket } = await import('../overlay-common.js');
+            initOverlayWebSocket(data => {
+                if (typeof data.throttle !== 'undefined') {
+                    updateOverlayData(data);
                 }
-            };
-            socket.onerror = (err) => {
-                console.error("Erro no WebSocket:", err);
-                socket.close(); 
-            };
-        }
-
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) { if (socket && socket.readyState === WebSocket.OPEN) socket.close(); } 
-            else if (!socket || socket.readyState === WebSocket.CLOSED) { initWebSocket(); }
-        });
-        
-        window.addEventListener('load', async () => { 
-            await loadSettings(); 
-            initWebSocket();
+            });
         });
 
     </script>
