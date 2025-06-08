@@ -237,5 +237,40 @@ namespace SuperBackendNR85IA.Calculations
                 default: return sessionTypeRaw ?? "Desconhecido";
             }
         }
+
+        public static void SanitizeModel(TelemetryModel model)
+        {
+            if (model == null) return;
+            SanitizeObject(model);
+        }
+
+        private static void SanitizeObject(object obj)
+        {
+            foreach (var prop in obj.GetType().GetProperties())
+            {
+                if (prop.PropertyType == typeof(float))
+                {
+                    float val = (float)(prop.GetValue(obj) ?? 0f);
+                    if (float.IsNaN(val) || float.IsInfinity(val))
+                        prop.SetValue(obj, 0f);
+                }
+                else if (prop.PropertyType == typeof(float[]))
+                {
+                    var arr = (float[]?)prop.GetValue(obj);
+                    if (arr != null)
+                    {
+                        for (int i = 0; i < arr.Length; i++)
+                            if (float.IsNaN(arr[i]) || float.IsInfinity(arr[i]))
+                                arr[i] = 0f;
+                    }
+                }
+                else if (!prop.PropertyType.IsPrimitive && prop.PropertyType != typeof(string) && !prop.PropertyType.IsEnum)
+                {
+                    var child = prop.GetValue(obj);
+                    if (child != null)
+                        SanitizeObject(child);
+                }
+            }
+        }
     }
 }
