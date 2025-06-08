@@ -26,13 +26,14 @@
       left: 0;
       width: 450px; /* Largura inicial, pode ser ajustada */
       height: auto; /* Altura automática para se ajustar ao conteúdo */
-      background: rgb(17, 24, 39); /* Cor de fundo escura */
+      background-color: rgba(17, 24, 39, var(--overlay-opacity, 0.98)); /* Cor de fundo com opacidade controlável */
       border: 2px solid #1d4ed8; /* Borda azul */
       border-radius: 0.75rem; /* Cantos arredondados */
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Sombra */
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      filter: contrast(var(--overlay-contrast, 1));
     }
 
     /* --- ESTILOS PARA MODO DE EDIÇÃO GLOBAL --- */
@@ -168,6 +169,15 @@
       position: relative;
       margin-bottom: 0.3rem;
     }
+    .delta-thin-bar {
+      width: 100%;
+      height: 4px;
+      background-color: #1f2937;
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 0.3rem;
+    }
     .bar-fill {
       height: 100%;
       position: absolute;
@@ -247,6 +257,9 @@
       </div>
       <div class="bar">
         <div id="main-delta-bar-fill" class="bar-fill setor-neutro" style="width:0%; left:50%;"></div>
+      </div>
+      <div class="delta-thin-bar">
+        <div id="delta-thin-fill" class="bar-fill setor-neutro" style="width:0%; left:50%;"></div>
       </div>
       <div id="main-delta-text" class="text-gray-300">--</div>
       <div class="sectors-container" id="sectors-container"></div>
@@ -444,15 +457,12 @@
 
     rangeOpacity.oninput = (e) => {
       const opacity = parseFloat(e.target.value);
-      resizableOverlayWrapper.style.opacity = opacity;
+      resizableOverlayWrapper.style.setProperty('--overlay-opacity', opacity);
       saveSetting('opacity', opacity);
     };
     rangeContrast.oninput = (e) => {
-      // Ajustado para usar porcentagem no filtro CSS se for o caso, ou apenas o número
       const contrastValue = parseFloat(e.target.value);
-      resizableOverlayWrapper.style.filter = `contrast(${contrastValue})`; // Se for um número de 0.5 a 2
-      // Se for para ser em porcentagem (50% a 200%):
-      // resizableOverlayWrapper.style.filter = `contrast(${contrastValue * 100}%)`;
+      resizableOverlayWrapper.style.setProperty('--overlay-contrast', contrastValue);
       saveSetting('contrast', contrastValue);
     };
 
@@ -514,11 +524,11 @@
     function loadAllSettings() {
       const opacity = loadSetting('opacity', 0.98);
       rangeOpacity.value = opacity;
-      resizableOverlayWrapper.style.opacity = opacity;
+      resizableOverlayWrapper.style.setProperty('--overlay-opacity', opacity);
 
       const contrast = loadSetting('contrast', 1);
       rangeContrast.value = contrast;
-      resizableOverlayWrapper.style.filter = `contrast(${contrast})`;
+      resizableOverlayWrapper.style.setProperty('--overlay-contrast', contrast);
 
       localPinned = loadSetting('pinned', false);
       updateVisualPinButtonState(localPinned);
@@ -565,6 +575,7 @@
     const gapBehindEl       = document.getElementById('gap-behind');
     const gapFrontEl        = document.getElementById('gap-front');
     const mainDeltaBarFill  = document.getElementById('main-delta-bar-fill');
+    const thinDeltaBarFill  = document.getElementById('delta-thin-fill');
     const mainDeltaText     = document.getElementById('main-delta-text');
     const sectorContainer   = document.getElementById('sectors-container');
     let sectorBarEls  = [];
@@ -604,16 +615,21 @@
       return ['setor-neutro', 'text-yellow-400'];
     }
 
-    function updateMainDeltaBar(value) { 
-      const normalizedValue = Math.max(-1, Math.min(1, value)); 
-      const [bgClass] = getColorClasses(normalizedValue); 
+    function updateMainDeltaBar(value) {
+      const normalizedValue = Math.max(-1, Math.min(1, value));
+      const [bgClass] = getColorClasses(normalizedValue);
       mainDeltaBarFill.className = `bar-fill ${bgClass}`;
-      if (normalizedValue >= 0) { 
+      thinDeltaBarFill.className = `bar-fill ${bgClass}`;
+      if (normalizedValue >= 0) {
         mainDeltaBarFill.style.left = '50%';
-        mainDeltaBarFill.style.width = `${(normalizedValue) * 50}%`; 
-      } else { 
-        mainDeltaBarFill.style.left = `${50 + (normalizedValue * 50)}%`; 
-        mainDeltaBarFill.style.width = `${(-normalizedValue) * 50}%`; 
+        mainDeltaBarFill.style.width = `${(normalizedValue) * 50}%`;
+        thinDeltaBarFill.style.left = '50%';
+        thinDeltaBarFill.style.width = `${(normalizedValue) * 50}%`;
+      } else {
+        mainDeltaBarFill.style.left = `${50 + (normalizedValue * 50)}%`;
+        mainDeltaBarFill.style.width = `${(-normalizedValue) * 50}%`;
+        thinDeltaBarFill.style.left = `${50 + (normalizedValue * 50)}%`;
+        thinDeltaBarFill.style.width = `${(-normalizedValue) * 50}%`;
       }
     }
 
@@ -640,7 +656,7 @@
     // --- Inicialização ---
   document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
-      ensureSectorElements(3);
+      ensureSectorElements(0);
       const { initOverlayWebSocket } = await import('../overlay-common.js');
       initOverlayWebSocket(d => {
           const dados = d.casper || d;
