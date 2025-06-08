@@ -181,12 +181,15 @@
             position:absolute;
             top:50%;
             transform:translateY(-50%);
-            font-size:0.65rem; 
-            color:#e2e8f0; 
+            font-size:0.65rem;
+            color:#e2e8f0;
             pointer-events:none;
             white-space: nowrap;
-            padding: 0 4px; 
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.7); 
+            padding: 0 4px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+        .bar-label::before {
+            content: attr(data-label) ' ';
         }
         
         .gear-display {
@@ -267,21 +270,22 @@
             <div class="overlay-inputs-content">
                 <div class="inputs-and-gear-container">
                     <div class="bars-column">
-                        <div class="bar-container">
+                        <div class="bar-container" title="Acelerador">
                             <div class="bar-bg">
                                 <div id="input-throttle" class="bar-fill bg-green-500" style="width:0%;"></div>
-                                <div class="bar-label" id="throttle-value">0%</div>
+                                <div class="bar-label" id="throttle-value" data-label="Acelerador">0%</div>
                             </div>
                         </div>
-                        <div class="bar-container">
-                               <div class="bar-bg">
-                                <div id="input-brake" class="bar-fill bg-red-500" style="width:0%;"></div>
-                                <div class="bar-label" id="brake-value">0%</div>
-                            </div>
-                        </div>
-                        <div class="bar-container">
+                        <div class="bar-container" title="Freio">
                             <div class="bar-bg">
-                                <div id="input-steer" class="bar-fill bg-blue-500" style="width:50%;"></div> <div class="bar-label" id="steer-value">0</div>
+                                <div id="input-brake" class="bar-fill bg-red-500" style="width:0%;"></div>
+                                <div class="bar-label" id="brake-value" data-label="Freio">0%</div>
+                            </div>
+                        </div>
+                        <div class="bar-container" title="Direção">
+                            <div class="bar-bg">
+                                <div id="input-steer" class="bar-fill bg-blue-500" style="width:50%;"></div>
+                                <div class="bar-label" id="steer-value" data-label="Direção">0</div>
                             </div>
                         </div>
                     </div>
