@@ -485,6 +485,7 @@
         rangeOpacity.oninput = async (e) => {
             const opacityValue = parseFloat(e.target.value);
             resizableOverlayWrapper.style.setProperty('--overlay-opacity', opacityValue);
+            resizableOverlayWrapper.style.opacity = opacityValue;
             saveSetting('opacity', opacityValue);
         };
 
@@ -506,20 +507,34 @@
             if (window.electronAPI && window.electronAPI.loadOverlaySettings) {
                 const savedSettings = await window.electronAPI.loadOverlaySettings(OVERLAY_NAME);
                 if (savedSettings) {
-                    if (typeof savedSettings.opacity !== 'undefined') { rangeOpacity.value = savedSettings.opacity; resizableOverlayWrapper.style.setProperty('--overlay-opacity', savedSettings.opacity); }
-                    else { rangeOpacity.value = 0.98; resizableOverlayWrapper.style.setProperty('--overlay-opacity', 0.98); }
+                    if (typeof savedSettings.opacity !== 'undefined') {
+                        rangeOpacity.value = savedSettings.opacity;
+                        resizableOverlayWrapper.style.setProperty('--overlay-opacity', savedSettings.opacity);
+                        resizableOverlayWrapper.style.opacity = savedSettings.opacity;
+                    }
+                    else {
+                        rangeOpacity.value = 0.98;
+                        resizableOverlayWrapper.style.setProperty('--overlay-opacity', 0.98);
+                        resizableOverlayWrapper.style.opacity = 0.98;
+                    }
                     if (typeof savedSettings.contrast !== 'undefined') { rangeContrast.value = savedSettings.contrast; resizableOverlayWrapper.style.setProperty('--overlay-contrast', savedSettings.contrast); }
                     else { rangeContrast.value = 1; resizableOverlayWrapper.style.setProperty('--overlay-contrast', 1); }
                     if (typeof savedSettings.pinned !== 'undefined') updatePinButtonState(savedSettings.pinned);
                     if (typeof savedSettings.locked !== 'undefined') updateLockButtonState(savedSettings.locked);
                     if (typeof savedSettings.ignoreClicks !== 'undefined') updateClickButtonState(savedSettings.ignoreClicks);
-                } else { 
-                     rangeOpacity.value = 0.98; resizableOverlayWrapper.style.setProperty('--overlay-opacity', 0.98);
-                     rangeContrast.value = 1; resizableOverlayWrapper.style.setProperty('--overlay-contrast', 1);
+                } else {
+                     rangeOpacity.value = 0.98;
+                     resizableOverlayWrapper.style.setProperty('--overlay-opacity', 0.98);
+                     resizableOverlayWrapper.style.opacity = 0.98;
+                     rangeContrast.value = 1;
+                     resizableOverlayWrapper.style.setProperty('--overlay-contrast', 1);
                 }
             } else {
-                rangeOpacity.value = 0.98; resizableOverlayWrapper.style.setProperty('--overlay-opacity', 0.98);
-                rangeContrast.value = 1; resizableOverlayWrapper.style.setProperty('--overlay-contrast', 1);
+                rangeOpacity.value = 0.98;
+                resizableOverlayWrapper.style.setProperty('--overlay-opacity', 0.98);
+                resizableOverlayWrapper.style.opacity = 0.98;
+                rangeContrast.value = 1;
+                resizableOverlayWrapper.style.setProperty('--overlay-contrast', 1);
             }
             if (window.electronAPI && window.electronAPI.loadOverlayBounds) {
                 const savedBounds = await window.electronAPI.loadOverlayBounds(OVERLAY_NAME);
