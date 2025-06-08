@@ -35,7 +35,7 @@ app.Map("/ws", async context =>
     {
         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
         var handler = context.RequestServices.GetRequiredService<TelemetryBroadcaster>();
-        await handler.AddClient(webSocket); // Certifique-se que o método AddClient em TelemetryBroadcaster existe e é público
+        await handler.AddClient(webSocket, context.RequestAborted); // passa o CancellationToken para permitir cancelamento gracioso
     }
     else
     {
