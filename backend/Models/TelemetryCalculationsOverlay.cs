@@ -88,12 +88,51 @@ namespace SuperBackendNR85IA.Calculations
                 }
             }
 
-            // Fallback usando distâncias se F2Time não estiver disponível ou parecer incorreto
-            float speed = model.CarSpeed > 0.1f ? model.CarSpeed : 0f;
-            if (!aheadFound && model.DistanceAhead > 0f && speed > 0f)
-                model.TimeDeltaToCarAhead = model.DistanceAhead / speed;
-            if (!behindFound && model.DistanceBehind > 0f && speed > 0f)
-                model.TimeDeltaToCarBehind = model.DistanceBehind / speed;
+            // Cálculo alternativo baseado em distância na pista caso F2Time não esteja válido
+            if ((!aheadFound || !behindFound) &&
+                model.CarIdxLapDistPct.Length == model.CarIdxPosition.Length &&
+                model.CarIdxLap.Length == model.CarIdxPosition.Length &&
+                model.PlayerCarIdx >= 0 && model.PlayerCarIdx < model.CarIdxPosition.Length &&
+                model.TrackLength > 0f)
+            {
+                int myPos = model.CarIdxPosition[model.PlayerCarIdx];
+                int myLap = model.CarIdxLap[model.PlayerCarIdx];
+                float myPct = model.CarIdxLapDistPct[model.PlayerCarIdx];
+                float trackMeters = model.TrackLength * 1000f;
+                float speed = model.CarSpeed > 0.1f ? model.CarSpeed : 0f;
+
+                for (int i = 0; i < model.CarIdxPosition.Length; i++)
+                {
+                    if (!aheadFound && model.CarIdxPosition[i] == myPos - 1)
+                    {
+                        float dist = ((model.CarIdxLap[i] - myLap) + (model.CarIdxLapDistPct[i] - myPct)) * trackMeters;
+                        if (Math.Abs(dist) > 0.01f && speed > 0f)
+                        {
+                            model.TimeDeltaToCarAhead = -dist / speed;
+                            aheadFound = true;
+                        }
+                    }
+                    else if (!behindFound && model.CarIdxPosition[i] == myPos + 1)
+                    {
+                        float dist = ((model.CarIdxLap[i] - myLap) + (model.CarIdxLapDistPct[i] - myPct)) * trackMeters;
+                        if (Math.Abs(dist) > 0.01f && speed > 0f)
+                        {
+                            model.TimeDeltaToCarBehind = dist / speed;
+                            behindFound = true;
+                        }
+                    }
+
+                    if (aheadFound && behindFound)
+                        break;
+                }
+            }
+
+            // Fallback usando distâncias pré-calculadas se nada mais deu certo
+            float fallbackSpeed = model.CarSpeed > 0.1f ? model.CarSpeed : 0f;
+            if (!aheadFound && model.DistanceAhead > 0f && fallbackSpeed > 0f)
+                model.TimeDeltaToCarAhead = model.DistanceAhead / fallbackSpeed;
+            if (!behindFound && model.DistanceBehind > 0f && fallbackSpeed > 0f)
+                model.TimeDeltaToCarBehind = model.DistanceBehind / fallbackSpeed;
 
             model.SectorDeltas = model.LapDeltaToSessionBestSectorTimes ?? Array.Empty<float>();
 
