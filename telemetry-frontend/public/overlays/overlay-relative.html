@@ -373,7 +373,7 @@
     </div>
 
     <script>
-const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
+
 const competitorListContainer = document.getElementById('competitor-list-container');
 const overlayAPI = window.overlayAPI || window.api || {}; // For potential interactions
 
@@ -657,41 +657,9 @@ function renderRelative(data) {
   }
 }
 
-// --- WebSocket Connection ---
-function connectWS() {
-  const ws = new WebSocket(WS_URL);
 
-  ws.onopen = () => {
-    console.log('Relative overlay conectada a', WS_URL);
-    const statusEl = document.getElementById('trackStatus');
-    if (statusEl) statusEl.textContent = 'Conectado...';
-  };
-
-  ws.onmessage = e => {
-    try {
-      const data = JSON.parse(e.data); // data is now a TelemetryModel object
-      if (data) {
-        renderRelative(data);
-      }
-    } catch (err) {
-      console.error('Erro processando dados WebSocket:', err, "Raw data:", e.data);
-      const statusEl = document.getElementById('trackStatus');
-      if (statusEl) statusEl.textContent = 'Erro nos dados!';
-    }
-  };
-
-  ws.onclose = (event) => {
-    let reason = `Código: ${event.code}${event.reason ? `, Motivo: ${event.reason}` : ''}${!event.wasClean ? ' (Desconexão abrupta)' : ''}`;
-    console.warn(`Relative overlay desconectada. ${reason}. Reconectando em 3s...`);
-    const statusEl = document.getElementById('trackStatus');
-    if (statusEl) statusEl.textContent = `Desconectado (${event.code || 'N/A'})...`;
-    setTimeout(connectWS, 3000);
-  };
-
-  ws.onerror = (errorEvent) => {
-    console.error('Erro WebSocket (Relative):', errorEvent.type || errorEvent);
-    // The onclose event will handle reconnection attempts.
-  };
+function handleData(data) {
+  renderRelative(data);
 }
 
 // --- UI Interactions (same as before) ---
@@ -838,7 +806,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    connectWS();
+    const { initOverlayWebSocket } = await import('../overlay-common.js');
+    initOverlayWebSocket(handleData);
 });
 
 </script>

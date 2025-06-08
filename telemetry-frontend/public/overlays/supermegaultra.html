@@ -149,8 +149,6 @@
 <script>
 // Objeto global para interagir com a API da overlay (se houver)
 const overlayAPI = window.overlayAPI || window.api || {};
-// URL do WebSocket para o backend
-const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
 // Elemento raiz onde o conteúdo será renderizado
 const rootElement = document.getElementById('root');
 
@@ -827,36 +825,8 @@ function render(data) {
 }
 
 // --- Lógica de Conexão WebSocket ---
-function connect() {
-  const ws = new WebSocket(WS_URL);
-  ws.onopen = () => { 
-    console.log(`Conectado a ${WS_URL}`);
-    if(rootElement.innerHTML.includes('Desconectado') || rootElement.innerHTML.includes('Erro: Dados ausentes')) {
-         rootElement.innerHTML = '<div class="section" style="color: #34d399; grid-column: 1 / -1;">Conectado. Aguardando dados...</div>';
-    }
-  };
-  ws.onmessage = event => {
-    try {
-      const parsedData = JSON.parse(event.data); 
-      if (parsedData) render(parsedData); 
-    } catch (e) { 
-      console.error("Erro ao processar mensagem WebSocket:", e, "Dados brutos:", event.data); 
-      if(rootElement) rootElement.innerHTML = '<div class="section" style="color: #f87171; grid-column: 1 / -1;">Erro ao processar dados do servidor. Verifique o console.</div>';
-    }
-  };
-  ws.onclose = (event) => { 
-    let reason = "";
-    if (event.code) reason += ` Código: ${event.code}`;
-    if (event.reason) reason += ` Motivo: ${event.reason}`;
-    if (!reason && !event.wasClean) reason = " Conexão perdida abruptamente.";
-
-    console.warn(`Desconectado de ${WS_URL}.${reason} Reconectando em 3s...`); 
-    if(rootElement) rootElement.innerHTML = `<div class="section" style="color: #f87171; grid-column: 1 / -1;">Desconectado do servidor (${event.code || 'sem código'}). Tentando reconectar...</div>`; 
-    setTimeout(connect, 3000); 
-  };
-  ws.onerror = (errorEvent) => { 
-    console.error(`Erro na conexão WebSocket. Tipo: ${errorEvent.type}. O evento 'onclose' fornecerá mais detalhes sobre o fechamento.`);
-  };
+function handleData(parsedData) {
+  if (parsedData) render(parsedData);
 }
 
 // --- Lógica para Fundo Opaque-Fallback (se o corpo for transparente) ---
@@ -869,7 +839,8 @@ if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)
 }
 
 // Inicia a conexão WebSocket ao carregar a página
-connect();
+const { initOverlayWebSocket } = await import('../overlay-common.js');
+initOverlayWebSocket(handleData);
 </script>
 <script type="module" src="/index.tsx"></script>
 </body>

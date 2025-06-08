@@ -680,37 +680,15 @@
     }
 
 
-    const WS_URL = window.OVERLAY_WS_URL || "ws://localhost:5221/ws";
-    let ws;
-    function connectWebSocket() {
-        ws = new WebSocket(WS_URL);
-        ws.onopen = () => console.log(`${OVERLAY_NAME} - WS Conectado a ${WS_URL}`);
-
-        ws.onmessage = ({data}) => {
-            try {
-                const d = JSON.parse(data);
-                // console.log("Dados recebidos:", d); // Para depuração
-                updateFuelCalculator(d);
-            } catch (err) {
-                 console.error(`${OVERLAY_NAME} - Erro ao processar mensagem WS: ${err.message}. Dados recebidos:`, data, "Objeto de erro:", err);
-            }
-        };
-
-        ws.onclose = (event) => {
-            console.log(`${OVERLAY_NAME} - WS Desconectado. Código: ${event.code}, Motivo: ${event.reason}. Tentando reconectar...`);
-            setTimeout(connectWebSocket, 3000);
-        };
-
-        ws.onerror = (event) => {
-            console.error(`${OVERLAY_NAME} - Falha na conexão WebSocket com ${WS_URL}. Verifique se o servidor WebSocket está em execução e acessível. Evento:`, event);
-            // O onclose será chamado após o onerror, então a reconexão será tentada lá.
-        };
+    function handleData(d) {
+        updateFuelCalculator(d);
     }
 
     // --- Inicialização ---
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings(); // Carrega configurações primeiro
-      connectWebSocket(); // Depois conecta ao WebSocket
+      const { initOverlayWebSocket } = await import('../overlay-common.js');
+      initOverlayWebSocket(handleData);
 
       // Estado inicial da UI baseado no modo de edição global (se a API Electron estiver presente)
       // Isso é importante para que a UI reflita o estado correto na inicialização.

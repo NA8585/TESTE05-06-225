@@ -92,8 +92,6 @@
   </div>
 
 <script>
-// URL do WebSocket - verifique se está correta
-const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
 
 // Função para formatar o tempo (manter como estava)
 function formatTime(seconds) {
@@ -104,34 +102,9 @@ function formatTime(seconds) {
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Conexão WebSocket mais robusta
-function connectWebSocket() {
-    const ws = new WebSocket(WS_URL);
-    
-    ws.onopen = function() {
-        console.log('Conexão WebSocket estabelecida');
-        document.getElementById('raceName').textContent = "Conectado";
-    };
-    
-    ws.onmessage = function(event) {
-        console.log('Dados recebidos:', event.data);
-        try {
-            const data = JSON.parse(event.data);
-            updateOverlay(data);
-        } catch (error) {
-            console.error('Erro ao parsear JSON:', error);
-        }
-    };
-    
-    ws.onerror = function(error) {
-        console.error('Erro WebSocket:', error);
-        document.getElementById('raceName').textContent = "Erro de conexão";
-    };
-    
-    ws.onclose = function() {
-        console.log('Conexão fechada, reconectando...');
-        setTimeout(connectWebSocket, 3000);
-    };
+
+function handleData(data) {
+    updateOverlay(data);
 }
 
 // Função principal de atualização
@@ -165,9 +138,10 @@ function updateOverlay(data) {
 }
 
 // Inicia a conexão quando a página carrega
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('Overlay carregada, iniciando conexão...');
-    connectWebSocket();
+    const { initOverlayWebSocket } = await import('../overlay-common.js');
+    initOverlayWebSocket(handleData);
 });
 </script>
 </body>
