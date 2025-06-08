@@ -130,6 +130,7 @@
       height: 100%; /* Preenche a altura disponível do wrapper */
       display: flex; /* Para que o conteúdo interno se ajuste */
       flex-direction: column; /* Para que o conteúdo interno se ajuste */
+      -webkit-app-region: no-drag; /* permite interação */
     }
     .row { display:flex; gap:0.5rem; margin-bottom:0.75rem; }
     .row label { width:120px; font-weight:600; }
@@ -216,7 +217,14 @@
           setFuelLeft(fuel);
 
           if (d.fuelCapacity) setTankCapacity(d.fuelCapacity);
-          if (d.consumoMedio) setLapConsumption(d.consumoMedio);
+
+          if (typeof d.consumoMedio === 'number' && d.consumoMedio > 0) {
+            setLapConsumption(d.consumoMedio);
+          } else if (typeof d.fuelUsePerLap === 'number' && d.fuelUsePerLap > 0) {
+            setLapConsumption(d.fuelUsePerLap);
+          } else if (typeof d.fuelPerLap === 'number' && d.fuelPerLap > 0) {
+            setLapConsumption(d.fuelPerLap);
+          }
         });
         return () => socket.close();
       }, []);

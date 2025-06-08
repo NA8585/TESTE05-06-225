@@ -688,7 +688,10 @@
             return (typeof current === 'number' && typeof best === 'number' && Math.abs(current - best) < 0.0001);
         });
 
-        const bestLapDelta = dados.lapDeltaToDriverBestLap;
+        const bestLapDelta =
+          dados.lapDeltaToSessionBestLap ??
+          dados.lapDeltaToBestLap ??
+          dados.lapDeltaToDriverBestLap;
 
         mainDeltaText.textContent = `${deltaValue >= 0 ? '+' : ''}${deltaValue.toFixed(3)}s`;
         const [_, deltaColorClass] = getColorClasses(deltaValue);
