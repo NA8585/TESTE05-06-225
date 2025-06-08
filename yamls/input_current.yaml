@@ -1,0 +1,29 @@
+WeekendInfo:
+  TrackDisplayName: "Interlagos"
+  TrackConfigName: "Grand Prix"
+SessionInfo:
+  Sessions:
+    - SessionNum: 0
+      SessionType: "Practice"
+      ResultsPositions:
+        - Position: 1
+          CarIdx: 0
+          FastestTime: 90.123
+          LastTime: 91.456
+          OnPitRoad: false
+          InGarage: false
+          PitStopCount: 0
+DriverInfo:
+  Drivers:
+    - CarIdx: 0
+      CarNumber: "01"
+      UserName: "Driver One"
+      IRating: 1500
+      LicString: "A 4.50"
+      LicLevel: 4
+      LicSubLevel: 50
+      CarPath: "car/path"
+      TeamIncidentCount: 0
+      CarSetup:
+        Tires:
+          CompoundName: "Soft"
