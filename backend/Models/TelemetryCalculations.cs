@@ -183,7 +183,13 @@ namespace SuperBackendNR85IA.Calculations
                 ? model.FuelLevel / model.ConsumoMedio
                 : 0;
 
-            model.NecessarioFim = (float)GetFuelForTargetLaps(model.LapsRemainingRace, model.ConsumoMedio);
+            float consumoParaCalculo = model.ConsumoMedio > 0
+                ? model.ConsumoMedio
+                : model.ConsumoVoltaAtual;
+
+            model.NecessarioFim = (float)GetFuelForTargetLaps(
+                model.LapsRemainingRace,
+                consumoParaCalculo);
 
             float faltante = model.NecessarioFim - model.FuelLevel;
             model.RecomendacaoAbastecimento = MathF.Max(0, faltante);

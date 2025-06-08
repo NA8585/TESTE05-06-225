@@ -170,6 +170,14 @@
     .to-yellow-400 { --tw-gradient-to: #facc15; } /* Adicionado para completar o gradiente da barra */
     .to-red-500 { --tw-gradient-to: #ef4444; } /* Adicionado para gradiente perigoso */
 
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .blink {
+      animation: blink 1s infinite;
+    }
+
 
     .grid { display: grid; }
     .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -647,7 +655,8 @@
         consumoPorVoltaValor.textContent = `${fuelLap.toFixed(2)}L`;
 
         // Voltas Restantes (com base no consumo atual/instantâneo)
-        voltasRestantesAtualValor.textContent = Math.floor(model.lapsRemaining ?? 0);
+        const lapsLeftInstant = Math.floor(model.lapsRemaining ?? 0);
+        voltasRestantesAtualValor.textContent = lapsLeftInstant;
 
         consumoUltimaVoltaValor.textContent = `${(model.consumoUltimaVolta ?? 0).toFixed(2)}L`;
         voltasRestantesUltimaValor.textContent = Math.floor(model.voltasRestantesUltimaVolta ?? 0);
@@ -656,7 +665,22 @@
         consumoMedioValor.textContent = `${(model.consumoMedio ?? 0).toFixed(2)}L`; // consumoMedio
 
         // Voltas Restantes (com base no consumo médio)
-        voltasRestantesMedioValor.textContent = Math.floor(model.voltasRestantesMedio ?? 0); // voltasRestantesMedio
+        const lapsLeftAverage = Math.floor(model.voltasRestantesMedio ?? 0);
+        voltasRestantesMedioValor.textContent = lapsLeftAverage; // voltasRestantesMedio
+
+        const lapsForWarning = lapsLeftAverage > 0 ? lapsLeftAverage : lapsLeftInstant;
+        const critical = lapsForWarning <= 1;
+        const warning  = lapsForWarning > 1 && lapsForWarning <= 3;
+        barraTanque.classList.toggle('blink', lapsForWarning <= 3);
+        voltasRestantesAtualValor.classList.toggle('blink', lapsForWarning <= 3);
+        voltasRestantesAtualValor.classList.remove('text-blue-400', 'text-yellow-400', 'text-red-600');
+        if (critical) {
+            voltasRestantesAtualValor.classList.add('text-red-600');
+        } else if (warning) {
+            voltasRestantesAtualValor.classList.add('text-yellow-400');
+        } else {
+            voltasRestantesAtualValor.classList.add('text-blue-400');
+        }
 
         // Necessário para o Fim
         necessarioFimValor.textContent = `${(model.necessarioFim ?? 0).toFixed(1)}L`; // necessarioFim
