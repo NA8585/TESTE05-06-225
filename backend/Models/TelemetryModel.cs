@@ -95,6 +95,11 @@ namespace SuperBackendNR85IA.Models
         public float LapDeltaToSessionBestLap { get; set; }
         public float LapDeltaToSessionOptimalLap { get; set; }
         public float LapDeltaToDriverBestLap { get; set; }
+        public float LapDeltaToBestLap
+        {
+            get => LapDeltaToDriverBestLap;
+            set => LapDeltaToDriverBestLap = value;
+        }
 
         public float[] LapAllSectorTimes { get; set; } = Array.Empty<float>();
         public float[] LapDeltaToSessionBestSectorTimes { get; set; } = Array.Empty<float>();
