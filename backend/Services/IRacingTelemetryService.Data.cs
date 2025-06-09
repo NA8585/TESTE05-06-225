@@ -436,6 +436,7 @@ namespace SuperBackendNR85IA.Services
             t.CarIdxCarClassShortNames = orderedDrivers.Select(di => di.CarClassShortName).ToArray();
             t.CarIdxTireCompounds = orderedDrivers.Select(di => di.TireCompound).ToArray();
 
+
             if (wkd != null)
             {
                 t.TrackDisplayName    = wkd.TrackDisplayName;

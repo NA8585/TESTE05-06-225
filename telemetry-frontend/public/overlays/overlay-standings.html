@@ -142,7 +142,6 @@ function updateStandingsTable(d) {
     const lastLap   = d.carIdxLastLapTime || [];
     const f2Arr     = d.carIdxF2Time      || [];
     const compArr   = d.carIdxTireCompounds || [];
-
     const cars = [];
     for (let i = 0; i < posArr.length; i++) {
         if (posArr[i] <= 0) continue;
