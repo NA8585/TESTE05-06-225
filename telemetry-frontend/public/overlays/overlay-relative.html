@@ -267,6 +267,7 @@
         .driver-row span.car-name-class { width: 7.5rem; text-align: left; font-size: 0.7rem; justify-content: flex-start;} 
         .driver-row span.driver-name { flex-grow: 1; margin: 0 0.3rem; text-align: left; min-width: 70px; justify-content: flex-start;} 
         .driver-row div.rating-container { width: 6rem; text-align: center; display: flex; justify-content: center; align-items: center; } 
+        .driver-row span.lap-count { width: 3rem; text-align: right; font-size: 0.7rem; justify-content: flex-end; }
         .driver-row span.gap-time { width: 4rem; text-align: right; font-size: 0.7rem; justify-content: flex-end;}
         .driver-row span.last-lap-time { width: 4.5rem; text-align: right; font-size: 0.7rem; justify-content: flex-end; color: #a1a1aa;}
 
@@ -618,8 +619,10 @@ function renderRelative(data) {
     if (playerInSortedList && car.idx !== playerCarIdx) {
         if (playerInSortedList.lap === car.lap && car.f2Time !== undefined && car.f2Time !== -1) {
             const timeDiff = car.f2Time;
-            gapText = (timeDiff > 0 ? '+' : '') + timeDiff.toFixed(2);
-            gapClass = timeDiff > 0 ? 'gap-positive' : (timeDiff < 0 ? 'gap-negative' : 'gap-neutral');
+            if (Math.abs(timeDiff) <= 60) {
+                gapText = (timeDiff > 0 ? '+' : '') + timeDiff.toFixed(2);
+                gapClass = timeDiff > 0 ? 'gap-positive' : (timeDiff < 0 ? 'gap-negative' : 'gap-neutral');
+            }
         } else if (playerInSortedList.lap !== undefined && car.lap !== undefined) {
             const lapDiff = car.lap - playerInSortedList.lap;
             if (lapDiff !== 0) {
@@ -650,6 +653,7 @@ function renderRelative(data) {
         <span class="sr-badge badge ${getSRClass(car.lic)}">${srBadgeLetter}</span>
         <span class="irating-badge badge">${iRatingDisplay}</span>
       </div>
+      <span class="lap-count">${car.lap ?? '--'}</span>
       <span class="gap-time ${gapClass}">${gapText}</span>
       <span class="last-lap-time">${fmtTimeSimple(car.lastLapTime)}</span>
     `;
