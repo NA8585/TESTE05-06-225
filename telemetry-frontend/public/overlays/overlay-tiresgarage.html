@@ -718,6 +718,7 @@
 
 
     function handleData(d) {
+        d = { ...d, ...(d.tyres || d.tires || {}) };
         let tires = d.tyres || d.tires;
         if (!tires) {
             const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx==='number' ? (d.carIdxTireCompounds[d.playerCarIdx]||'U') : 'U';

@@ -21,12 +21,11 @@
     <tr>
       <th>Pos</th>
       <th>#</th>
-      <th>Marca</th>
       <th>SR</th>
       <th>IR</th>
       <th>Piloto</th>
-      <th>Melhor</th>
       <th>Última</th>
+      <th>Voltas</th>
       <th>Líder</th>
       <th>Gap</th>
       <th>Pit</th>
@@ -47,23 +46,26 @@ function update(data){
  const srs=data.carIdxLicStrings||[];
  const irs=data.carIdxIRatings||[];
  const last=data.carIdxLastLapTime||[];
+ const laps=data.carIdxLap||[];
  const f2=data.carIdxF2Time||[];
  const onPit=data.carIdxOnPitRoad||[];
  const compounds=data.carIdxTireCompounds||[];
  const tbody=document.getElementById('tbody');
  tbody.innerHTML='';
  const cars=[];
- for(let i=0;i<pos.length;i++){if(pos[i]<=0)continue;cars.push({idx:i,pos:pos[i],num:nums[i]||'',name:names[i]||'',sr:srs[i]||'',ir:irs[i]||'',last:last[i]||0,gap:f2[i]||0,pit:onPit[i],compound:compounds[i]||''});}
+ for(let i=0;i<pos.length;i++){if(pos[i]<=0)continue;cars.push({idx:i,pos:pos[i],num:nums[i]||'',name:names[i]||'',sr:srs[i]||'',ir:irs[i]||'',last:last[i]||0,lap:laps[i]||0,gap:f2[i]||0,pit:onPit[i],compound:compounds[i]||''});}
  cars.sort((a,b)=>a.pos-b.pos);
  const leaderGap=cars.length>0?cars[0].gap:0;
  for(let i=0;i<cars.length;i++){
   const c=cars[i];
-  const gapL=i===0?'---':(c.gap-leaderGap).toFixed(1);
-  const gapA=i===0?'---':(c.gap-cars[i-1].gap).toFixed(1);
+  const diffLeader=c.gap-leaderGap;
+  const diffAhead=c.gap-(i>0?cars[i-1].gap:c.gap);
+  const gapL=i===0?'---':(Math.abs(diffLeader)>60?'--':diffLeader.toFixed(1));
+  const gapA=i===0?'---':(Math.abs(diffAhead)>60?'--':diffAhead.toFixed(1));
   let pitCell='';
   if(c.pit){pitStart[c.idx]=pitStart[c.idx]??data.sessionTime;pitCell=`<span class="pit-timer">${fmtTime(data.sessionTime-pitStart[c.idx])}</span>`;} else {delete pitStart[c.idx];}
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${c.pos}</td><td>${c.num}</td><td>${c.sr}</td><td>${c.ir}</td><td>${c.name}</td><td>${fmtTime(c.last)}</td><td>${gapL}</td><td>${gapA}</td><td>${pitCell}</td><td>${c.compound}</td>`;
+  tr.innerHTML=`<td>${c.pos}</td><td>${c.num}</td><td>${c.sr}</td><td>${c.ir}</td><td>${c.name}</td><td>${fmtTime(c.last)}</td><td>${c.lap}</td><td>${gapL}</td><td>${gapA}</td><td>${pitCell}</td><td>${c.compound}</td>`;
   tbody.appendChild(tr);
  }
 }
