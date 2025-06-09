@@ -133,8 +133,48 @@ function updateOverlay(data) {
     if (lap !== undefined) {
         document.getElementById('lapsCompleted').textContent = lap;
     }
-    
-    // Adicione mais campos conforme necessário, verificando sempre se existem
+
+    updateStandingsTable(data);
+}
+
+function updateStandingsTable(d) {
+    const body = document.getElementById('standings-body');
+    if (!body) return;
+
+    const posArr    = d.carIdxPosition    || [];
+    const numArr    = d.carIdxCarNumbers  || [];
+    const nameArr   = d.carIdxUserNames   || [];
+    const classArr  = d.carIdxCarClassShortNames || [];
+    const lapArr    = d.carIdxLap         || [];
+    const lastLap   = d.carIdxLastLapTime || [];
+
+    const cars = [];
+    for (let i = 0; i < posArr.length; i++) {
+        if (posArr[i] <= 0) continue;
+        cars.push({
+            pos: posArr[i],
+            num: numArr[i] || '',
+            name: nameArr[i] || '',
+            cls: classArr[i] || '',
+            lap: lapArr[i] || 0,
+            last: lastLap[i] || 0
+        });
+    }
+
+    cars.sort((a,b) => a.pos - b.pos);
+
+    body.innerHTML = '';
+    for (const c of cars) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="position">${c.pos}</td>
+            <td class="number">${c.num}</td>
+            <td>${c.name}</td>
+            <td class="car">${c.cls}</td>
+            <td>${c.lap}</td>
+            <td>${c.last.toFixed ? c.last.toFixed(2) : c.last}</td>`;
+        body.appendChild(tr);
+    }
 }
 
 // Inicia a conexão quando a página carrega
