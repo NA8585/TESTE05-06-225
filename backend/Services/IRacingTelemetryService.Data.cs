@@ -434,6 +434,8 @@ namespace SuperBackendNR85IA.Services
             t.CarIdxLicStrings = orderedDrivers.Select(di => di.LicString).ToArray();
             t.CarIdxCarClassIds = orderedDrivers.Select(di => di.CarClassID).ToArray();
             t.CarIdxCarClassShortNames = orderedDrivers.Select(di => di.CarClassShortName).ToArray();
+            t.CarIdxTireCompounds = orderedDrivers.Select(di => di.TireCompound).ToArray();
+
 
             if (wkd != null)
             {

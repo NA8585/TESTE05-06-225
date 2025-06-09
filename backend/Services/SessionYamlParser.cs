@@ -53,7 +53,8 @@ namespace SuperBackendNR85IA.Services
                 CarPath           = GetStr(node, "CarPath"),
                 CarClassID        = GetInt(node, "CarClassID"),
                 CarClassShortName = GetStr(node, "CarClassShortName"),
-                CarClassRelSpeed  = GetFloat(node, "CarClassRelSpeed")
+                CarClassRelSpeed  = GetFloat(node, "CarClassRelSpeed"),
+                TireCompound      = GetTireCompound(node)
             };
         }
 
@@ -81,7 +82,8 @@ namespace SuperBackendNR85IA.Services
                     CarPath           = GetStr(child, "CarPath"),
                     CarClassID        = GetInt(child, "CarClassID"),
                     CarClassShortName = GetStr(child, "CarClassShortName"),
-                    CarClassRelSpeed  = GetFloat(child, "CarClassRelSpeed")
+                    CarClassRelSpeed  = GetFloat(child, "CarClassRelSpeed"),
+                    TireCompound      = GetTireCompound(child)
                 });
             }
 
@@ -140,6 +142,20 @@ namespace SuperBackendNR85IA.Services
                               if (node.Children.TryGetValue(new YamlScalarNode("ResultsPenalty"), out var rpNode) && rpNode is YamlMappingNode rpMap)
                               {
                                   sd.IncidentLimit = GetInt(rpMap, "IncidentLimit");
+                              }
+                              if (node.Children.TryGetValue(new YamlScalarNode("ResultsPositions"), out var rp) && rp is YamlSequenceNode rpSeq)
+                              {
+                                  sd.ResultsPositions = rpSeq.Children.OfType<YamlMappingNode>()
+                                      .Select(p => new ResultPosition
+                                      {
+                                          Position = GetInt(p, "Position"),
+                                          CarIdx = GetInt(p, "CarIdx"),
+                                          FastestTime = GetFloat(p, "FastestTime"),
+                                          LastTime = GetFloat(p, "LastTime"),
+                                          OnPitRoad = GetInt(p, "OnPitRoad") == 1,
+                                          InGarage = GetInt(p, "InGarage") == 1,
+                                          PitStopCount = GetInt(p, "PitStopCount")
+                                      }).ToList();
                               }
                               return sd;
                           })
@@ -213,6 +229,16 @@ namespace SuperBackendNR85IA.Services
                 }
             }
             return 0f;
+        }
+
+        private static string GetTireCompound(YamlMappingNode driverNode)
+        {
+            if (driverNode.Children.TryGetValue(new YamlScalarNode("CarSetup"), out var csNode) && csNode is YamlMappingNode csMap &&
+                csMap.Children.TryGetValue(new YamlScalarNode("Tires"), out var tireNode) && tireNode is YamlMappingNode tireMap)
+            {
+                return GetStr(tireMap, "CompoundName");
+            }
+            return string.Empty;
         }
 
         // New helper method to parse an array of floats

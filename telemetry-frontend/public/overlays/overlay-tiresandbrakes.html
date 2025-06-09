@@ -598,7 +598,9 @@
             d.tireAssistOn = [on,on,on,on];
         }
         if (!Array.isArray(d.tireCompound)) {
-            d.tireCompound = ['U','U','U','U'];
+            const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx==='number'
+                ? (d.carIdxTireCompounds[d.playerCarIdx] || 'U') : 'U';
+            d.tireCompound = [comp,comp,comp,comp];
         }
 
         tireMap.forEach(({id, idx}) => {
