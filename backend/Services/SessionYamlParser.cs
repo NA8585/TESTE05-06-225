@@ -68,8 +68,20 @@ namespace SuperBackendNR85IA.Services
             {
                 list.Add(new DriverInfo
                 {
-                    CarIdx   = GetInt(child, "CarIdx"),
-                    UserName = GetStr(child, "UserName")
+                    CarIdx            = GetInt(child, "CarIdx"),
+                    UserName          = GetStr(child, "UserName"),
+                    TeamName          = GetStr(child, "TeamName"),
+                    UserID            = GetInt(child, "UserID"),
+                    TeamID            = GetInt(child, "TeamID"),
+                    CarNumber         = GetStr(child, "CarNumberRaw"),
+                    IRating           = GetInt(child, "IRating"),
+                    LicString         = GetStr(child, "LicString"),
+                    LicLevel          = GetInt(child, "LicLevel"),
+                    LicSubLevel       = GetInt(child, "LicSubLevel"),
+                    CarPath           = GetStr(child, "CarPath"),
+                    CarClassID        = GetInt(child, "CarClassID"),
+                    CarClassShortName = GetStr(child, "CarClassShortName"),
+                    CarClassRelSpeed  = GetFloat(child, "CarClassRelSpeed")
                 });
             }
 
