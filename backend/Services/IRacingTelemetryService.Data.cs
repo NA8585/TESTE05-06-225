@@ -426,10 +426,15 @@ namespace SuperBackendNR85IA.Services
             }
             t.PlayerCarTeamIncidentCount = GetSdkValue<int>(d, "PlayerCarTeamIncidentCount") ?? 0;
 
-            t.CarIdxUserNames = drivers
-                .OrderBy(di => di.CarIdx)
-                .Select(di => di.UserName)
-                .ToArray();
+            var orderedDrivers = drivers.OrderBy(di => di.CarIdx).ToList();
+            t.CarIdxUserNames = orderedDrivers.Select(di => di.UserName).ToArray();
+            t.CarIdxCarNumbers = orderedDrivers.Select(di => di.CarNumber).ToArray();
+            t.CarIdxTeamNames  = orderedDrivers.Select(di => di.TeamName).ToArray();
+            t.CarIdxIRatings   = orderedDrivers.Select(di => di.IRating).ToArray();
+            t.CarIdxLicStrings = orderedDrivers.Select(di => di.LicString).ToArray();
+            t.CarIdxCarClassIds = orderedDrivers.Select(di => di.CarClassID).ToArray();
+            t.CarIdxCarClassShortNames = orderedDrivers.Select(di => di.CarClassShortName).ToArray();
+            t.CarIdxTireCompounds = orderedDrivers.Select(di => di.TireCompound).ToArray();
 
             if (wkd != null)
             {

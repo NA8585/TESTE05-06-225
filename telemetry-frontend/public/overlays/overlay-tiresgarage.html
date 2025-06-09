@@ -718,14 +718,37 @@
 
 
     function handleData(d) {
-        const tires = d.tyres || d.tires;
-        if (tires) {
-            tireMap.forEach(({id, iRacingKey}) => {
-                if (tires[iRacingKey]) {
-                    updateTireUI(id, tires[iRacingKey]);
+        let tires = d.tyres || d.tires;
+        if (!tires) {
+            const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx==='number' ? (d.carIdxTireCompounds[d.playerCarIdx]||'U') : 'U';
+            tires = {
+                frontLeft:  {
+                    wear:{left:(d.lfWear?.[0]||0),middle:(d.lfWear?.[1]||0),right:(d.lfWear?.[2]||0)},
+                    temp:{left:d.lfTempCl||0,middle:d.lfTempCm||0,right:d.lfTempCr||0},
+                    pressure:d.lfPress||0, compound:comp
+                },
+                frontRight: {
+                    wear:{left:(d.rfWear?.[0]||0),middle:(d.rfWear?.[1]||0),right:(d.rfWear?.[2]||0)},
+                    temp:{left:d.rfTempCl||0,middle:d.rfTempCm||0,right:d.rfTempCr||0},
+                    pressure:d.rfPress||0, compound:comp
+                },
+                rearLeft:   {
+                    wear:{left:(d.lrWear?.[0]||0),middle:(d.lrWear?.[1]||0),right:(d.lrWear?.[2]||0)},
+                    temp:{left:d.lrTempCl||0,middle:d.lrTempCm||0,right:d.lrTempCr||0},
+                    pressure:d.lrPress||0, compound:comp
+                },
+                rearRight:  {
+                    wear:{left:(d.rrWear?.[0]||0),middle:(d.rrWear?.[1]||0),right:(d.rrWear?.[2]||0)},
+                    temp:{left:d.rrTempCl||0,middle:d.rrTempCm||0,right:d.rrTempCr||0},
+                    pressure:d.rrPress||0, compound:comp
                 }
-            });
+            };
         }
+        tireMap.forEach(({id, iRacingKey}) => {
+            if (tires[iRacingKey]) {
+                updateTireUI(id, tires[iRacingKey]);
+            }
+        });
     }
 
     // --- Inicialização ---

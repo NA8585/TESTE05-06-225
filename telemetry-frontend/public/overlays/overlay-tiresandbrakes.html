@@ -584,6 +584,25 @@
     ];
 
     function handleData(d) {
+        if (!Array.isArray(d.tireTemps)) {
+            d.tireTemps = [d.lfTempCm, d.rfTempCm, d.lrTempCm, d.rrTempCm];
+        }
+        if (!Array.isArray(d.tirePressures)) {
+            d.tirePressures = [d.lfPress, d.rfPress, d.lrPress, d.rrPress];
+        }
+        if (!Array.isArray(d.tireBrakes)) {
+            d.tireBrakes = (d.brakeTemp || []).slice(0,4);
+        }
+        if (!Array.isArray(d.tireAssistOn)) {
+            const on = (d.dcAbs ?? 0) > 0;
+            d.tireAssistOn = [on,on,on,on];
+        }
+        if (!Array.isArray(d.tireCompound)) {
+            const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx==='number'
+                ? (d.carIdxTireCompounds[d.playerCarIdx] || 'U') : 'U';
+            d.tireCompound = [comp,comp,comp,comp];
+        }
+
         tireMap.forEach(({id, idx}) => {
             const el = document.getElementById(id);
             if (!el) return;
