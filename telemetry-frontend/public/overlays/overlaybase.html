@@ -87,6 +87,11 @@
       display: flex; flex-direction: column; gap: 2px;
       width: 100%; flex-grow: 1; overflow-y: auto; min-height: 200px;
     }
+    .driver-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 0.4rem;
+    }
   </style>
 </head>
 <body>
@@ -116,7 +121,7 @@
         <div class="text-sky-400">Track: <span id="trackTemp">--</span>°C</div>
         <div class="text-gray-400">BB: <span id="brakeBias">--</span>%</div>
       </div>
-      <div id="competitor-list-container">
+  <div id="competitor-list-container">
         <div class="text-center text-muted py-4">Overlay Base - Nenhum dado carregado</div>
       </div>
       <div class="footer-bar">
@@ -127,5 +132,89 @@
       </div>
     </div>
   </div>
+  <script type="module">
+    import { initOverlayWebSocket } from '../overlay-common.js';
+
+    function fmtTime(sec) {
+      if (typeof sec !== 'number' || !isFinite(sec) || sec < 0) return '--:--';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+
+    function update(data) {
+      if (!data) return;
+
+      const t = data.sessionTime;
+      if (t !== undefined) {
+        document.getElementById('raceTime').textContent = fmtTime(t);
+      }
+
+      const ambient = data.weekendInfo?.trackAirTemp;
+      if (ambient !== undefined) {
+        document.getElementById('ambientTemp').textContent = Math.round(ambient);
+      }
+
+      const track = data.telemetry?.trackTemp ?? data.trackTemp ?? data.trackSurfaceTemp;
+      if (track !== undefined) {
+        document.getElementById('trackTemp').textContent = Math.round(track);
+      }
+
+      const bb = data.telemetry?.dcBrakeBias;
+      if (bb !== undefined) {
+        document.getElementById('brakeBias').textContent = bb.toFixed(1);
+      }
+
+      const remain = data.sessionTimeRemain;
+      if (remain !== undefined) {
+        document.getElementById('sessionTimeRemaining').textContent = fmtTime(remain);
+      }
+
+      const lap = data.telemetry?.lapCompleted ?? data.lap;
+      if (lap !== undefined) {
+        document.getElementById('lapsCompleted').textContent = lap;
+      }
+
+      const totalLaps = data.sessionInfo?.currentSessionTotalLaps;
+      if (totalLaps !== undefined && totalLaps > 0) {
+        document.getElementById('totalLaps').textContent = totalLaps;
+      }
+
+      const playerInc = data.telemetry?.playerCarMyIncidentCount;
+      const incLimit = data.sessionInfo?.incidentLimit;
+      if (playerInc !== undefined) {
+        const limitText = incLimit && incLimit > 0 ? `/${incLimit}` : '';
+        document.getElementById('penaltyStatus').textContent = `Inc: ${playerInc}${limitText}`;
+      }
+
+      const wet = data.telemetry?.trackWetnessPCA;
+      if (wet !== undefined) {
+        document.getElementById('trackStatus').textContent = `Wet: ${(wet * 100).toFixed(0)}%`;
+      }
+
+      const results = data.results;
+      const drivers = data.drivers || [];
+      const container = document.getElementById('competitor-list-container');
+      if (container) {
+        container.innerHTML = '';
+        if (Array.isArray(results) && results.length) {
+          results.sort((a, b) => a.position - b.position);
+          results.slice(0, 10).forEach(r => {
+            const drv = drivers.find(d => d.carIdx === r.carIdx) || {};
+            const row = document.createElement('div');
+            row.className = 'driver-row';
+            row.textContent = `${r.position}. ${drv.userName || 'Car ' + r.carIdx} - ${fmtTime(r.lastTime)}`;
+            container.appendChild(row);
+          });
+        } else {
+          container.textContent = 'Sem dados de classificação';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initOverlayWebSocket(update);
+    });
+  </script>
 </body>
 </html>
