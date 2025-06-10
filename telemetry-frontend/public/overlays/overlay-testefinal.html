@@ -715,7 +715,8 @@ if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)
     document.body.classList.add('opaque-fallback');
 }
 
-const { initOverlayWebSocket } = await import('../overlay-common.js');
+const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+window.isElectron = enableBrowserEditMode('root', document.querySelector('header'));
 initOverlayWebSocket(handleData);
 </script>
 </body>
