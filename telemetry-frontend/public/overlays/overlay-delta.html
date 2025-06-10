@@ -293,6 +293,7 @@
   <script>
     // --- Constantes e Variáveis de Estado ---
     const OVERLAY_NAME = 'overlay-delta';
+    const isElectron = !!window.electronAPI;
     const resizableOverlayWrapper = document.getElementById('wrapper');
     const overlayHeader = document.getElementById('overlay-header');
     const settingsPopover = document.getElementById('settings-popover');
@@ -311,10 +312,10 @@
     let isDragging = false;
     let dragStartX, dragStartY, windowStartX, windowStartY;
 
-    let isCurrentlyInGlobalEditMode = false;
+    let isCurrentlyInGlobalEditMode = !isElectron;
     let localPinned = false;
-    let localLocked = true;
-    let localIgnoreClicks = true;
+    let localLocked = isElectron;
+    let localIgnoreClicks = isElectron;
 
     // --- Lógica de Redimensionamento e Arraste ---
     function getCursorForHandle(handleType) {
@@ -444,8 +445,8 @@
             updateVisualClickButtonState(false); // Permite cliques para edição
         } else {
             // Ao sair do modo de edição, restaura as preferências do usuário
-            updateVisualLockButtonState(loadSetting('locked', true));
-            updateVisualClickButtonState(loadSetting('ignoreClicks', true));
+            updateVisualLockButtonState(loadSetting('locked', isElectron));
+            updateVisualClickButtonState(loadSetting('ignoreClicks', isElectron));
         }
       });
     }
@@ -550,8 +551,8 @@
       window.electronAPI?.setAlwaysOnTop?.(OVERLAY_NAME, localPinned);
 
       // Carrega as preferências, mas o estado visual inicial será ditado pelo modo de edição global (se ativo)
-      const savedLocked = loadSetting('locked', true);
-      const savedIgnoreClicks = loadSetting('ignoreClicks', true);
+      const savedLocked = loadSetting('locked', isElectron);
+      const savedIgnoreClicks = loadSetting('ignoreClicks', isElectron);
       updateVisualLockButtonState(savedLocked);
       updateVisualClickButtonState(savedIgnoreClicks);
 
@@ -740,11 +741,15 @@
       });
 
       animationLoop();
+      if (isCurrentlyInGlobalEditMode) {
+        resizableOverlayWrapper.classList.add('global-edit-mode-active');
+        overlayHeader.style.cursor = 'move';
+      }
       // Estado inicial dos botões de lock/click-through é ditado por onEditMode se electronAPI estiver presente
       // Se não, eles iniciam como definidos em loadAllSettings
       if (!window.electronAPI?.onEditMode) {
-        const initialLocked = loadSetting('locked', true);
-        const initialIgnoreClicks = loadSetting('ignoreClicks', true);
+        const initialLocked = loadSetting('locked', isElectron);
+        const initialIgnoreClicks = loadSetting('ignoreClicks', isElectron);
         updateVisualLockButtonState(initialLocked);
         updateVisualClickButtonState(initialIgnoreClicks);
         window.electronAPI?.toggleMovable?.(OVERLAY_NAME, !initialLocked);
