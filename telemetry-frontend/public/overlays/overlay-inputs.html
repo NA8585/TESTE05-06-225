@@ -663,6 +663,7 @@
         if (resizableOverlayWrapper) { resizeObserver.observe(resizableOverlayWrapper); }
 
         function updateOverlayData(d) {
+            if (!d) return;
             throttle = Math.min(1, Math.max(0, parseFloat(d.throttle ?? 0)));
             brake    = Math.min(1, Math.max(0, parseFloat(d.brake    ?? 0)));
             steer    = Math.min(1, Math.max(-1, parseFloat(d.steeringWheelAngle ?? 0)));
