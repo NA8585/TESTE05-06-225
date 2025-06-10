@@ -310,7 +310,7 @@
         const resizableOverlayWrapper = document.getElementById('wrapper');
         const overlayHeader = document.querySelector('.header');
         const overlayContent = document.querySelector('.overlay-inputs-content');
-        const isElectron = enableBrowserEditMode('wrapper', overlayHeader);
+        let isElectron = !!window.electronAPI;
 
         let isResizing = false;
         let resizeHandleType = '';
@@ -720,6 +720,8 @@
         
         window.addEventListener('load', async () => {
             await loadSettings();
+            const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+            isElectron = enableBrowserEditMode('wrapper', overlayHeader);
             initOverlayWebSocket(data => {
                 if (typeof data.throttle !== 'undefined') {
                     updateOverlayData(data);
