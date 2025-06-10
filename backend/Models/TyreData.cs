@@ -31,16 +31,5 @@ namespace SuperBackendNR85IA.Models
         public float TreadRemainingFr { get; set; }
         public float TreadRemainingRl { get; set; }
         public float TreadRemainingRr { get; set; }
-
-        // --- Additional garage data ---
-        public float LfLastHotPress { get; set; }
-        public float RfLastHotPress { get; set; }
-        public float LrLastHotPress { get; set; }
-        public float RrLastHotPress { get; set; }
-
-        public float[] LfTreadRemainingParts { get; set; } = new float[3];
-        public float[] RfTreadRemainingParts { get; set; } = new float[3];
-        public float[] LrTreadRemainingParts { get; set; } = new float[3];
-        public float[] RrTreadRemainingParts { get; set; } = new float[3];
     }
 }

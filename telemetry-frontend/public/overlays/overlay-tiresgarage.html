@@ -262,8 +262,6 @@
             <div class="tire-zone" id="frt-esq-tempM">0°C</div>
             <div class="tire-zone" id="frt-esq-tempR">0°C</div>
           </div>
-          <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="frt-esq-hot">0.0</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FINAL</div>
           <div class="press text-lg font-bold" id="frt-esq-press">0.0</div>
           <div class="compound-indicator" id="frt-esq-compound">S</div>
@@ -282,8 +280,6 @@
             <div class="tire-zone" id="frt-dir-tempM">0°C</div>
             <div class="tire-zone" id="frt-dir-tempR">0°C</div>
           </div>
-          <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="frt-dir-hot">0.0</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FINAL</div>
           <div class="press text-lg font-bold" id="frt-dir-press">0.0</div>
           <div class="compound-indicator" id="frt-dir-compound">S</div>
@@ -302,8 +298,6 @@
             <div class="tire-zone" id="trs-esq-tempM">0°C</div>
             <div class="tire-zone" id="trs-esq-tempR">0°C</div>
           </div>
-          <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="trs-esq-hot">0.0</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FINAL</div>
           <div class="press text-lg font-bold" id="trs-esq-press">0.0</div>
           <div class="compound-indicator" id="trs-esq-compound">S</div>
@@ -322,8 +316,6 @@
             <div class="tire-zone" id="trs-dir-tempM">0°C</div>
             <div class="tire-zone" id="trs-dir-tempR">0°C</div>
           </div>
-          <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="trs-dir-hot">0.0</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FINAL</div>
           <div class="press text-lg font-bold" id="trs-dir-press">0.0</div>
           <div class="compound-indicator" id="trs-dir-compound">S</div>
@@ -690,11 +682,9 @@
      */
     function updateTireUI(tireId, tireData) {
       // Update wear percentages
-      const wearData = tireData.treadRemaining || tireData.wear ||
-            { left:0, middle:0, right:0 };
-      getTireElement(tireId, 'wearL').textContent = `${(wearData.left * 100).toFixed(1)}%`;
-      getTireElement(tireId, 'wearM').textContent = `${(wearData.middle * 100).toFixed(1)}%`;
-      getTireElement(tireId, 'wearR').textContent = `${(wearData.right * 100).toFixed(1)}%`;
+      getTireElement(tireId, 'wearL').textContent = `${(tireData.wear.left * 100).toFixed(1)}%`;
+      getTireElement(tireId, 'wearM').textContent = `${(tireData.wear.middle * 100).toFixed(1)}%`;
+      getTireElement(tireId, 'wearR').textContent = `${(tireData.wear.right * 100).toFixed(1)}%`;
 
       // Update temperatures and apply color classes
       const tempL_el = getTireElement(tireId, 'tempL');
@@ -715,8 +705,6 @@
       tempR_el.classList.add(getTempBgClass(tireData.temp.right));
 
       // Update final pressure
-      const hotVal = tireData.lastHotPressure ?? tireData.pressure ?? 0;
-      getTireElement(tireId, 'hot').textContent = hotVal.toFixed(1);
       getTireElement(tireId, 'press').textContent = tireData.pressure.toFixed(1);
 
       // Update compound indicator and tire container border
@@ -750,43 +738,27 @@
                     wear:  { left:(src.lfWear?.[0]||0), middle:(src.lfWear?.[1]||0), right:(src.lfWear?.[2]||0) },
                     temp:  { left:src.lfTempCl||0, middle:src.lfTempCm||0, right:src.lfTempCr||0 },
                     pressure: src.lfPress || 0,
-                    lastHotPressure: src.lfLastHotPress ?? src.lfPress || 0,
-                    treadRemaining: { left:(src.lfTreadRemainingParts?.[0]||src.lfWear?.[0]||0), middle:(src.lfTreadRemainingParts?.[1]||src.lfWear?.[1]||0), right:(src.lfTreadRemainingParts?.[2]||src.lfWear?.[2]||0) },
                     compound: comp
                 },
                 frontRight: {
                     wear:  { left:(src.rfWear?.[0]||0), middle:(src.rfWear?.[1]||0), right:(src.rfWear?.[2]||0) },
                     temp:  { left:src.rfTempCl||0, middle:src.rfTempCm||0, right:src.rfTempCr||0 },
                     pressure: src.rfPress || 0,
-                    lastHotPressure: src.rfLastHotPress ?? src.rfPress || 0,
-                    treadRemaining: { left:(src.rfTreadRemainingParts?.[0]||src.rfWear?.[0]||0), middle:(src.rfTreadRemainingParts?.[1]||src.rfWear?.[1]||0), right:(src.rfTreadRemainingParts?.[2]||src.rfWear?.[2]||0) },
                     compound: comp
                 },
                 rearLeft:   {
                     wear:  { left:(src.lrWear?.[0]||0), middle:(src.lrWear?.[1]||0), right:(src.lrWear?.[2]||0) },
                     temp:  { left:src.lrTempCl||0, middle:src.lrTempCm||0, right:src.lrTempCr||0 },
                     pressure: src.lrPress || 0,
-                    lastHotPressure: src.lrLastHotPress ?? src.lrPress || 0,
-                    treadRemaining: { left:(src.lrTreadRemainingParts?.[0]||src.lrWear?.[0]||0), middle:(src.lrTreadRemainingParts?.[1]||src.lrWear?.[1]||0), right:(src.lrTreadRemainingParts?.[2]||src.lrWear?.[2]||0) },
                     compound: comp
                 },
                 rearRight:  {
                     wear:  { left:(src.rrWear?.[0]||0), middle:(src.rrWear?.[1]||0), right:(src.rrWear?.[2]||0) },
                     temp:  { left:src.rrTempCl||0, middle:src.rrTempCm||0, right:src.rrTempCr||0 },
                     pressure: src.rrPress || 0,
-                    lastHotPressure: src.rrLastHotPress ?? src.rrPress || 0,
-                    treadRemaining: { left:(src.rrTreadRemainingParts?.[0]||src.rrWear?.[0]||0), middle:(src.rrTreadRemainingParts?.[1]||src.rrWear?.[1]||0), right:(src.rrTreadRemainingParts?.[2]||src.rrWear?.[2]||0) },
                     compound: comp
                 }
             };
-        } else {
-            ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
-                const tData = tires[key];
-                if (!tData) return;
-                tData.lastHotPressure = tData.lastHotPressure ?? tData.pressure ?? 0;
-                if (!tData.treadRemaining && tData.wear)
-                    tData.treadRemaining = tData.wear;
-            });
         }
         tireMap.forEach(({id, iRacingKey}) => {
             if (tires[iRacingKey]) {

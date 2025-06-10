@@ -303,24 +303,6 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.LrPress = GetSdkValue<float>(d, "LRpressure") ?? 0f;
             t.Tyres.RrPress = GetSdkValue<float>(d, "RRpressure") ?? 0f;
 
-            if (t.OnPitRoad)
-            {
-                _lfLastHotPress = t.Tyres.LfPress;
-                _rfLastHotPress = t.Tyres.RfPress;
-                _lrLastHotPress = t.Tyres.LrPress;
-                _rrLastHotPress = t.Tyres.RrPress;
-            }
-
-            _lfLastHotPress = Math.Max(_lfLastHotPress, t.Tyres.LfPress);
-            _rfLastHotPress = Math.Max(_rfLastHotPress, t.Tyres.RfPress);
-            _lrLastHotPress = Math.Max(_lrLastHotPress, t.Tyres.LrPress);
-            _rrLastHotPress = Math.Max(_rrLastHotPress, t.Tyres.RrPress);
-
-            t.Tyres.LfLastHotPress = _lfLastHotPress;
-            t.Tyres.RfLastHotPress = _rfLastHotPress;
-            t.Tyres.LrLastHotPress = _lrLastHotPress;
-            t.Tyres.RrLastHotPress = _rrLastHotPress;
-
             t.Tyres.LfWear = new float?[] {
                 GetSdkValue<float>(d, "LFWearL"),
                 GetSdkValue<float>(d, "LFWearM"),
@@ -341,11 +323,6 @@ namespace SuperBackendNR85IA.Services
                 GetSdkValue<float>(d, "RRWearM"),
                 GetSdkValue<float>(d, "RRWearR")
             }.Select(v => v ?? 0f).ToArray();
-
-            t.Tyres.LfTreadRemainingParts = (float[])t.Tyres.LfWear.Clone();
-            t.Tyres.RfTreadRemainingParts = (float[])t.Tyres.RfWear.Clone();
-            t.Tyres.LrTreadRemainingParts = (float[])t.Tyres.LrWear.Clone();
-            t.Tyres.RrTreadRemainingParts = (float[])t.Tyres.RrWear.Clone();
 
             t.Tyres.TreadRemainingFl = GetSdkValue<float>(d, "LFWearM") ?? 0f;
             t.Tyres.TreadRemainingFr = GetSdkValue<float>(d, "RFWearM") ?? 0f;
