@@ -1,5 +1,23 @@
 {
-  "sessionInfoYaml": "",
+  "sessionInfoYaml": "...",
+  "playerCarIdx": 0,
+  "sessionNum": 1,
+  "sessionTime": 123.4,
+  "sessionTimeRemain": 600.0,
+  "lap": 5,
+  "totalLaps": 20,
+  "trackDisplayName": "Interlagos",
+  "dcBrakeBias": 0.55,
+  "trackAirTemp": 28.0,
+  "trackSurfaceTemp": 38.5,
+  "carIdxPosition": [1, 2],
+  "carIdxLap": [5, 5],
+  "carIdxLapDistPct": [0.5, 0.48],
+  "carIdxOnPitRoad": [false, false],
+  "carIdxTrackSurface": [1, 1],
+  "carIdxLastLapTime": [90.5, 91.0],
+  "carIdxF2Time": [0.0, 1.2],
+  "carIdxCarClassEstLapTimes": [89.5, 90.0],
   "yamlPlayerDriver": {
     "carIdx": 0,
     "userName": "Driver One"
@@ -9,13 +27,14 @@
     "trackConfigName": "Grand Prix"
   },
   "yamlSessionInfo": {
-    "sessionNum": 0,
+    "sessionNum": 1,
     "sessionType": "Practice"
   },
   "yamlSectorInfo": {
     "sectorCount": 3
   },
   "yamlDrivers": [
-    { "carIdx": 0, "userName": "Driver One" }
+    { "carIdx": 0, "userName": "Driver One" },
+    { "carIdx": 1, "userName": "Driver Two" }
   ]
 }
