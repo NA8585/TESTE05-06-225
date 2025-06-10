@@ -54,6 +54,7 @@ namespace SuperBackendNR85IA.Services
                 CarClassID        = GetInt(node, "CarClassID"),
                 CarClassShortName = GetStr(node, "CarClassShortName"),
                 CarClassRelSpeed  = GetFloat(node, "CarClassRelSpeed"),
+                CarClassEstLapTime = GetFloat(node, "CarClassEstLapTime"),
                 TireCompound      = GetTireCompound(node)
             };
         }
@@ -83,6 +84,7 @@ namespace SuperBackendNR85IA.Services
                     CarClassID        = GetInt(child, "CarClassID"),
                     CarClassShortName = GetStr(child, "CarClassShortName"),
                     CarClassRelSpeed  = GetFloat(child, "CarClassRelSpeed"),
+                    CarClassEstLapTime = GetFloat(child, "CarClassEstLapTime"),
                     TireCompound      = GetTireCompound(child)
                 });
             }
