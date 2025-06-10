@@ -36,7 +36,6 @@
   <tbody id="tbody"></tbody>
 </table>
 <script type="module">
-import { initOverlayWebSocket } from '../overlay-common.js';
 const pitStart={};
 function fmtTime(s){if(typeof s!=='number'||!isFinite(s)||s<=0)return'--';const m=Math.floor(s/60);const sec=Math.floor(s%60);return`${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;}
 function update(data){
@@ -71,6 +70,8 @@ function update(data){
   tbody.appendChild(tr);
  }
 }
+const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+window.isElectron = enableBrowserEditMode(document.body, null);
 initOverlayWebSocket(update);
 </script>
 </body>

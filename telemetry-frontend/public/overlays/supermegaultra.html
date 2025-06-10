@@ -839,7 +839,8 @@ if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)
 }
 
 // Inicia a conexão WebSocket ao carregar a página
-const { initOverlayWebSocket } = await import('../overlay-common.js');
+const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+window.isElectron = enableBrowserEditMode('root', document.querySelector('header'));
 initOverlayWebSocket(handleData);
 </script>
 <script type="module" src="/index.tsx"></script>
