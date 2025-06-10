@@ -303,7 +303,7 @@
     const OVERLAY_NAME = 'overlay-tanque';
     const resizableOverlayWrapper = document.getElementById('wrapper');
     const overlayHeader = document.getElementById('overlay-header');
-    const isElectron = enableBrowserEditMode('wrapper','overlay-header');
+    let isElectron = !!window.electronAPI;
     const settingsPopover = document.getElementById('settings-popover');
     const rangeOpacity = document.getElementById('rangeOpacity');
     const rangeContrast = document.getElementById('rangeContrast');
@@ -320,7 +320,7 @@
     let isDragging = false;
     let dragStartX, dragStartY, windowStartX, windowStartY;
 
-    let isCurrentlyInGlobalEditMode = false;
+    let isCurrentlyInGlobalEditMode = !isElectron;
     let localPinned = false;
     let localLocked = true; // Começa travado por padrão
     let localIgnoreClicks = true; // Começa ignorando cliques por padrão
@@ -721,6 +721,8 @@
     document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings(); // Carrega configurações primeiro
       const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+      isElectron = enableBrowserEditMode('wrapper','overlay-header');
+      isCurrentlyInGlobalEditMode = !isElectron;
       initOverlayWebSocket(handleData);
 
       // Estado inicial da UI baseado no modo de edição global (se a API Electron estiver presente)
