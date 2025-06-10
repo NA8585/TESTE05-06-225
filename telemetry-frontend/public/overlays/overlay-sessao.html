@@ -811,6 +811,10 @@
         }
     });
     document.addEventListener('DOMContentLoaded', () => {
+        if (!window.electronAPI) {
+            document.getElementById('wrapper')?.classList.add('global-edit-mode-active');
+            document.querySelector('.overlay-header')?.style && (document.querySelector('.overlay-header').style.cursor = 'move');
+        }
         loadSettings();
         connectWebSocket();
         updatePinButtonState(pinnedState); // Garante estado visual inicial correto

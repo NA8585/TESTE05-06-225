@@ -192,6 +192,10 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
+    import('../overlay-common.js').then(m => {
+      window.isElectron = m.enableBrowserEditMode('wrapper','overlay-header');
+    });
+
     function FuelCalculator() {
       // estados
       const [currentLap, setCurrentLap]     = useState(0);

@@ -18,4 +18,19 @@ function initOverlayWebSocket(onData) {
   connect();
 }
 
-export { initOverlayWebSocket };
+function enableBrowserEditMode(wrapperId, headerId) {
+  const isElectron = !!window.electronAPI;
+  if (!isElectron) {
+    const wrapper = typeof wrapperId === 'string' ? document.getElementById(wrapperId) : wrapperId;
+    const header = typeof headerId === 'string' ? document.getElementById(headerId) : headerId;
+    if (wrapper) {
+      wrapper.classList.add('global-edit-mode-active');
+      wrapper.style.pointerEvents = 'auto';
+      wrapper.querySelectorAll?.('.resize-handle').forEach(h => h.style.display = 'block');
+    }
+    if (header) header.style.cursor = 'move';
+  }
+  return isElectron;
+}
+
+export { initOverlayWebSocket, enableBrowserEditMode };

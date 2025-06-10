@@ -333,7 +333,7 @@
   <script>
     // --- Constantes e Variáveis de Estado ---
     const OVERLAY_NAME = 'overlay-tiresgarage';
-    const isElectron = !!window.electronAPI;
+    const isElectron = enableBrowserEditMode('wrapper','overlay-header');
     const resizableOverlayWrapper = document.getElementById('wrapper');
     const overlayHeader = document.getElementById('overlay-header');
     const settingsPopover = document.getElementById('settings-popover');
@@ -770,7 +770,7 @@
     // --- Inicialização ---
     document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
-      const { initOverlayWebSocket } = await import('../overlay-common.js');
+      const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
       initOverlayWebSocket(handleData);
       if (!isCurrentlyInGlobalEditMode) {
           resizableOverlayWrapper.classList.remove('global-edit-mode-active');
