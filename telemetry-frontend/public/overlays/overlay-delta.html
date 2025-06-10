@@ -737,7 +737,7 @@
 
       const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
       initOverlayWebSocket(d => {
-          latest = d.casper || d;
+          if (d) latest = d.casper || d;
       });
 
       animationLoop();

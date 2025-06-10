@@ -705,7 +705,8 @@ function render(data) {
 
 
 function handleData(parsedData) {
-  if (parsedData) render(parsedData);
+  if (!parsedData) return;
+  render(parsedData);
 }
 
 if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)' ||
