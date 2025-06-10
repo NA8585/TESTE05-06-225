@@ -290,7 +290,9 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initOverlayWebSocket, enableBrowserEditMode } from '../overlay-common.js';
+
     // --- Constantes e Variáveis de Estado ---
     const OVERLAY_NAME = 'overlay-delta';
     const isElectron = enableBrowserEditMode('wrapper','overlay-header');
@@ -735,7 +737,6 @@
         window.requestAnimationFrame(animationLoop);
       }
 
-      const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
       initOverlayWebSocket(d => {
           if (d) latest = d.casper || d;
       });

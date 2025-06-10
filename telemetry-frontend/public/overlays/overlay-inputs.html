@@ -303,7 +303,9 @@
             <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1">
         </div>
     </div>
-    <script>
+    <script type="module">
+        import { initOverlayWebSocket, enableBrowserEditMode } from '../overlay-common.js';
+
         const OVERLAY_NAME = 'overlay-inputs';
         const resizableOverlayWrapper = document.getElementById('wrapper');
         const overlayHeader = document.querySelector('.header');
@@ -718,7 +720,6 @@
         
         window.addEventListener('load', async () => {
             await loadSettings();
-            const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
             initOverlayWebSocket(data => {
                 if (typeof data.throttle !== 'undefined') {
                     updateOverlayData(data);
