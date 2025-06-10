@@ -293,7 +293,7 @@
   <script>
     // --- Constantes e Variáveis de Estado ---
     const OVERLAY_NAME = 'overlay-delta';
-    const isElectron = enableBrowserEditMode('wrapper','overlay-header');
+    let isElectron = !!window.electronAPI;
     const resizableOverlayWrapper = document.getElementById('wrapper');
     const overlayHeader = document.getElementById('overlay-header');
     const settingsPopover = document.getElementById('settings-popover');
@@ -736,6 +736,8 @@
       }
 
       const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+      isElectron = enableBrowserEditMode('wrapper','overlay-header');
+      isCurrentlyInGlobalEditMode = !isElectron;
       initOverlayWebSocket(d => {
           if (d) latest = d.casper || d;
       });

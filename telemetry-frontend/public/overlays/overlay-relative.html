@@ -378,7 +378,7 @@
 const competitorListContainer = document.getElementById('competitor-list-container');
 const overlayAPI = window.overlayAPI || window.api || {}; // For potential interactions
 const overlayHeader = document.querySelector('.overlay-header');
-const isElectron = enableBrowserEditMode('wrapper', overlayHeader);
+let isElectron = !!window.electronAPI;
 
 // --- Helper Functions ---
 function parseYaml(yamlStr) {
@@ -813,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+    isElectron = enableBrowserEditMode('wrapper', overlayHeader);
     initOverlayWebSocket(handleData);
 });
 
