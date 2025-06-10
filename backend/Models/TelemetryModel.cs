@@ -75,6 +75,16 @@ namespace SuperBackendNR85IA.Models
         public float TreadRemainingRl { get => Tyres.TreadRemainingRl; set => Tyres.TreadRemainingRl = value; }
         public float TreadRemainingRr { get => Tyres.TreadRemainingRr; set => Tyres.TreadRemainingRr = value; }
 
+        public float LfLastHotPress { get => Tyres.LfLastHotPress; set => Tyres.LfLastHotPress = value; }
+        public float RfLastHotPress { get => Tyres.RfLastHotPress; set => Tyres.RfLastHotPress = value; }
+        public float LrLastHotPress { get => Tyres.LrLastHotPress; set => Tyres.LrLastHotPress = value; }
+        public float RrLastHotPress { get => Tyres.RrLastHotPress; set => Tyres.RrLastHotPress = value; }
+
+        public float[] LfTreadRemainingParts { get => Tyres.LfTreadRemainingParts; set => Tyres.LfTreadRemainingParts = value; }
+        public float[] RfTreadRemainingParts { get => Tyres.RfTreadRemainingParts; set => Tyres.RfTreadRemainingParts = value; }
+        public float[] LrTreadRemainingParts { get => Tyres.LrTreadRemainingParts; set => Tyres.LrTreadRemainingParts = value; }
+        public float[] RrTreadRemainingParts { get => Tyres.RrTreadRemainingParts; set => Tyres.RrTreadRemainingParts = value; }
+
         // ---- Damage ----
         public float LfDamage { get => Damage.LfDamage; set => Damage.LfDamage = value; }
         public float RfDamage { get => Damage.RfDamage; set => Damage.RfDamage = value; }

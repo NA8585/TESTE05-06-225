@@ -35,6 +35,11 @@ namespace SuperBackendNR85IA.Services
         private string _trackName = string.Empty;
         private bool _awaitingStoredData = false;
 
+        private float _lfLastHotPress = 0f;
+        private float _rfLastHotPress = 0f;
+        private float _lrLastHotPress = 0f;
+        private float _rrLastHotPress = 0f;
+
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
             TelemetryBroadcaster broadcaster,

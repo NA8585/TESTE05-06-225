@@ -585,6 +585,7 @@
     ];
 
     function handleData(d) {
+        if (!d) return;
         if (!Array.isArray(d.tireTemps)) {
             d.tireTemps = [d.lfTempCm, d.rfTempCm, d.lrTempCm, d.rrTempCm];
         }
