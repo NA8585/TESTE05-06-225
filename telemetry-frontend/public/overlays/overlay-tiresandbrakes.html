@@ -270,6 +270,7 @@
     const OVERLAY_NAME = 'overlay-tiresandbrakes';
     const resizableOverlayWrapper = document.getElementById('wrapper');
     const overlayHeader = document.getElementById('overlay-header');
+    const isElectron = enableBrowserEditMode('wrapper','overlay-header');
     const settingsPopover = document.getElementById('settings-popover');
     const rangeOpacity = document.getElementById('rangeOpacity');
     const rangeContrast = document.getElementById('rangeContrast');
@@ -653,7 +654,7 @@
     // --- Inicialização ---
     document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
-      const { initOverlayWebSocket } = await import('../overlay-common.js');
+      const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
       initOverlayWebSocket(handleData);
       if (!isCurrentlyInGlobalEditMode) {
           resizableOverlayWrapper.classList.remove('global-edit-mode-active');

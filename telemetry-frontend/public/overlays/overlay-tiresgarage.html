@@ -333,6 +333,7 @@
   <script>
     // --- Constantes e Variáveis de Estado ---
     const OVERLAY_NAME = 'overlay-tiresgarage';
+    const isElectron = enableBrowserEditMode('wrapper','overlay-header');
     const resizableOverlayWrapper = document.getElementById('wrapper');
     const overlayHeader = document.getElementById('overlay-header');
     const settingsPopover = document.getElementById('settings-popover');
@@ -352,10 +353,10 @@
     let isDragging = false;
     let dragStartX, dragStartY, windowStartX, windowStartY;
 
-    let isCurrentlyInGlobalEditMode = false;
+    let isCurrentlyInGlobalEditMode = !isElectron;
     let localPinned = false;
-    let localLocked = true; // Começa travado por padrão
-    let localIgnoreClicks = true; // Começa ignorando cliques por padrão
+    let localLocked = isElectron; // Travado por padrão apenas no Electron
+    let localIgnoreClicks = isElectron; // Ignora cliques por padrão apenas no Electron
 
     // --- Lógica de Redimensionamento e Arraste ---
     function getCursorForHandle(handleType) {
@@ -529,8 +530,12 @@
         localLocked = isLocked;
         lockButton.classList.toggle('active', isLocked);
         lockButton.innerHTML = isLocked ? '🔓' : '🔒';
-        // Gerencia pointer-events do wrapper para travar/destravar cliques
-        resizableOverlayWrapper.style.pointerEvents = isLocked ? 'none' : 'auto';
+        // Gerencia pointer-events apenas no Electron
+        if (isElectron) {
+            resizableOverlayWrapper.style.pointerEvents = isLocked ? 'none' : 'auto';
+        } else {
+            resizableOverlayWrapper.style.pointerEvents = 'auto';
+        }
     }
     function updateVisualClickButtonState(shouldIgnoreClicks) {
         localIgnoreClicks = shouldIgnoreClicks;
@@ -595,8 +600,8 @@
       updateVisualPinButtonState(localPinned);
       window.electronAPI?.setAlwaysOnTop?.(OVERLAY_NAME, localPinned);
 
-      updateVisualLockButtonState(loadSetting('locked', true));
-      updateVisualClickButtonState(loadSetting('ignoreClicks', true));
+      updateVisualLockButtonState(loadSetting('locked', isElectron));
+      updateVisualClickButtonState(loadSetting('ignoreClicks', isElectron));
 
       // Carrega a posição e tamanho da janela se estiver em Electron
       if (window.electronAPI && window.electronAPI.getBounds) {
@@ -719,29 +724,39 @@
 
     function handleData(d) {
         d = { ...d, ...(d.tyres || d.tires || {}) };
+
         let tires = d.tyres || d.tires;
-        if (!tires) {
-            const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx==='number' ? (d.carIdxTireCompounds[d.playerCarIdx]||'U') : 'U';
+        const hasNested = tires && typeof tires.frontLeft === 'object';
+
+        if (!hasNested) {
+            const src = d.tyres || d.tires || d;
+            const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx === 'number'
+                ? (d.carIdxTireCompounds[d.playerCarIdx] || 'U') : 'U';
+
             tires = {
                 frontLeft:  {
-                    wear:{left:(d.lfWear?.[0]||0),middle:(d.lfWear?.[1]||0),right:(d.lfWear?.[2]||0)},
-                    temp:{left:d.lfTempCl||0,middle:d.lfTempCm||0,right:d.lfTempCr||0},
-                    pressure:d.lfPress||0, compound:comp
+                    wear:  { left:(src.lfWear?.[0]||0), middle:(src.lfWear?.[1]||0), right:(src.lfWear?.[2]||0) },
+                    temp:  { left:src.lfTempCl||0, middle:src.lfTempCm||0, right:src.lfTempCr||0 },
+                    pressure: src.lfPress || 0,
+                    compound: comp
                 },
                 frontRight: {
-                    wear:{left:(d.rfWear?.[0]||0),middle:(d.rfWear?.[1]||0),right:(d.rfWear?.[2]||0)},
-                    temp:{left:d.rfTempCl||0,middle:d.rfTempCm||0,right:d.rfTempCr||0},
-                    pressure:d.rfPress||0, compound:comp
-     },
+                    wear:  { left:(src.rfWear?.[0]||0), middle:(src.rfWear?.[1]||0), right:(src.rfWear?.[2]||0) },
+                    temp:  { left:src.rfTempCl||0, middle:src.rfTempCm||0, right:src.rfTempCr||0 },
+                    pressure: src.rfPress || 0,
+                    compound: comp
+                },
                 rearLeft:   {
-                    wear:{left:(d.lrWear?.[0]||0),middle:(d.lrWear?.[1]||0),right:(d.lrWear?.[2]||0)},
-                    temp:{left:d.lrTempCl||0,middle:d.lrTempCm||0,right:d.lrTempCr||0},
-                    pressure:d.lrPress||0, compound:comp
+                    wear:  { left:(src.lrWear?.[0]||0), middle:(src.lrWear?.[1]||0), right:(src.lrWear?.[2]||0) },
+                    temp:  { left:src.lrTempCl||0, middle:src.lrTempCm||0, right:src.lrTempCr||0 },
+                    pressure: src.lrPress || 0,
+                    compound: comp
                 },
                 rearRight:  {
-                    wear:{left:(d.rrWear?.[0]||0),middle:(d.rrWear?.[1]||0),right:(d.rrWear?.[2]||0)},
-                    temp:{left:d.rrTempCl||0,middle:d.rrTempCm||0,right:d.rrTempCr||0},
-                    pressure:d.rrPress||0, compound:comp
+                    wear:  { left:(src.rrWear?.[0]||0), middle:(src.rrWear?.[1]||0), right:(src.rrWear?.[2]||0) },
+                    temp:  { left:src.rrTempCl||0, middle:src.rrTempCm||0, right:src.rrTempCr||0 },
+                    pressure: src.rrPress || 0,
+                    compound: comp
                 }
             };
         }
@@ -755,7 +770,7 @@
     // --- Inicialização ---
     document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
-      const { initOverlayWebSocket } = await import('../overlay-common.js');
+      const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
       initOverlayWebSocket(handleData);
       if (!isCurrentlyInGlobalEditMode) {
           resizableOverlayWrapper.classList.remove('global-edit-mode-active');
@@ -763,6 +778,9 @@
           document.querySelectorAll('.resize-handle').forEach(h => h.style.display = 'none');
           updateVisualLockButtonState(localLocked);
           updateVisualClickButtonState(localIgnoreClicks);
+      } else {
+          resizableOverlayWrapper.classList.add('global-edit-mode-active');
+          overlayHeader.style.cursor = 'move';
       }
     });
   </script>
