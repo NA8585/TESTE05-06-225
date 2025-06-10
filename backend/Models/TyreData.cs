@@ -27,6 +27,16 @@ namespace SuperBackendNR85IA.Models
         public float[] LrWear { get; set; } = Array.Empty<float>();
         public float[] RrWear { get; set; } = Array.Empty<float>();
 
+        public float[] LfTreadRemainingParts { get; set; } = Array.Empty<float>();
+        public float[] RfTreadRemainingParts { get; set; } = Array.Empty<float>();
+        public float[] LrTreadRemainingParts { get; set; } = Array.Empty<float>();
+        public float[] RrTreadRemainingParts { get; set; } = Array.Empty<float>();
+
+        public float LfLastHotPress { get; set; }
+        public float RfLastHotPress { get; set; }
+        public float LrLastHotPress { get; set; }
+        public float RrLastHotPress { get; set; }
+
         public float TreadRemainingFl { get; set; }
         public float TreadRemainingFr { get; set; }
         public float TreadRemainingRl { get; set; }

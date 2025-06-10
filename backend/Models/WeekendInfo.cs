@@ -13,8 +13,9 @@ namespace SuperBackendNR85IA.Models
         public float  RelativeHumidity { get; set; }
         public float  ChanceOfRain     { get; set; }
         public string ForecastType     { get; set; } = string.Empty;
-		public float TrackWindVel { get; set; }
-        public float TrackAirTemp { get; set; }
-        public string TrackNumTurns { get; set; }
+        public float  TrackWindVel      { get; set; }
+        public float  TrackAirTemp      { get; set; }
+        public string TrackNumTurns     { get; set; } = string.Empty;
+        public int    NumCarClasses     { get; set; }
     }
 }

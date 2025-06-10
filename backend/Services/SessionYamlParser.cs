@@ -120,7 +120,8 @@ namespace SuperBackendNR85IA.Services
                 ForecastType     = GetStr(wNode, "ForecastType"),
                 TrackWindVel     = GetFloatFromSpecialFormat(wNode, "WindVel"),
                 TrackAirTemp     = GetFloatFromSpecialFormat(wNode, "AirTemp"),
-                TrackNumTurns    = GetStr(wNode, "TrackNumTurns")
+                TrackNumTurns    = GetStr(wNode, "TrackNumTurns"),
+                NumCarClasses    = GetInt(wNode, "NumCarClasses")
             };
         }
 

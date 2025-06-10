@@ -470,7 +470,9 @@ function renderRelative(data) {
   // === Update Header and Footer ===
   document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.TrackDisplayName || '--'}`;
   document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(data.sessionTime, false) || '00:00'}`;
-  document.getElementById('ambientTemp').textContent = `${typeof data.tempValue === 'number' ? data.tempValue.toFixed(1) : '--'}`; // Assuming tempValue for ambient
+  const amb = typeof data.trackAirTemp === 'number' ? data.trackAirTemp
+               : (typeof data.tempValue === 'number' ? data.tempValue : undefined);
+  document.getElementById('ambientTemp').textContent = `${typeof amb === 'number' ? amb.toFixed(1) : '--'}`;
   
   let trackTempValue = '--';
   if (typeof data.trackSurfaceTemp === 'number' && data.trackSurfaceTemp > -100) {

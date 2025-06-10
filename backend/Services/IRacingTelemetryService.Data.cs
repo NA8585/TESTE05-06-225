@@ -324,6 +324,11 @@ namespace SuperBackendNR85IA.Services
                 GetSdkValue<float>(d, "RRWearR")
             }.Select(v => v ?? 0f).ToArray();
 
+            t.Tyres.LfTreadRemainingParts = t.Tyres.LfWear;
+            t.Tyres.RfTreadRemainingParts = t.Tyres.RfWear;
+            t.Tyres.LrTreadRemainingParts = t.Tyres.LrWear;
+            t.Tyres.RrTreadRemainingParts = t.Tyres.RrWear;
+
             t.Tyres.TreadRemainingFl = GetSdkValue<float>(d, "LFWearM") ?? 0f;
             t.Tyres.TreadRemainingFr = GetSdkValue<float>(d, "RFWearM") ?? 0f;
             t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
@@ -439,6 +444,8 @@ namespace SuperBackendNR85IA.Services
             t.CarIdxCarClassShortNames = orderedDrivers.Select(di => di.CarClassShortName).ToArray();
             t.CarIdxCarClassEstLapTimes = orderedDrivers.Select(di => di.CarClassEstLapTime).ToArray();
             t.CarIdxTireCompounds = orderedDrivers.Select(di => di.TireCompound).ToArray();
+            t.IsMultiClassSession = (wkd?.NumCarClasses ?? 0) > 1 ||
+                                   t.CarIdxCarClassIds.Distinct().Count() > 1;
 
 
             if (wkd != null)

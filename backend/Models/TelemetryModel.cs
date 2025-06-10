@@ -70,6 +70,14 @@ namespace SuperBackendNR85IA.Models
         public float[] RfWear { get => Tyres.RfWear; set => Tyres.RfWear = value; }
         public float[] LrWear { get => Tyres.LrWear; set => Tyres.LrWear = value; }
         public float[] RrWear { get => Tyres.RrWear; set => Tyres.RrWear = value; }
+        public float[] LfTreadRemainingParts { get => Tyres.LfTreadRemainingParts; set => Tyres.LfTreadRemainingParts = value; }
+        public float[] RfTreadRemainingParts { get => Tyres.RfTreadRemainingParts; set => Tyres.RfTreadRemainingParts = value; }
+        public float[] LrTreadRemainingParts { get => Tyres.LrTreadRemainingParts; set => Tyres.LrTreadRemainingParts = value; }
+        public float[] RrTreadRemainingParts { get => Tyres.RrTreadRemainingParts; set => Tyres.RrTreadRemainingParts = value; }
+        public float LfLastHotPress { get => Tyres.LfLastHotPress; set => Tyres.LfLastHotPress = value; }
+        public float RfLastHotPress { get => Tyres.RfLastHotPress; set => Tyres.RfLastHotPress = value; }
+        public float LrLastHotPress { get => Tyres.LrLastHotPress; set => Tyres.LrLastHotPress = value; }
+        public float RrLastHotPress { get => Tyres.RrLastHotPress; set => Tyres.RrLastHotPress = value; }
         public float TreadRemainingFl { get => Tyres.TreadRemainingFl; set => Tyres.TreadRemainingFl = value; }
         public float TreadRemainingFr { get => Tyres.TreadRemainingFr; set => Tyres.TreadRemainingFr = value; }
         public float TreadRemainingRl { get => Tyres.TreadRemainingRl; set => Tyres.TreadRemainingRl = value; }
@@ -134,6 +142,7 @@ namespace SuperBackendNR85IA.Models
         public string[] CarIdxCarClassShortNames { get; set; } = Array.Empty<string>();
         public float[] CarIdxCarClassEstLapTimes { get; set; } = Array.Empty<float>();
         public string[] CarIdxTireCompounds { get; set; } = Array.Empty<string>();
+        public bool IsMultiClassSession { get; set; }
         public string CarAheadName { get; set; } = string.Empty;
         public string CarBehindName { get; set; } = string.Empty;
 
