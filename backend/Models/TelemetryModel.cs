@@ -119,6 +119,7 @@ namespace SuperBackendNR85IA.Models
         public bool[] CarIdxOnPitRoad { get; set; } = Array.Empty<bool>();
         public int[] CarIdxTrackSurface { get; set; } = Array.Empty<int>();
         public float[] CarIdxLastLapTime { get; set; } = Array.Empty<float>();
+        public float[] CarIdxBestLapTime { get; set; } = Array.Empty<float>();
         public float[] CarIdxF2Time { get; set; } = Array.Empty<float>();
         public float DistanceAhead { get; set; }
         public float DistanceBehind { get; set; }
