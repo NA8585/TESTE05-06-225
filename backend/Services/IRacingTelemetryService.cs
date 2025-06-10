@@ -34,6 +34,11 @@ namespace SuperBackendNR85IA.Services
         private string _carPath = string.Empty;
         private string _trackName = string.Empty;
         private bool _awaitingStoredData = false;
+        private bool _wasOnPitRoad = false;
+        private float _lfLastHotPress;
+        private float _rfLastHotPress;
+        private float _lrLastHotPress;
+        private float _rrLastHotPress;
 
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
@@ -117,11 +122,29 @@ namespace SuperBackendNR85IA.Services
             ComputeRelativeDistances(d, t);
             PopulateSessionInfo(d, t);
             PopulateTyres(d, t);
+            UpdateLastHotPress(t);
             await ApplyYamlData(d, t);
             RunCustomCalculations(d, t);
             await PersistCarTrackData(t);
 
             return t;
+        }
+
+        private void UpdateLastHotPress(TelemetryModel t)
+        {
+            if (t.OnPitRoad && !_wasOnPitRoad)
+            {
+                _lfLastHotPress = t.LfPress;
+                _rfLastHotPress = t.RfPress;
+                _lrLastHotPress = t.LrPress;
+                _rrLastHotPress = t.RrPress;
+            }
+            _wasOnPitRoad = t.OnPitRoad;
+
+            t.LfLastHotPress = _lfLastHotPress;
+            t.RfLastHotPress = _rfLastHotPress;
+            t.LrLastHotPress = _lrLastHotPress;
+            t.RrLastHotPress = _rrLastHotPress;
         }
     }
 }

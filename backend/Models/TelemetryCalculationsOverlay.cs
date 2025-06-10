@@ -36,6 +36,11 @@ namespace SuperBackendNR85IA.Calculations
             model.Tyres.LrWear ??= new float[3];
             model.Tyres.RrWear ??= new float[3];
 
+            model.Tyres.LfTreadRemainingParts ??= model.Tyres.LfWear;
+            model.Tyres.RfTreadRemainingParts ??= model.Tyres.RfWear;
+            model.Tyres.LrTreadRemainingParts ??= model.Tyres.LrWear;
+            model.Tyres.RrTreadRemainingParts ??= model.Tyres.RrWear;
+
             model.Tyres.LfPress = model.Tyres.LfPress;
             model.Tyres.RfPress = model.Tyres.RfPress;
             model.Tyres.LrPress = model.Tyres.LrPress;

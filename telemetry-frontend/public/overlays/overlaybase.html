@@ -150,7 +150,7 @@
         document.getElementById('raceTime').textContent = fmtTime(t);
       }
 
-      const ambient = data.weekendInfo?.trackAirTemp;
+      const ambient = data.trackAirTemp ?? data.weekendInfo?.trackAirTemp;
       if (ambient !== undefined) {
         document.getElementById('ambientTemp').textContent = Math.round(ambient);
       }
