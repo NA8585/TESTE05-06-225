@@ -216,6 +216,7 @@ namespace SuperBackendNR85IA.Services
             var trackSurfaceArr = GetSdkArray<int>(d, "CarIdxTrackSurface")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
             var lastLapArr      = GetSdkArray<float>(d, "CarIdxLastLapTime")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
             var f2TimeArr       = GetSdkArray<float>(d, "CarIdxF2Time")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
+            var bestLapArr      = GetSdkArray<float>(d, "CarIdxBestLapTime")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
             int myIdx           = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
 
             if (myIdx >= 0 && myIdx < lapPctArr.Length && lapPctArr.Length == posArr.Length)
@@ -242,6 +243,7 @@ namespace SuperBackendNR85IA.Services
                 t.CarIdxOnPitRoad   = onPitArr;
                 t.CarIdxTrackSurface= trackSurfaceArr;
                 t.CarIdxLastLapTime = lastLapArr;
+                t.CarIdxBestLapTime = bestLapArr;
                 t.CarIdxF2Time      = f2TimeArr;
             }
             else
@@ -254,6 +256,7 @@ namespace SuperBackendNR85IA.Services
                 t.CarIdxOnPitRoad  = Array.Empty<bool>();
                 t.CarIdxTrackSurface= Array.Empty<int>();
                 t.CarIdxLastLapTime= Array.Empty<float>();
+                t.CarIdxBestLapTime= Array.Empty<float>();
                 t.CarIdxF2Time     = Array.Empty<float>();
             }
         }

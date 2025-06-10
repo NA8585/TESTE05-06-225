@@ -16,6 +16,7 @@
   "carIdxOnPitRoad": [false, false],
   "carIdxTrackSurface": [1, 1],
   "carIdxLastLapTime": [90.5, 91.0],
+  "carIdxBestLapTime": [89.8, 90.2],
   "carIdxF2Time": [0.0, 1.2],
   "carIdxCarClassEstLapTimes": [89.5, 90.0],
   "yamlPlayerDriver": {
