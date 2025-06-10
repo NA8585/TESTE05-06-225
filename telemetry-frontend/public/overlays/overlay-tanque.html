@@ -298,7 +298,8 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initOverlayWebSocket, enableBrowserEditMode } from '../overlay-common.js';
     // --- Constantes e Variáveis de Estado ---
     const OVERLAY_NAME = 'overlay-tanque';
     const resizableOverlayWrapper = document.getElementById('wrapper');
@@ -718,9 +719,8 @@
     }
 
     // --- Inicialização ---
-    document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener('DOMContentLoaded', () => {
       loadAllSettings(); // Carrega configurações primeiro
-      const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
       isElectron = enableBrowserEditMode('wrapper','overlay-header');
       isCurrentlyInGlobalEditMode = !isElectron;
       initOverlayWebSocket(handleData);
