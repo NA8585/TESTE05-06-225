@@ -290,7 +290,9 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { initOverlayWebSocket, enableBrowserEditMode } from '../overlay-common.js';
+
     // --- Constantes e Variáveis de Estado ---
     const OVERLAY_NAME = 'overlay-delta';
     let isElectron = !!window.electronAPI;
