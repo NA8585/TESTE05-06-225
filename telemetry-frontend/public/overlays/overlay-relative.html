@@ -532,23 +532,9 @@ function renderRelative(data) {
   const driversFromYaml = cachedDriverInfo || []; // Use cached driver info from YAML
   const playerCarIdx = data.playerCarIdx;
 
-  // These should come directly from your backend's TelemetryModel, likely as arrays by CarIdx
-  // The backend needs to provide these as arrays indexed by CarIdx, not just the player's info.
-  // Assuming `carIdxPosition` etc. arrays are populated in TelemetryModel (they are not in the provided model, this is a CRITICAL GAP)
-  // For the relative, you would need properties like:
-  // public int[] CarIdxPosition { get; set; } = Array.Empty<int>();
-  // public int[] CarIdxLap { get; set; } = Array.Empty<int>();
-  // public bool[] CarIdxOnPitRoad { get; set; } = Array.Empty<bool>();
-  // public int[] CarIdxTrackSurface { get; set; } = Array.Empty<int>(); // For DNF
-  // public float[] CarIdxLastLapTime { get; set; } = Array.Empty<float>();
-  // public float[] CarIdxF2Time { get; set; } = Array.Empty<float>(); // Time relative to player
-
-  // **IMPORTANT: The following block assumes your TelemetryModel *will be extended*
-  // to include these arrays, or that you'll derive this data from `SessionInfoYaml`
-  // if `IRSDKSharper` provides it in a different way.**
-  // As per your `TelemetryModel.cs`, `carIdxPosition` and others are NOT present.
-  // This is a major discrepancy. For now, I'll use placeholders or limited data.
-  // YOU MUST ADD THESE ARRAYS TO YOUR `TelemetryModel` IN C# AND POPULATE THEM IN `BuildTelemetryModel`!
+  // Arrays provided by TelemetryModel for each car index
+  // (carIdxPosition, carIdxLap, carIdxOnPitRoad, carIdxTrackSurface,
+  //  carIdxLastLapTime, carIdxF2Time, etc.) are used to build the table below.
 
   // Placeholder/simulated data for demonstration IF backend doesn't send arrays
   // In a real scenario, these arrays should come directly from 'data' object.
