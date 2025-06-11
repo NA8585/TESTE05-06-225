@@ -10,8 +10,14 @@ function initOverlayWebSocket(onData) {
   console.log('[Overlay] connecting to', url);
   function connect() {
     socket = new WebSocket(url);
+    socket.onopen = () => console.log('[Overlay] WebSocket connected');
     socket.onmessage = (e) => {
-      try { onData(JSON.parse(e.data)); } catch (err) { console.error('WS parse', err); }
+      try {
+        const parsed = JSON.parse(e.data);
+        onData(parsed);
+      } catch (err) {
+        console.error('WS parse', err);
+      }
     };
     socket.onclose = () => setTimeout(connect, 3000);
     socket.onerror = (err) => { console.error('WebSocket error', err); socket.close(); };
