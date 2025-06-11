@@ -7,9 +7,16 @@
   "lap": 5,
   "totalLaps": 20,
   "trackDisplayName": "Interlagos",
+  "trackLength": 4.309,
   "dcBrakeBias": 0.55,
+  "playerCarClassID": 3,
+  "carSpeed": 100,
   "trackAirTemp": 28.0,
   "trackSurfaceTemp": 38.5,
+  "carIdxCarClassIds": [
+    3,
+    2
+  ],
   "carIdxTireCompounds": [
     "Soft",
     "Soft"
