@@ -464,12 +464,17 @@ function renderRelative(data) {
       cachedSessionInfo = data.yamlSessionInfo;
   }
 
-  // Fallback: parse raw YAML only if we still don't have info
+  // Fallback: parse raw YAML only if typed info missing
   if (!cachedDriverInfo && data.sessionInfoYaml && data.sessionInfoYaml !== lastSessionInfoYaml) {
       const parsedYaml = parseYaml(data.sessionInfoYaml);
       cachedDriverInfo = parsedYaml?.DriverInfo?.Drivers;
       cachedWeekendInfo = parsedYaml?.WeekendInfo;
-      cachedSessionInfo = parsedYaml?.SessionInfo;
+      if (parsedYaml?.SessionInfo) {
+          cachedSessionInfo = { ...parsedYaml.SessionInfo };
+          if (Array.isArray(parsedYaml.SessionInfo.Sessions)) {
+              cachedSessionInfo.allSessionsFromYaml = parsedYaml.SessionInfo.Sessions;
+          }
+      }
       lastSessionInfoYaml = data.sessionInfoYaml;
   }
 
