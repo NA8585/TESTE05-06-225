@@ -9,6 +9,7 @@ namespace SuperBackendNR85IA.Models
         public string SessionType      { get; set; } = string.Empty;
         public string Skies            { get; set; } = string.Empty;
         public float  WindSpeed        { get; set; }
+        public float  WindDir          { get; set; }
         public float  AirPressure      { get; set; }
         public float  RelativeHumidity { get; set; }
         public float  ChanceOfRain     { get; set; }

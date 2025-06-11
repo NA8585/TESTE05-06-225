@@ -230,11 +230,14 @@ namespace SuperBackendNR85IA.Models
         public string Skies { get; set; } = string.Empty;
         public string ForecastType { get; set; } = string.Empty;
         public float TrackWindVel { get; set; }
+        public float WindSpeed { get; set; }
+        public float WindDir { get; set; }
         public float AirPressure { get; set; }
         public float RelativeHumidity { get; set; }
         public float ChanceOfRain { get; set; }
         public int IncidentLimit { get; set; }
         public float TrackAirTemp { get; set; }
+        public int[] CarIdxIRatingDeltas { get; set; } = Array.Empty<int>();
         // Parsed YAML objects
         public WeekendInfo? YamlWeekendInfo { get; set; }
         public SessionInfo? YamlSessionInfo { get; set; }

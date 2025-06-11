@@ -444,6 +444,18 @@ namespace SuperBackendNR85IA.Services
             t.CarIdxCarClassShortNames = orderedDrivers.Select(di => di.CarClassShortName).ToArray();
             t.CarIdxCarClassEstLapTimes = orderedDrivers.Select(di => di.CarClassEstLapTime).ToArray();
             t.CarIdxTireCompounds = orderedDrivers.Select(di => di.TireCompound).ToArray();
+            if (t.CarIdxPosition.Length == t.CarIdxIRatings.Length && t.CarIdxPosition.Length > 0)
+            {
+                t.CarIdxIRatingDeltas = TelemetryCalculations.CalculateIRatingDeltas(
+                    t.CarIdxPosition,
+                    t.CarIdxIRatings,
+                    t.PlayerCarIdx,
+                    t.PlayerCarTeamIncidentCount);
+            }
+            else
+            {
+                t.CarIdxIRatingDeltas = Array.Empty<int>();
+            }
             t.IsMultiClassSession = (wkd?.NumCarClasses ?? 0) > 1 ||
                                    t.CarIdxCarClassIds.Distinct().Count() > 1;
 
@@ -457,6 +469,8 @@ namespace SuperBackendNR85IA.Services
                 t.Skies               = EnumTranslations.TranslateSkies(GetSdkValue<int>(d, "Skies") ?? 0);
                 t.ForecastType        = wkd.ForecastType;
                 t.TrackWindVel        = wkd.TrackWindVel;
+                t.WindSpeed           = wkd.WindSpeed;
+                t.WindDir             = wkd.WindDir;
                 t.TrackAirTemp        = wkd.TrackAirTemp;
                 t.TrackNumTurns       = wkd.TrackNumTurns;
                 t.AirPressure         = wkd.AirPressure;

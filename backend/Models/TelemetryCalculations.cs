@@ -142,6 +142,29 @@ namespace SuperBackendNR85IA.Calculations
             return (pct, status);
         }
 
+        // --- IRATING DELTA ---
+        public static int[] CalculateIRatingDeltas(int[] positions, int[] ratings, int playerIdx, int playerInc)
+        {
+            int n = Math.Min(positions.Length, ratings.Length);
+            int[] delta = new int[n];
+            const double K = 30.0;
+            for (int i = 0; i < n; i++)
+            {
+                double d = 0.0;
+                for (int j = 0; j < n; j++)
+                {
+                    if (i == j) continue;
+                    double expected = 1.0 / (1.0 + Math.Pow(10.0, (ratings[j] - ratings[i]) / 400.0));
+                    double actual = positions[i] < positions[j] ? 1.0 : 0.0;
+                    d += K * (actual - expected);
+                }
+                delta[i] = (int)Math.Round(d);
+            }
+            if (playerIdx >= 0 && playerIdx < n)
+                delta[playerIdx] -= playerInc;
+            return delta;
+        }
+
         // --- FUNÇÕES UTILIZADAS POR OVERLAYS ---
         public static void UpdateFuelData(ref TelemetryModel model)
         {

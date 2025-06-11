@@ -23,6 +23,7 @@
       <th>#</th>
       <th>SR</th>
       <th>IR</th>
+      <th>ΔIR</th>
       <th>Piloto</th>
       <th>Melhor</th>
       <th>Última</th>
@@ -45,6 +46,7 @@ function update(data){
  const names=data.carIdxUserNames||[];
  const srs=data.carIdxLicStrings||[];
  const irs=data.carIdxIRatings||[];
+ const irDelta=data.carIdxIRatingDeltas||[];
  const best=data.carIdxBestLapTime||[];
  const last=data.carIdxLastLapTime||[];
  const laps=data.carIdxLap||[];
@@ -54,7 +56,7 @@ function update(data){
  const tbody=document.getElementById('tbody');
  tbody.innerHTML='';
  const cars=[];
- for(let i=0;i<pos.length;i++){if(pos[i]<=0)continue;cars.push({idx:i,pos:pos[i],num:nums[i]||'',name:names[i]||'',sr:srs[i]||'',ir:irs[i]||'',best:best[i]||0,last:last[i]||0,lap:laps[i]||0,gap:f2[i]||0,pit:onPit[i],compound:compounds[i]||''});}
+ for(let i=0;i<pos.length;i++){if(pos[i]<=0)continue;cars.push({idx:i,pos:pos[i],num:nums[i]||'',name:names[i]||'',sr:srs[i]||'',ir:irs[i]||'',delta:irDelta[i]||0,best:best[i]||0,last:last[i]||0,lap:laps[i]||0,gap:f2[i]||0,pit:onPit[i],compound:compounds[i]||''});}
  cars.sort((a,b)=>a.pos-b.pos);
  const leaderGap=cars.length>0?cars[0].gap:0;
  for(let i=0;i<cars.length;i++){
@@ -66,7 +68,7 @@ function update(data){
   let pitCell='';
   if(c.pit){pitStart[c.idx]=pitStart[c.idx]??data.sessionTime;pitCell=`<span class="pit-timer">${fmtTime(data.sessionTime-pitStart[c.idx])}</span>`;} else {delete pitStart[c.idx];}
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${c.pos}</td><td>${c.num}</td><td>${c.sr}</td><td>${c.ir}</td><td>${c.name}</td><td>${fmtTime(c.best)}</td><td>${fmtTime(c.last)}</td><td>${c.lap}</td><td>${gapL}</td><td>${gapA}</td><td>${pitCell}</td><td>${c.compound}</td>`;
+  tr.innerHTML=`<td>${c.pos}</td><td>${c.num}</td><td>${c.sr}</td><td>${c.ir}</td><td>${c.delta>0?"+":""}${c.delta}</td><td>${c.name}</td><td>${fmtTime(c.best)}</td><td>${fmtTime(c.last)}</td><td>${c.lap}</td><td>${gapL}</td><td>${gapA}</td><td>${pitCell}</td><td>${c.compound}</td>`;
   tbody.appendChild(tr);
  }
 }
