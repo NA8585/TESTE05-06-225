@@ -117,6 +117,8 @@ namespace SuperBackendNR85IA.Models
         public int SectorCount { get; set; }
         public float[] SectorDeltas { get; set; } = Array.Empty<float>();
         public bool[] SectorIsBest { get; set; } = Array.Empty<bool>();
+        public bool AreSectorsValid { get; set; }
+        public string SectorTimesDebug { get; set; } = string.Empty;
 
         public float FfbPercent { get; set; }
         public bool FfbClip { get; set; }
@@ -190,6 +192,7 @@ namespace SuperBackendNR85IA.Models
         public float SessionTimeOfDay { get; set; }
         public int TrackSurfaceMaterial { get; set; }
         public string TrackGripStatus { get; set; } = string.Empty;
+        public float TrackWetnessPCA { get; set; }
         public string TrackStatus { get; set; } = string.Empty;
 
         public float FuelUsePerHour { get; set; }
@@ -223,6 +226,7 @@ namespace SuperBackendNR85IA.Models
         public float LicSafetyRating { get; set; }
         public int PlayerCarClassID { get; set; }
         public int PlayerCarTeamIncidentCount { get; set; }
+        public int PlayerCarMyIncidentCount { get; set; }
         public string TrackNumTurns { get; set; }
         public string TrackDisplayName { get; set; } = string.Empty;
         public string TrackConfigName { get; set; } = string.Empty;
@@ -245,6 +249,7 @@ namespace SuperBackendNR85IA.Models
         public DriverInfo? YamlPlayerDriver { get; set; }
         public List<DriverInfo> YamlDrivers { get; set; } = new();
         public string SessionInfoYaml { get; set; } = string.Empty;
+        public List<ResultPosition> Results { get; set; } = new();
 
         public static string FormatTime(float seconds)
         {

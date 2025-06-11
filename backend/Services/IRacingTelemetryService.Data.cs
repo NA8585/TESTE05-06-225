@@ -189,6 +189,9 @@ namespace SuperBackendNR85IA.Services
 
             TelemetryCalculations.UpdateSectorData(ref t);
 
+            t.AreSectorsValid = t.LapAllSectorTimes.Length > 0 && t.LapAllSectorTimes.Any(s => s > 0);
+            t.SectorTimesDebug = string.Join(",", t.LapAllSectorTimes.Select(v => v.ToString("F3")));
+
             var lapOpt = GetSdkValue<float>(d, "LapOptimalLapTime") ?? 0f;
             t.EstLapTime = lapOpt > 1e-4f ? lapOpt : t.LapBestLapTime;
         }
@@ -392,8 +395,9 @@ namespace SuperBackendNR85IA.Services
             t.TrackTempCrew    = GetSdkValue<float>(d, "TrackTempCrew") ?? 0f;
             t.TempUnits        = (GetSdkValue<bool>(d, "DisplayUnits") ?? false) ? 1 : 0;
             t.SessionTimeOfDay = GetSdkValue<float>(d, "SessionTimeOfDay") ?? 0f;
-            t.TrackSurfaceMaterial = 0;
-            t.TrackGripStatus  = string.Empty;
+            t.TrackSurfaceMaterial = GetSdkValue<int>(d, "TrackSurfaceMaterial") ?? 0;
+            t.TrackGripStatus  = GetSdkString(d, "TrackGripStatus") ?? string.Empty;
+            t.TrackWetnessPCA  = GetSdkValue<float>(d, "TrackWetness") ?? 0f;
             t.TrackStatus      = string.Join(", ", EnumTranslations.TranslateSessionFlags(t.SessionFlags));
 
             t.FuelUsePerHour = GetSdkValue<float>(d, "FuelUsePerHour") ?? 0f;
@@ -433,6 +437,7 @@ namespace SuperBackendNR85IA.Services
                 t.PlayerCarClassID   = drv.CarClassID;
             }
             t.PlayerCarTeamIncidentCount = GetSdkValue<int>(d, "PlayerCarTeamIncidentCount") ?? 0;
+            t.PlayerCarMyIncidentCount   = GetSdkValue<int>(d, "PlayerCarMyIncidentCount") ?? 0;
 
             var orderedDrivers = drivers.OrderBy(di => di.CarIdx).ToList();
             t.CarIdxUserNames = orderedDrivers.Select(di => di.UserName).ToArray();
@@ -501,6 +506,8 @@ namespace SuperBackendNR85IA.Services
                     : ((ses.SessionType?.ToLower().Contains("race") ?? false) ? 0 : -1);
                 if (string.IsNullOrEmpty(t.SessionTypeFromYaml))
                     t.SessionTypeFromYaml = ses.SessionType ?? string.Empty;
+                var currentDetail = ses.AllSessionsFromYaml?.FirstOrDefault(sd => sd.SessionNum == t.SessionNum);
+                t.Results = currentDetail?.ResultsPositions ?? new List<ResultPosition>();
             }
             else
             {
