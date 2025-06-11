@@ -1,5 +1,5 @@
 {
-  "sessionInfoYaml": "...",
+  "sessionInfoYaml": "WeekendInfo:\n  TrackDisplayName: \"Interlagos\"\n  TrackConfigName: \"Grand Prix\"\nSessionInfo:\n  Sessions:\n    - SessionNum: 0\n      SessionType: \"Practice\"\n      ResultsPositions:\n        - Position: 1\n          CarIdx: 0\n          FastestTime: 90.123\n          LastTime: 91.456\n          OnPitRoad: false\n          InGarage: false\n          PitStopCount: 0\nDriverInfo:\n  Drivers:\n    - CarIdx: 0\n      CarNumber: \"01\"\n      UserName: \"Driver One\"\n      IRating: 1500\n      LicString: \"A 4.50\"\n      LicLevel: 4\n      LicSubLevel: 50\n      CarPath: \"car/path\"\n      TeamIncidentCount: 0\n      CarSetup:\n        Tires:\n          CompoundName: \"Soft\"\n",
   "playerCarIdx": 0,
   "sessionNum": 1,
   "sessionTime": 123.4,
@@ -10,15 +10,42 @@
   "dcBrakeBias": 0.55,
   "trackAirTemp": 28.0,
   "trackSurfaceTemp": 38.5,
-  "carIdxPosition": [1, 2],
-  "carIdxLap": [5, 5],
-  "carIdxLapDistPct": [0.5, 0.48],
-  "carIdxOnPitRoad": [false, false],
-  "carIdxTrackSurface": [1, 1],
-  "carIdxLastLapTime": [90.5, 91.0],
-  "carIdxBestLapTime": [89.8, 90.2],
-  "carIdxF2Time": [0.0, 1.2],
-  "carIdxCarClassEstLapTimes": [89.5, 90.0],
+  "carIdxPosition": [
+    1,
+    2
+  ],
+  "carIdxLap": [
+    5,
+    5
+  ],
+  "carIdxLapDistPct": [
+    0.5,
+    0.48
+  ],
+  "carIdxOnPitRoad": [
+    false,
+    false
+  ],
+  "carIdxTrackSurface": [
+    1,
+    1
+  ],
+  "carIdxLastLapTime": [
+    90.5,
+    91.0
+  ],
+  "carIdxBestLapTime": [
+    89.8,
+    90.2
+  ],
+  "carIdxF2Time": [
+    0.0,
+    1.2
+  ],
+  "carIdxCarClassEstLapTimes": [
+    89.5,
+    90.0
+  ],
   "yamlPlayerDriver": {
     "carIdx": 0,
     "userName": "Driver One"
@@ -35,7 +62,13 @@
     "sectorCount": 3
   },
   "yamlDrivers": [
-    { "carIdx": 0, "userName": "Driver One" },
-    { "carIdx": 1, "userName": "Driver Two" }
+    {
+      "carIdx": 0,
+      "userName": "Driver One"
+    },
+    {
+      "carIdx": 1,
+      "userName": "Driver Two"
+    }
   ]
 }
