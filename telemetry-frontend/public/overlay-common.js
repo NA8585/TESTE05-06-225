@@ -7,6 +7,7 @@ function overlayHost() {
 
 function initOverlayWebSocket(onData) {
   const url = window.OVERLAY_WS_URL || `ws://${overlayHost()}:5221/ws`;
+  console.log('[Overlay] connecting to', url);
   function connect() {
     socket = new WebSocket(url);
     socket.onmessage = (e) => {
