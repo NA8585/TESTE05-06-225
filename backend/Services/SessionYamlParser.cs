@@ -114,6 +114,7 @@ namespace SuperBackendNR85IA.Services
                 SessionType      = GetStr(wNode, "SessionType"),
                 Skies            = GetStr(wNode, "Skies"),
                 WindSpeed        = GetFloatFromSpecialFormat(wNode, "WindSpeed"), // Ex: "12 kph"
+                WindDir          = GetFloatFromSpecialFormat(wNode, "WindDir"),
                 AirPressure      = GetFloatFromSpecialFormat(wNode, "AirPressure"), // Ex: "29.00 Hg" ou "101.2 kPa"
                 RelativeHumidity = GetFloatFromSpecialFormat(wNode, "RelativeHumidity"), // Ex: "50.0 %"
                 ChanceOfRain     = GetFloatFromSpecialFormat(wNode, "ChanceOfRain"),     // Ex: "0.0 %"
