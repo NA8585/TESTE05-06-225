@@ -453,22 +453,42 @@ function renderRelative(data) {
   // Flatten possible sub-models from new TelemetryModel structure
   data = { ...data, ...(data.session || {}), ...(data.vehicle || {}), ...(data.tyres || {}), ...(data.damage || {}) };
 
-  // Parse YAML only if it has changed
-  if (data.sessionInfoYaml && data.sessionInfoYaml !== lastSessionInfoYaml) {
+  // Prefer typed YAML objects from the backend when available
+  if (Array.isArray(data.yamlDrivers)) {
+      cachedDriverInfo = data.yamlDrivers;
+  }
+  if (data.yamlWeekendInfo) {
+      cachedWeekendInfo = data.yamlWeekendInfo;
+  }
+  if (data.yamlSessionInfo) {
+      cachedSessionInfo = data.yamlSessionInfo;
+  }
+
+  // Fallback: parse raw YAML only if we still don't have info
+  if (!cachedDriverInfo && data.sessionInfoYaml && data.sessionInfoYaml !== lastSessionInfoYaml) {
       const parsedYaml = parseYaml(data.sessionInfoYaml);
       cachedDriverInfo = parsedYaml?.DriverInfo?.Drivers;
       cachedWeekendInfo = parsedYaml?.WeekendInfo;
-      cachedSessionInfo = parsedYaml?.SessionInfo?.Sessions;
+      cachedSessionInfo = parsedYaml?.SessionInfo;
       lastSessionInfoYaml = data.sessionInfoYaml;
   }
 
   const weekendInfo = cachedWeekendInfo || {};
-  const currentSessionYamlData = (cachedSessionInfo || []).find(s => s.SessionNum === data.sessionNum) || {};
-  const playerDriverYaml = (cachedDriverInfo || []).find(d => d.CarIdx === data.playerCarIdx);
+  let currentSessionYamlData = {};
+  if (cachedSessionInfo) {
+      if (Array.isArray(cachedSessionInfo.allSessionsFromYaml)) {
+          currentSessionYamlData = cachedSessionInfo.allSessionsFromYaml.find(s => s.sessionNum === data.sessionNum) || cachedSessionInfo;
+      } else if (Array.isArray(cachedSessionInfo)) {
+          currentSessionYamlData = cachedSessionInfo.find(s => s.SessionNum === data.sessionNum) || {};
+      } else {
+          currentSessionYamlData = cachedSessionInfo;
+      }
+  }
+  const playerDriverYaml = (cachedDriverInfo || []).find(d => (d.carIdx ?? d.CarIdx) === data.playerCarIdx);
 
 
   // === Update Header and Footer ===
-  document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.TrackDisplayName || '--'}`;
+  document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.trackDisplayName || '--'}`;
   document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(data.sessionTime, false) || '00:00'}`;
   const amb = typeof data.trackAirTemp === 'number' ? data.trackAirTemp
                : (typeof data.tempValue === 'number' ? data.tempValue : undefined);
@@ -485,12 +505,14 @@ function renderRelative(data) {
   
   document.getElementById('sessionTimeRemaining').textContent = `${fmtTimeSimple(data.sessionTimeRemain, false) || '00:00'}`;
   const playerLap = data.lap ?? '--';
-  const totalLapsSess = currentSessionYamlData?.SessionLapsTotal === -1 ? '∞' : (currentSessionYamlData?.SessionLapsTotal ?? '--'); // Adjust to use SessionLapsTotal from YAML if available and needed
+  const totalLapsSess = currentSessionYamlData?.currentSessionTotalLaps === -1
+        ? '∞'
+        : (currentSessionYamlData?.currentSessionTotalLaps ?? currentSessionYamlData?.sessionLapsTotal ?? '--');
   document.getElementById('lapsCompleted').textContent = `${playerLap}`;
   document.getElementById('totalLaps').textContent = `${totalLapsSess}`;
 
   // Use IncidentLimit from the current session in YAML
-  const incidentLimit = currentSessionYamlData?.IncidentLimit || weekendInfo.IncidentLimit || 'N/A';
+  const incidentLimit = currentSessionYamlData?.incidentLimit ?? weekendInfo.incidentLimit ?? 'N/A';
   const playerIncidents = data.playerCarTeamIncidentCount ?? '--';
   const penaltyEl = document.getElementById('penaltyStatus');
   penaltyEl.textContent = `Inc: ${playerIncidents}/${incidentLimit}`;
@@ -551,7 +573,7 @@ function renderRelative(data) {
   // and try to match with real-time data from backend
   for (let i = 0; i < driversFromYaml.length; i++) {
     const driverYaml = driversFromYaml[i];
-    const carIdx = driverYaml.CarIdx;
+    const carIdx = driverYaml.carIdx ?? driverYaml.CarIdx;
 
     // We need real-time position for filtering/sorting. If not available, skip.
     // Assuming carPositionsFromBackend has valid position at carIdx.
@@ -561,13 +583,13 @@ function renderRelative(data) {
     carsData.push({
       idx: carIdx,
       pos: pos,
-      num: driverYaml.CarNumberRaw !== undefined ? driverYaml.CarNumberRaw.toString() : (driverYaml.CarNumber || '--'),
-      name: driverYaml.UserName || 'Desconhecido',
-      team: driverYaml.TeamName || '',
-      irating: driverYaml.IRating || 0,
-      lic: driverYaml.LicString || 'R ----',
-      carClassShort: driverYaml.CarClassShortName || '',
-      carScreenName: driverYaml.CarScreenName || '',
+      num: driverYaml.carNumberRaw !== undefined ? driverYaml.carNumberRaw.toString() : (driverYaml.carNumber ?? driverYaml.CarNumber || '--'),
+      name: driverYaml.userName ?? driverYaml.UserName || 'Desconhecido',
+      team: driverYaml.teamName ?? driverYaml.TeamName || '',
+      irating: driverYaml.iRating ?? driverYaml.IRating || 0,
+      lic: driverYaml.licString ?? driverYaml.LicString || 'R ----',
+      carClassShort: driverYaml.carClassShortName ?? driverYaml.CarClassShortName || '',
+      carScreenName: driverYaml.carScreenName ?? driverYaml.CarScreenName || '',
       lap: carLapsCompletedFromBackend[carIdx],
       lastLapTime: carLastLapTimesFromBackend[carIdx],
       onPit: carOnPitRoadFromBackend[carIdx],

@@ -549,10 +549,10 @@ function render(data) {
   addRow('Sets Disponíveis', data.tireSetsAvailable); 
 
   tires.forEach((tire) => { // tire já é o prefixo em minúsculas
-    addRow(`${tire.toUpperCase()} Temp CL`, data[`${tire}tempCL`], fmtGenericValue, '°C');
-    addRow(`${tire.toUpperCase()} Temp CM`, data[`${tire}tempCM`], fmtGenericValue, '°C');
-    addRow(`${tire.toUpperCase()} Temp CR`, data[`${tire}tempCR`], fmtGenericValue, '°C');
-    addRow(`${tire.toUpperCase()} Pressão`, data[`${tire}press`], fmtGenericValue, 'kPa');
+    addRow(`${tire.toUpperCase()} Temp CL`, data[`${tire}TempCl`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Temp CM`, data[`${tire}TempCm`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Temp CR`, data[`${tire}TempCr`], fmtGenericValue, '°C');
+    addRow(`${tire.toUpperCase()} Pressão`, data[`${tire}Press`], fmtGenericValue, 'kPa');
     const wearArray = data[`${tire}Wear`]; 
     let wearText = "— / — / —";
     if(Array.isArray(wearArray) && wearArray.length >= 3){
@@ -564,7 +564,7 @@ function render(data) {
   addSection('🛑 Freios, Pit & Ajustes (DC)');
   const tireCornersUpper = ['LF', 'RF', 'LR', 'RR'];
   tireCornersUpper.forEach((corner, index) => addRow(`Temp. Freio ${corner}`, data.brakeTemp ? data.brakeTemp[index] : undefined, fmtGenericValue, '°C'));
-  tireCornersUpper.forEach(corner => addRow(`Pressão Linha Freio ${corner}`, data[`${corner.toLowerCase()}brakeLinePress`], fmtGenericValue, 'kPa'));
+  tireCornersUpper.forEach(corner => addRow(`Pressão Linha Freio ${corner}`, data[`${corner.toLowerCase()}BrakeLinePress`], fmtGenericValue, 'kPa'));
   addRow('Balanço Freio', data.dcBrakeBias, v => (v * 100).toFixed(1), '%');
   addRow('Nos Pits', data.onPitRoad, fmtGenericValue);
   addRow('Reparo Restante (Obrig.)', data.pitRepairLeft, fmtTime);
@@ -655,21 +655,21 @@ function render(data) {
     trackGripStatus: 'Aderência Pista', drs_Status: 'Status DRS', // Assumindo drs_Status
     dcEnginePower: 'Modo Motor ERS (DC)', pitRepairLeft: 'Reparo Obrig. Restante',
     pitOptRepairLeft: 'Reparo Opc. Restante',
-    lftempCL: 'LF Temp CL', lftempCM: 'LF Temp CM', lftempCR: 'LF Temp CR',
-    rftempCL: 'RF Temp CL', rftempCM: 'RF Temp CM', rftempCR: 'RF Temp CR',
-    lrtempCL: 'LR Temp CL', lrtempCM: 'LR Temp CM', lrtempCR: 'LR Temp CR',
-    rrtempCL: 'RR Temp CL', rrtempCM: 'RR Temp CM', rrtempCR: 'RR Temp CR',
-    lfpress: 'LF Pressão', rfpress: 'RF Pressão', lrpress: 'LR Pressão', rrpress: 'RR Pressão',
+    lfTempCl: 'LF Temp CL', lfTempCm: 'LF Temp CM', lfTempCr: 'LF Temp CR',
+    rfTempCl: 'RF Temp CL', rfTempCm: 'RF Temp CM', rfTempCr: 'RF Temp CR',
+    lrTempCl: 'LR Temp CL', lrTempCm: 'LR Temp CM', lrTempCr: 'LR Temp CR',
+    rrTempCl: 'RR Temp CL', rrTempCm: 'RR Temp CM', rrTempCr: 'RR Temp CR',
+    lfPress: 'LF Pressão', rfPress: 'RF Pressão', lrPress: 'LR Pressão', rrPress: 'RR Pressão',
     lfWear: 'LF Desgaste', rfWear: 'RF Desgaste', lrWear: 'LR Desgaste', rrWear: 'RR Desgaste',
     playerCarTireCompound: 'Composto Pneu Jogador',
     tireSetsUsed: 'Sets Pneus Usados', tireSetsAvailable: 'Sets Pneus Disponíveis',
     brakeTemp: 'Temp. Freio (Array)',
-    lfbrakeLinePress: 'LF Pressão Linha Freio', rfbrakeLinePress: 'RF Pressão Linha Freio',
-    lrbrakeLinePress: 'LR Pressão Linha Freio', rrbrakeLinePress: 'RR Pressão Linha Freio',
-    lfsuspPos: 'LF Pos. Susp.', rfsuspPos: 'RF Pos. Susp.', lrsuspPos: 'LR Pos. Susp.', rrsuspPos: 'RR Pos. Susp.',
-    lfsuspVel: 'LF Vel. Susp.', rfsuspVel: 'RF Vel. Susp.', lrsuspVel: 'LR Vel. Susp.', rrsuspVel: 'RR Vel. Susp.',
-    lfrideHeight: 'LF Alt. Monoposto', rfrideHeight: 'RF Alt. Monoposto', 
-    lrrideHeight: 'LR Alt. Monoposto', rrrideHeight: 'RR Alt. Monoposto',
+    lfBrakeLinePress: 'LF Pressão Linha Freio', rfBrakeLinePress: 'RF Pressão Linha Freio',
+    lrBrakeLinePress: 'LR Pressão Linha Freio', rrBrakeLinePress: 'RR Pressão Linha Freio',
+    lfSuspPos: 'LF Pos. Susp.', rfSuspPos: 'RF Pos. Susp.', lrSuspPos: 'LR Pos. Susp.', rrSuspPos: 'RR Pos. Susp.',
+    lfSuspVel: 'LF Vel. Susp.', rfSuspVel: 'RF Vel. Susp.', lrSuspVel: 'LR Vel. Susp.', rrSuspVel: 'RR Vel. Susp.',
+    lfRideHeight: 'LF Alt. Monoposto', rfRideHeight: 'RF Alt. Monoposto',
+    lrRideHeight: 'LR Alt. Monoposto', rrRideHeight: 'RR Alt. Monoposto',
     lfDamage: 'LF Dano', rfDamage: 'RF Dano', lrDamage: 'LR Dano', rrDamage: 'RR Dano',
     frontWingDamage: 'Dano Asa Diant.', rearWingDamage: 'Dano Asa Tras.',
     engineDamage: 'Dano Motor', gearboxDamage: 'Dano Câmbio',
