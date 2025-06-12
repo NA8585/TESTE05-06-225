@@ -125,6 +125,19 @@ namespace SuperBackendNR85IA.Services
             t.Vehicle.PitRepairLeft      = GetSdkValue<float>(d, "PitRepairLeft") ?? 0f;
             t.Vehicle.PitOptRepairLeft   = GetSdkValue<float>(d, "PitOptRepairLeft") ?? 0f;
             t.Vehicle.CarSpeed = t.Vehicle.Speed;
+            t.Vehicle.ThrottleRaw        = GetSdkValue<float>(d, "ThrottleRaw") ?? 0f;
+            t.Vehicle.BrakeRaw           = GetSdkValue<float>(d, "BrakeRaw") ?? 0f;
+            t.Vehicle.BrakeABSactive     = GetSdkValue<bool>(d, "BrakeABSactive") ?? false;
+            t.Vehicle.BrakeABSCutPct     = GetSdkValue<float>(d, "BrakeABSCutPct") ?? 0f;
+            t.Vehicle.HandBrake          = GetSdkValue<float>(d, "HandBrake") ?? 0f;
+            t.Vehicle.HandBrakeRaw       = GetSdkValue<float>(d, "HandBrakeRaw") ?? 0f;
+            t.Vehicle.SteeringWheelAngleMax = GetSdkValue<float>(d, "SteeringWheelAngleMax") ?? 0f;
+            t.Vehicle.SteeringWheelLimiter  = GetSdkValue<int>(d, "SteeringWheelLimiter") ?? 0;
+            t.Vehicle.SteeringWheelTorque   = GetSdkValue<float>(d, "SteeringWheelTorque") ?? 0f;
+            t.Vehicle.SteeringWheelPeakForceNm = GetSdkValue<float>(d, "SteeringWheelPeakForceNm") ?? 0f;
+            t.Vehicle.YawRate            = GetSdkValue<float>(d, "YawRate") ?? 0f;
+            t.Vehicle.PitchRate          = GetSdkValue<float>(d, "PitchRate") ?? 0f;
+            t.Vehicle.RollRate           = GetSdkValue<float>(d, "RollRate") ?? 0f;
         }
 
         private void UpdateLapInfo(IRacingSdkData d, TelemetryModel t)
@@ -220,6 +233,8 @@ namespace SuperBackendNR85IA.Services
             var lastLapArr      = GetSdkArray<float>(d, "CarIdxLastLapTime")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
             var f2TimeArr       = GetSdkArray<float>(d, "CarIdxF2Time")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
             var bestLapArr      = GetSdkArray<float>(d, "CarIdxBestLapTime")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
+            var gearArr         = GetSdkArray<int>(d, "CarIdxGear")?.Select(v => v ?? 0).ToArray() ?? Array.Empty<int>();
+            var rpmArr          = GetSdkArray<float>(d, "CarIdxRPM")?.Select(v => v ?? 0f).ToArray() ?? Array.Empty<float>();
             int myIdx           = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
 
             if (myIdx >= 0 && myIdx < lapPctArr.Length && lapPctArr.Length == posArr.Length)
@@ -248,6 +263,8 @@ namespace SuperBackendNR85IA.Services
                 t.CarIdxLastLapTime = lastLapArr;
                 t.CarIdxBestLapTime = bestLapArr;
                 t.CarIdxF2Time      = f2TimeArr;
+                t.CarIdxGear        = gearArr;
+                t.CarIdxRPM         = rpmArr;
             }
             else
             {
@@ -261,6 +278,8 @@ namespace SuperBackendNR85IA.Services
                 t.CarIdxLastLapTime= Array.Empty<float>();
                 t.CarIdxBestLapTime= Array.Empty<float>();
                 t.CarIdxF2Time     = Array.Empty<float>();
+                t.CarIdxGear       = Array.Empty<int>();
+                t.CarIdxRPM        = Array.Empty<float>();
             }
         }
 
@@ -284,6 +303,11 @@ namespace SuperBackendNR85IA.Services
             t.Session.PlayerCarIdx      = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
             t.Session.TotalLaps         = GetSdkValue<int>(d, "CurrentSessionTotalLaps") ?? -1;
             t.Session.LapsRemainingRace = GetSdkValue<int>(d, "LapsRemainingRace") ?? 0;
+            t.Session.SessionTimeTotal  = GetSdkValue<float>(d, "SessionTimeTotal") ?? 0f;
+            t.Session.SessionLapsTotal  = GetSdkValue<int>(d, "SessionLapsTotal") ?? 0;
+            t.Session.SessionLapsRemain = GetSdkValue<int>(d, "SessionLapsRemain") ?? 0;
+            t.Session.RaceLaps         = GetSdkValue<int>(d, "RaceLaps") ?? 0;
+            t.Session.PitsOpen         = GetSdkValue<bool>(d, "PitsOpen") ?? false;
         }
 
         private void PopulateTyres(IRacingSdkData d, TelemetryModel t)
@@ -398,6 +422,17 @@ namespace SuperBackendNR85IA.Services
             t.TrackSurfaceMaterial = GetSdkValue<int>(d, "TrackSurfaceMaterial") ?? 0;
             t.TrackGripStatus  = GetSdkString(d, "TrackGripStatus") ?? string.Empty;
             t.TrackWetnessPCA  = GetSdkValue<float>(d, "TrackWetness") ?? 0f;
+            t.AirTemp         = GetSdkValue<float>(d, "AirTemp") ?? 0f;
+            t.TrackAltitude   = GetSdkValue<float>(d, "Alt") ?? 0f;
+            t.TrackLatitude   = GetSdkValue<float>(d, "Lat") ?? 0f;
+            t.TrackLongitude  = GetSdkValue<float>(d, "Lon") ?? 0f;
+            t.AirDensity       = GetSdkValue<float>(d, "AirDensity") ?? 0f;
+            t.FogLevel         = GetSdkValue<float>(d, "FogLevel") ?? 0f;
+            t.Precipitation    = GetSdkValue<float>(d, "Precipitation") ?? 0f;
+            t.WeatherDeclaredWet = GetSdkValue<bool>(d, "WeatherDeclaredWet") ?? false;
+            t.SolarAltitude    = GetSdkValue<float>(d, "SolarAltitude") ?? 0f;
+            t.SolarAzimuth     = GetSdkValue<float>(d, "SolarAzimuth") ?? 0f;
+            t.CarLeftRight     = GetSdkString(d, "CarLeftRight") ?? string.Empty;
             t.TrackStatus      = string.Join(", ", EnumTranslations.TranslateSessionFlags(t.SessionFlags));
 
             t.FuelUsePerHour = GetSdkValue<float>(d, "FuelUsePerHour") ?? 0f;

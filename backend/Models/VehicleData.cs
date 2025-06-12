@@ -23,5 +23,20 @@ namespace SuperBackendNR85IA.Models
         public float PitRepairLeft { get; set; }
         public float PitOptRepairLeft { get; set; }
         public float CarSpeed { get; set; }
+
+        // Extra controls and dynamics
+        public float ThrottleRaw { get; set; }
+        public float BrakeRaw { get; set; }
+        public bool BrakeABSactive { get; set; }
+        public float BrakeABSCutPct { get; set; }
+        public float HandBrake { get; set; }
+        public float HandBrakeRaw { get; set; }
+        public float SteeringWheelAngleMax { get; set; }
+        public int SteeringWheelLimiter { get; set; }
+        public float SteeringWheelTorque { get; set; }
+        public float SteeringWheelPeakForceNm { get; set; }
+        public float YawRate { get; set; }
+        public float PitchRate { get; set; }
+        public float RollRate { get; set; }
     }
 }

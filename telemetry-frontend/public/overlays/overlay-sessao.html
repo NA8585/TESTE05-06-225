@@ -352,6 +352,12 @@
               <span class="data-label">Vento Dir.:</span><span class="data-value" id="wind-direction" title="WindDir / windDir (YAML)"> —</span>
               <span class="data-label">Umidade Rel.:</span><span class="data-value" id="relative-humidity" title="RelativeHumidity / relativeHumidity (YAML)"> —</span>
               <span class="data-label">Pressão Ar:</span><span class="data-value" id="air-pressure" title="AirPressure / airPressure (YAML)"> —</span>
+              <span class="data-label">Densidade Ar:</span><span class="data-value" id="air-density" title="AirDensity / airDensity (SDK)"> —</span>
+              <span class="data-label">Névoa (%):</span><span class="data-value" id="fog-level" title="FogLevel / fogLevel (SDK)"> —</span>
+              <span class="data-label">Precip. (%):</span><span class="data-value" id="precipitation" title="Precipitation / precipitation (SDK)"> —</span>
+              <span class="data-label">Pista Molhada:</span><span class="data-value" id="weather-wet" title="WeatherDeclaredWet / weatherDeclaredWet (SDK)"> —</span>
+              <span class="data-label">Sol Alt.:</span><span class="data-value" id="solar-altitude" title="SolarAltitude / solarAltitude (SDK)"> —</span>
+              <span class="data-label">Sol Azim.:</span><span class="data-value" id="solar-azimuth" title="SolarAzimuth / solarAzimuth (SDK)"> —</span>
               <span class="data-label">Chuva (%):</span><span class="data-value" id="rain-chance" title="ChanceOfRain / chanceOfRain (YAML)"> —</span> <span class="data-label">Hora Sim.:</span><span class="data-value" id="session-time-of-day" title="SessionTimeOfDay / sessionTimeOfDay (SDK)"> —</span>
             </div>
           </div>
@@ -375,6 +381,7 @@
             <div class="data-grid">
               <span class="data-label">Bandeira:</span><span class="data-value"><span id="flag-status" class="flag-status-span flag-default" title="SessionFlags / sessionFlags (traduzido)"><span>&nbsp;</span></span></span>
               <span class="data-label">Modo Pace Car:</span><span class="data-value" id="pace-car-mode" title="PaceMode / paceMode (traduzido)">—</span>
+              <span class="data-label">Carros L/R:</span><span class="data-value" id="car-left-right" title="CarLeftRight / carLeftRight">—</span>
             </div>
           </div>
 
@@ -651,6 +658,12 @@
         updateText('#wind-direction', d.windDir, wd => `${(wd ?? 0).toFixed(1)} rad`); // YAML WindDir
         updateText('#relative-humidity', d.relativeHumidity, rh => fmtPercentage(rh, 1, false)); // YAML RelativeHumidity (não é fração)
         updateText('#air-pressure', d.airPressure, ap => `${(ap ?? 0).toFixed(2)} kPa`); // YAML AirPressure
+        updateText('#air-density', d.airDensity, ad => `${(ad ?? 0).toFixed(3)} kg/m³`); // SDK AirDensity
+        updateText('#fog-level', d.fogLevel, fl => fmtPercentage(fl, 0, false)); // SDK FogLevel
+        updateText('#precipitation', d.precipitation, p => fmtPercentage(p, 0, false)); // SDK Precipitation
+        updateText('#weather-wet', d.weatherDeclaredWet, w => w ? 'Sim' : 'Não'); // SDK WeatherDeclaredWet
+        updateText('#solar-altitude', d.solarAltitude, sa => `${(sa ?? 0).toFixed(1)}°`); // SDK SolarAltitude
+        updateText('#solar-azimuth', d.solarAzimuth, sa => `${(sa ?? 0).toFixed(1)}°`); // SDK SolarAzimuth
         updateText('#rain-chance', d.chanceOfRain, cr => fmtPercentage(cr, 0, false)); // YAML ChanceOfRain (não é fração)
         updateText('#session-time-of-day', d.sessionTimeOfDay, fmtTimeOfDay); // SDK SessionTimeOfDay
 
@@ -680,6 +693,7 @@
         const paceModeTranslated = translatePaceMode(d.paceMode);
         updateText('#pace-car-mode', paceModeTranslated, null);
         q('#pace-car-mode').setAttribute('title', `PaceMode: ${d.paceMode} (traduzido)`);
+        updateText('#car-left-right', d.carLeftRight);
 
 
         // --- Setores (lógica de nova-tester) ---
