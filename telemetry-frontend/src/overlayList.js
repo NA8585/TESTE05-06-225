@@ -8,6 +8,7 @@ export default [
   { name: 'Tires Garage', file: 'overlay-tiresgarage.html' },
   { name: 'Standings', file: 'overlay-standings.html' },
   { name: 'Calculadora', file: 'overlay-calculadora.html' },
+  { name: 'Tire Wear', file: 'overlay-tirewear.html' },
   { name: 'Base', file: 'overlaybase.html' },
   { name: 'Teste Final', file: 'overlay-testefinal.html' }
 ];
