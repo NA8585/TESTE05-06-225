@@ -21,6 +21,11 @@ namespace SuperBackendNR85IA.Models
         public int PlayerCarIdx { get => Session.PlayerCarIdx; set => Session.PlayerCarIdx = value; }
         public int TotalLaps { get => Session.TotalLaps; set => Session.TotalLaps = value; }
         public int LapsRemainingRace { get => Session.LapsRemainingRace; set => Session.LapsRemainingRace = value; }
+        public float SessionTimeTotal { get => Session.SessionTimeTotal; set => Session.SessionTimeTotal = value; }
+        public int SessionLapsTotal { get => Session.SessionLapsTotal; set => Session.SessionLapsTotal = value; }
+        public int SessionLapsRemain { get => Session.SessionLapsRemain; set => Session.SessionLapsRemain = value; }
+        public int RaceLaps { get => Session.RaceLaps; set => Session.RaceLaps = value; }
+        public bool PitsOpen { get => Session.PitsOpen; set => Session.PitsOpen = value; }
         public string SessionTypeFromYaml { get => Session.SessionTypeFromYaml; set => Session.SessionTypeFromYaml = value; }
 
         public string SessionTimeFormatted => FormatTime(Session.SessionTime);
@@ -48,6 +53,19 @@ namespace SuperBackendNR85IA.Models
         public float PitRepairLeft { get => Vehicle.PitRepairLeft; set => Vehicle.PitRepairLeft = value; }
         public float PitOptRepairLeft { get => Vehicle.PitOptRepairLeft; set => Vehicle.PitOptRepairLeft = value; }
         public float CarSpeed { get => Vehicle.CarSpeed; set => Vehicle.CarSpeed = value; }
+        public float ThrottleRaw { get => Vehicle.ThrottleRaw; set => Vehicle.ThrottleRaw = value; }
+        public float BrakeRaw { get => Vehicle.BrakeRaw; set => Vehicle.BrakeRaw = value; }
+        public bool BrakeABSactive { get => Vehicle.BrakeABSactive; set => Vehicle.BrakeABSactive = value; }
+        public float BrakeABSCutPct { get => Vehicle.BrakeABSCutPct; set => Vehicle.BrakeABSCutPct = value; }
+        public float HandBrake { get => Vehicle.HandBrake; set => Vehicle.HandBrake = value; }
+        public float HandBrakeRaw { get => Vehicle.HandBrakeRaw; set => Vehicle.HandBrakeRaw = value; }
+        public float SteeringWheelAngleMax { get => Vehicle.SteeringWheelAngleMax; set => Vehicle.SteeringWheelAngleMax = value; }
+        public int SteeringWheelLimiter { get => Vehicle.SteeringWheelLimiter; set => Vehicle.SteeringWheelLimiter = value; }
+        public float SteeringWheelTorque { get => Vehicle.SteeringWheelTorque; set => Vehicle.SteeringWheelTorque = value; }
+        public float SteeringWheelPeakForceNm { get => Vehicle.SteeringWheelPeakForceNm; set => Vehicle.SteeringWheelPeakForceNm = value; }
+        public float YawRate { get => Vehicle.YawRate; set => Vehicle.YawRate = value; }
+        public float PitchRate { get => Vehicle.PitchRate; set => Vehicle.PitchRate = value; }
+        public float RollRate { get => Vehicle.RollRate; set => Vehicle.RollRate = value; }
 
         // ---- Tyres ----
         public float LfTempCl { get => Tyres.LfTempCl; set => Tyres.LfTempCl = value; }
@@ -144,6 +162,8 @@ namespace SuperBackendNR85IA.Models
         public string[] CarIdxCarClassShortNames { get; set; } = Array.Empty<string>();
         public float[] CarIdxCarClassEstLapTimes { get; set; } = Array.Empty<float>();
         public string[] CarIdxTireCompounds { get; set; } = Array.Empty<string>();
+        public int[] CarIdxGear { get; set; } = Array.Empty<int>();
+        public float[] CarIdxRPM { get; set; } = Array.Empty<float>();
         public bool IsMultiClassSession { get; set; }
         public string CarAheadName { get; set; } = string.Empty;
         public string CarBehindName { get; set; } = string.Empty;
@@ -236,8 +256,19 @@ namespace SuperBackendNR85IA.Models
         public float TrackWindVel { get; set; }
         public float WindSpeed { get; set; }
         public float WindDir { get; set; }
+        public float AirTemp { get; set; }
+        public float TrackAltitude { get; set; }
+        public float TrackLatitude { get; set; }
+        public float TrackLongitude { get; set; }
         public float AirPressure { get; set; }
         public float RelativeHumidity { get; set; }
+        public float AirDensity { get; set; }
+        public float FogLevel { get; set; }
+        public float Precipitation { get; set; }
+        public bool WeatherDeclaredWet { get; set; }
+        public float SolarAltitude { get; set; }
+        public float SolarAzimuth { get; set; }
+        public string CarLeftRight { get; set; } = string.Empty;
         public float ChanceOfRain { get; set; }
         public int IncidentLimit { get; set; }
         public float TrackAirTemp { get; set; }

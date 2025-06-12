@@ -12,5 +12,12 @@ namespace SuperBackendNR85IA.Models
         public int TotalLaps { get; set; }
         public int LapsRemainingRace { get; set; }
         public string SessionTypeFromYaml { get; set; } = string.Empty;
+
+        // Additional session telemetry
+        public float SessionTimeTotal { get; set; }
+        public int SessionLapsTotal { get; set; }
+        public int SessionLapsRemain { get; set; }
+        public int RaceLaps { get; set; }
+        public bool PitsOpen { get; set; }
     }
 }
