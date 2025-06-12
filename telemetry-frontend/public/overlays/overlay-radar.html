@@ -185,11 +185,17 @@ function CarDot({car}) {
 function RadarOverlay() {
   const [cars, setCars] = React.useState([]);
   React.useEffect(() => {
-    window.updateRadar = (d) => setCars(processarDadosWs(d));
+    window.updateRadar = (d) => {
+      setCars(processarDadosWs(d));
+      const msg = d.carLeftRight ?? '';
+      const el = document.getElementById('left-right-msg');
+      if (el) el.textContent = msg;
+    };
   }, []);
   return (
     <div className="radar">
       <div className="player" />
+      <div id="left-right-msg" style="position:absolute;top:5px;left:50%;transform:translateX(-50%);color:#fff;font-size:1.2rem;"></div>
       {cars.map(c => <CarDot key={c.id} car={c} />)}
     </div>
   );
