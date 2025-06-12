@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tire Wear Overlay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+  <style>
+    body { margin: 0; background: transparent; font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+const { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } = Recharts;
+
+function TireCard({ label, wear, temp, press }) {
+  const radius = 40;
+  const arc = d3.arc()
+    .innerRadius(radius - 10)
+    .outerRadius(radius)
+    .startAngle(0)
+    .endAngle(2 * Math.PI * wear);
+  let color = '#22c55e';
+  if (temp >= 110) color = '#ef4444';
+  else if (temp >= 90) color = '#facc15';
+
+  return (
+    <div className="relative w-24 h-24 flex flex-col items-center justify-center">
+      <svg width={radius*2} height={radius*2} className="absolute">
+        <circle cx={radius} cy={radius} r={radius} stroke={color} strokeWidth="4" fill="none" />
+        <path d={arc()} transform={`translate(${radius},${radius})`} fill="#ffcc00" />
+      </svg>
+      <div className="text-xs text-white font-orbitron">{label}</div>
+      <div className="text-white text-lg font-semibold">{Math.round(wear*100)}%</div>
+      <div className="text-slate-300 text-xs">{press.toFixed(1)} psi</div>
+    </div>
+  );
+}
+
+function TireWearOverlay() {
+  const [state, setState] = useState({ history: [] });
+
+  useEffect(() => {
+    window.updateTireWear = data => {
+      const lap = data.lap || 0;
+      const getWear = (prefix) => {
+        const est = data.tireEst?.[prefix];
+        if (typeof est === 'number') return est;
+        const arr = data[`${prefix}Wear`];
+        return Array.isArray(arr) ? (arr[0]+arr[1]+arr[2])/3 : 1; // TODO: calcular se backend nao enviar
+      };
+      const getTemp = (prefix) => data[`${prefix}TempCm`] ?? 0;
+      const getPress = (prefix) => data[`${prefix}Press`] ?? 0;
+      const update = {
+        lf: getWear('lf'), rf: getWear('rf'), lr: getWear('lr'), rr: getWear('rr'),
+        tlf: getTemp('lf'), trf: getTemp('rf'), tlr: getTemp('lr'), trr: getTemp('rr'),
+        plf: getPress('lf'), prf: getPress('rf'), plr: getPress('lr'), prr: getPress('rr')
+      };
+      setState(prev => {
+        const hist = [...prev.history, { lap, lf:update.lf*100, rf:update.rf*100, lr:update.lr*100, rr:update.rr*100 }];
+        if (hist.length > 30) hist.shift();
+        return { ...update, history: hist };
+      });
+    };
+  }, []);
+
+  const hist = state.history;
+  const dataForChart = hist.map(h => ({ lap: h.lap, lf: h.lf, rf: h.rf, lr: h.lr, rr: h.rr }));
+
+  return (
+    <div id="overlay-root" className="p-2" style={{background:'rgba(13,27,42,0.6)',position:'fixed',bottom:'12px',left:'12px'}}>
+      <div id="drag" className="cursor-move text-center text-white text-xs mb-1 font-orbitron">Tire Wear</div>
+      <div className="grid grid-cols-2 gap-2">
+        <TireCard label="LF" wear={state.lf||0} temp={state.tlf||0} press={state.plf||0} />
+        <TireCard label="RF" wear={state.rf||0} temp={state.trf||0} press={state.prf||0} />
+        <TireCard label="LR" wear={state.lr||0} temp={state.tlr||0} press={state.plr||0} />
+        <TireCard label="RR" wear={state.rr||0} temp={state.trr||0} press={state.prr||0} />
+      </div>
+      <div className="mt-2" style={{width:'360px',height:'180px'}}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={dataForChart} margin={{ left: 10, right: 10, top: 5, bottom: 5 }}>
+            <XAxis dataKey="lap" stroke="#fff" />
+            <YAxis stroke="#fff" domain={[0,100]} />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="lf" stroke="#ffcc00" dot={false} />
+            <Line type="monotone" dataKey="rf" stroke="#34d399" dot={false} />
+            <Line type="monotone" dataKey="lr" stroke="#60a5fa" dot={false} />
+            <Line type="monotone" dataKey="rr" stroke="#f472b6" dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<TireWearOverlay />);
+
+// Draggable logic
+(function(){
+  const root = document.getElementById('overlay-root');
+  const drag = document.getElementById('drag');
+  let offsetX=0, offsetY=0, dragging=false;
+  drag.addEventListener('mousedown', e => {
+    dragging=true;
+    offsetX=e.clientX-root.offsetLeft;
+    offsetY=e.clientY-root.offsetTop;
+  });
+  document.addEventListener('mousemove', e => {
+    if(!dragging) return;
+    root.style.left = `${e.clientX - offsetX}px`;
+    root.style.top = `${e.clientY - offsetY}px`;
+  });
+  document.addEventListener('mouseup', () => dragging=false);
+})();
+
+// WebSocket initialization
+import('../overlay-common.js').then(m => {
+  m.initOverlayWebSocket(data => window.updateTireWear?.(data));
+});
+</script>
+</body>
+</html>
