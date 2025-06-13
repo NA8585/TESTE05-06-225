@@ -150,10 +150,19 @@ namespace SuperBackendNR85IA.Calculations
             if (!behindFound && model.DistanceBehind > 0f && fallbackSpeed > 0f)
                 model.TimeDeltaToCarBehind = model.DistanceBehind / fallbackSpeed;
 
-            if (aheadIdx >= 0 && aheadIdx < model.CarIdxUserNames.Length)
-                model.CarAheadName = model.CarIdxUserNames[aheadIdx];
-            if (behindIdx >= 0 && behindIdx < model.CarIdxUserNames.Length)
-                model.CarBehindName = model.CarIdxUserNames[behindIdx];
+            var (idxA, idxB) = TelemetryCalculations.GetAdjacentIndices(
+                model.PlayerCarIdx,
+                model.CarIdxPosition ?? Array.Empty<int>());
+
+            if (aheadIdx < 0) aheadIdx = idxA;
+            if (behindIdx < 0) behindIdx = idxB;
+
+            model.CarAheadName = (aheadIdx >= 0 && aheadIdx < model.CarIdxUserNames.Length)
+                ? model.CarIdxUserNames[aheadIdx]
+                : string.Empty;
+            model.CarBehindName = (behindIdx >= 0 && behindIdx < model.CarIdxUserNames.Length)
+                ? model.CarIdxUserNames[behindIdx]
+                : string.Empty;
 
             model.SectorDeltas = model.LapDeltaToSessionBestSectorTimes ?? Array.Empty<float>();
 

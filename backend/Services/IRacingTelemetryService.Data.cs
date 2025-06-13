@@ -499,28 +499,7 @@ namespace SuperBackendNR85IA.Services
             t.PlayerCarTeamIncidentCount = GetSdkValue<int>(d, "PlayerCarTeamIncidentCount") ?? 0;
             t.PlayerCarMyIncidentCount   = GetSdkValue<int>(d, "PlayerCarMyIncidentCount") ?? 0;
 
-            var orderedDrivers = drivers.OrderBy(di => di.CarIdx).ToList();
-            t.CarIdxUserNames = orderedDrivers.Select(di => di.UserName).ToArray();
-            t.CarIdxCarNumbers = orderedDrivers.Select(di => di.CarNumber).ToArray();
-            t.CarIdxTeamNames  = orderedDrivers.Select(di => di.TeamName).ToArray();
-            t.CarIdxIRatings   = orderedDrivers.Select(di => di.IRating).ToArray();
-            t.CarIdxLicStrings = orderedDrivers.Select(di => di.LicString).ToArray();
-            t.CarIdxCarClassIds = orderedDrivers.Select(di => di.CarClassID).ToArray();
-            t.CarIdxCarClassShortNames = orderedDrivers.Select(di => di.CarClassShortName).ToArray();
-            t.CarIdxCarClassEstLapTimes = orderedDrivers.Select(di => di.CarClassEstLapTime).ToArray();
-            t.CarIdxTireCompounds = orderedDrivers.Select(di => di.TireCompound).ToArray();
-            if (t.CarIdxPosition.Length == t.CarIdxIRatings.Length && t.CarIdxPosition.Length > 0)
-            {
-                t.CarIdxIRatingDeltas = TelemetryCalculations.CalculateIRatingDeltas(
-                    t.CarIdxPosition,
-                    t.CarIdxIRatings,
-                    t.PlayerCarIdx,
-                    t.PlayerCarTeamIncidentCount);
-            }
-            else
-            {
-                t.CarIdxIRatingDeltas = Array.Empty<int>();
-            }
+            PopulateDriverArrays(drivers.ToArray(), t);
             t.IsMultiClassSession = (wkd?.NumCarClasses ?? 0) > 1 ||
                                    t.CarIdxCarClassIds.Distinct().Count() > 1;
 
