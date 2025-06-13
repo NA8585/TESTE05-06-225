@@ -1,6 +1,6 @@
 namespace SuperBackendNR85IA.Models
 {
-    public record DamageData
+    public partial record DamageData
     {
         public float LfDamage { get; set; }
         public float RfDamage { get; set; }

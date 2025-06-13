@@ -1,6 +1,6 @@
 namespace SuperBackendNR85IA.Models
 {
-    public record VehicleData
+    public partial record VehicleData
     {
         public float Speed { get; set; }
         public float Rpm { get; set; }
