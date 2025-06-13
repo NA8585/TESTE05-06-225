@@ -21,21 +21,19 @@ namespace SuperBackendNR85IA.Services
 
             foreach (var d in drv)
             {
-                Resize(ref t.CarIdxCarNumbers);      t.CarIdxCarNumbers[d.CarIdx] = d.CarNumber;
-                Resize(ref t.CarIdxUserNames);       t.CarIdxUserNames[d.CarIdx] = d.UserName;
-                Resize(ref t.CarIdxLicStrings);      t.CarIdxLicStrings[d.CarIdx] = d.LicString;
-                Resize(ref t.CarIdxIRatings);        t.CarIdxIRatings[d.CarIdx] = d.IRating;
-                Resize(ref t.CarIdxTeamNames);       t.CarIdxTeamNames[d.CarIdx] = d.TeamName;
-                Resize(ref t.CarIdxCarClassIds);     t.CarIdxCarClassIds[d.CarIdx] = d.CarClassID;
-                Resize(ref t.CarIdxCarClassShortNames); t.CarIdxCarClassShortNames[d.CarIdx] = d.CarClassShortName;
-                Resize(ref t.CarIdxCarClassEstLapTimes); t.CarIdxCarClassEstLapTimes[d.CarIdx] = d.CarClassEstLapTime;
-                Resize(ref t.CarIdxTireCompounds);   t.CarIdxTireCompounds[d.CarIdx] = d.TireCompound;
-                Resize(ref t.CarIdxIRatingDeltas);
-                if (_irStart.Length <= d.CarIdx)
-                    Array.Resize(ref _irStart, d.CarIdx + 1);
-                if (_irStart[d.CarIdx] == 0)
-                    _irStart[d.CarIdx] = d.IRating;
-                t.CarIdxIRatingDeltas[d.CarIdx] = d.IRating - _irStart[d.CarIdx];
+                var carNumbers = t.CarIdxCarNumbers;      Resize(ref carNumbers);      carNumbers[d.CarIdx] = d.CarNumber;      t.CarIdxCarNumbers = carNumbers;
+                var userNames = t.CarIdxUserNames;        Resize(ref userNames);       userNames[d.CarIdx] = d.UserName;        t.CarIdxUserNames = userNames;
+                var licStrings = t.CarIdxLicStrings;      Resize(ref licStrings);      licStrings[d.CarIdx] = d.LicString;      t.CarIdxLicStrings = licStrings;
+                var iratings = t.CarIdxIRatings;          Resize(ref iratings);        iratings[d.CarIdx] = d.IRating;          t.CarIdxIRatings = iratings;
+                var teamNames = t.CarIdxTeamNames;        Resize(ref teamNames);       teamNames[d.CarIdx] = d.TeamName;         t.CarIdxTeamNames = teamNames;
+                var classIds = t.CarIdxCarClassIds;       Resize(ref classIds);        classIds[d.CarIdx] = d.CarClassID;       t.CarIdxCarClassIds = classIds;
+                var classShort = t.CarIdxCarClassShortNames; Resize(ref classShort);   classShort[d.CarIdx] = d.CarClassShortName; t.CarIdxCarClassShortNames = classShort;
+                var estTimes = t.CarIdxCarClassEstLapTimes; Resize(ref estTimes);      estTimes[d.CarIdx] = d.CarClassEstLapTime; t.CarIdxCarClassEstLapTimes = estTimes;
+                var compounds = t.CarIdxTireCompounds;     Resize(ref compounds);       compounds[d.CarIdx] = d.TireCompound;     t.CarIdxTireCompounds = compounds;
+
+                var irDeltas = t.CarIdxIRatingDeltas;      Resize(ref irDeltas);        if (_irStart.Length <= d.CarIdx) Array.Resize(ref _irStart, d.CarIdx + 1);
+                if (_irStart[d.CarIdx] == 0) _irStart[d.CarIdx] = d.IRating;           irDeltas[d.CarIdx] = d.IRating - _irStart[d.CarIdx];
+                t.CarIdxIRatingDeltas = irDeltas;
             }
         }
     }
