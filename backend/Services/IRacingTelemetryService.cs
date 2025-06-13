@@ -39,6 +39,18 @@ namespace SuperBackendNR85IA.Services
         private float _rfLastHotPress;
         private float _lrLastHotPress;
         private float _rrLastHotPress;
+        private float _lfLastTempCl;
+        private float _lfLastTempCm;
+        private float _lfLastTempCr;
+        private float _rfLastTempCl;
+        private float _rfLastTempCm;
+        private float _rfLastTempCr;
+        private float _lrLastTempCl;
+        private float _lrLastTempCm;
+        private float _lrLastTempCr;
+        private float _rrLastTempCl;
+        private float _rrLastTempCm;
+        private float _rrLastTempCr;
 
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
@@ -139,6 +151,19 @@ namespace SuperBackendNR85IA.Services
                 _rfLastHotPress = t.RfPress;
                 _lrLastHotPress = t.LrPress;
                 _rrLastHotPress = t.RrPress;
+
+                _lfLastTempCl = t.LfTempCl;
+                _lfLastTempCm = t.LfTempCm;
+                _lfLastTempCr = t.LfTempCr;
+                _rfLastTempCl = t.RfTempCl;
+                _rfLastTempCm = t.RfTempCm;
+                _rfLastTempCr = t.RfTempCr;
+                _lrLastTempCl = t.LrTempCl;
+                _lrLastTempCm = t.LrTempCm;
+                _lrLastTempCr = t.LrTempCr;
+                _rrLastTempCl = t.RrTempCl;
+                _rrLastTempCm = t.RrTempCm;
+                _rrLastTempCr = t.RrTempCr;
             }
             _wasOnPitRoad = t.OnPitRoad;
 
@@ -146,6 +171,22 @@ namespace SuperBackendNR85IA.Services
             t.RfLastHotPress = _rfLastHotPress;
             t.LrLastHotPress = _lrLastHotPress;
             t.RrLastHotPress = _rrLastHotPress;
+
+            t.LfLastTempCl = _lfLastTempCl;
+            t.LfLastTempCm = _lfLastTempCm;
+            t.LfLastTempCr = _lfLastTempCr;
+            t.RfLastTempCl = _rfLastTempCl;
+            t.RfLastTempCm = _rfLastTempCm;
+            t.RfLastTempCr = _rfLastTempCr;
+            t.LrLastTempCl = _lrLastTempCl;
+            t.LrLastTempCm = _lrLastTempCm;
+            t.LrLastTempCr = _lrLastTempCr;
+            t.RrLastTempCl = _rrLastTempCl;
+            t.RrLastTempCm = _rrLastTempCm;
+            t.RrLastTempCr = _rrLastTempCr;
+
+            t.FrontStagger = (t.RfRideHeight - t.LfRideHeight) * 1000f;
+            t.RearStagger  = (t.RrRideHeight - t.LrRideHeight) * 1000f;
         }
     }
 }

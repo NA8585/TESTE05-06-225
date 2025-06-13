@@ -45,6 +45,9 @@ namespace SuperBackendNR85IA.Calculations
             model.Tyres.RfPress = model.Tyres.RfPress;
             model.Tyres.LrPress = model.Tyres.LrPress;
             model.Tyres.RrPress = model.Tyres.RrPress;
+
+            model.Tyres.FrontStagger = (model.RfRideHeight - model.LfRideHeight) * 1000f;
+            model.Tyres.RearStagger  = (model.RrRideHeight - model.LrRideHeight) * 1000f;
         }
 
         public static void PreencherOverlaySetores(ref TelemetryModel model)
