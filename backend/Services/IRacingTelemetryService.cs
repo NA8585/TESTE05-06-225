@@ -116,6 +116,7 @@ namespace SuperBackendNR85IA.Services
             var t = new TelemetryModel();
 
             PopulateVehicleData(d, t);
+            PopulateAllExtraData(d, t);
             UpdateLapInfo(d, t);
             ReadSectorTimes(d, t);
             ComputeForceFeedback(d, t);

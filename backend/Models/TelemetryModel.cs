@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SuperBackendNR85IA.Models
 {
-    public class TelemetryModel
+    public partial class TelemetryModel
     {
         public SessionData Session { get; set; } = new SessionData();
         public VehicleData Vehicle { get; set; } = new VehicleData();
@@ -73,12 +73,6 @@ namespace SuperBackendNR85IA.Models
         public float SteeringWheelPctTorque { get => Vehicle.SteeringWheelPctTorque; set => Vehicle.SteeringWheelPctTorque = value; }
         public float SteeringWheelPctTorqueSign { get => Vehicle.SteeringWheelPctTorqueSign; set => Vehicle.SteeringWheelPctTorqueSign = value; }
         public float SteeringWheelPctTorqueSignStops { get => Vehicle.SteeringWheelPctTorqueSignStops; set => Vehicle.SteeringWheelPctTorqueSignStops = value; }
-        public float EnergyERSBattery { get => Vehicle.EnergyERSBattery; set => Vehicle.EnergyERSBattery = value; }
-        public float EnergyERSBatteryPct { get => Vehicle.EnergyERSBatteryPct; set => Vehicle.EnergyERSBatteryPct = value; }
-        public float EnergyMGU_KLapDeployPct { get => Vehicle.EnergyMGU_KLapDeployPct; set => Vehicle.EnergyMGU_KLapDeployPct = value; }
-        public float EnergyBatteryToMGU_KLap { get => Vehicle.EnergyBatteryToMGU_KLap; set => Vehicle.EnergyBatteryToMGU_KLap = value; }
-        public bool ManualBoost { get => Vehicle.ManualBoost; set => Vehicle.ManualBoost = value; }
-        public bool ManualNoBoost { get => Vehicle.ManualNoBoost; set => Vehicle.ManualNoBoost = value; }
 
         // ---- Tyres ----
         public float LfTempCl { get => Tyres.LfTempCl; set => Tyres.LfTempCl = value; }
