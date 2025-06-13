@@ -103,6 +103,20 @@ namespace SuperBackendNR85IA.Models
         public float RfLastHotPress { get => Tyres.RfLastHotPress; set => Tyres.RfLastHotPress = value; }
         public float LrLastHotPress { get => Tyres.LrLastHotPress; set => Tyres.LrLastHotPress = value; }
         public float RrLastHotPress { get => Tyres.RrLastHotPress; set => Tyres.RrLastHotPress = value; }
+        public float LfLastTempCl { get => Tyres.LfLastTempCl; set => Tyres.LfLastTempCl = value; }
+        public float LfLastTempCm { get => Tyres.LfLastTempCm; set => Tyres.LfLastTempCm = value; }
+        public float LfLastTempCr { get => Tyres.LfLastTempCr; set => Tyres.LfLastTempCr = value; }
+        public float RfLastTempCl { get => Tyres.RfLastTempCl; set => Tyres.RfLastTempCl = value; }
+        public float RfLastTempCm { get => Tyres.RfLastTempCm; set => Tyres.RfLastTempCm = value; }
+        public float RfLastTempCr { get => Tyres.RfLastTempCr; set => Tyres.RfLastTempCr = value; }
+        public float LrLastTempCl { get => Tyres.LrLastTempCl; set => Tyres.LrLastTempCl = value; }
+        public float LrLastTempCm { get => Tyres.LrLastTempCm; set => Tyres.LrLastTempCm = value; }
+        public float LrLastTempCr { get => Tyres.LrLastTempCr; set => Tyres.LrLastTempCr = value; }
+        public float RrLastTempCl { get => Tyres.RrLastTempCl; set => Tyres.RrLastTempCl = value; }
+        public float RrLastTempCm { get => Tyres.RrLastTempCm; set => Tyres.RrLastTempCm = value; }
+        public float RrLastTempCr { get => Tyres.RrLastTempCr; set => Tyres.RrLastTempCr = value; }
+        public float FrontStagger { get => Tyres.FrontStagger; set => Tyres.FrontStagger = value; }
+        public float RearStagger  { get => Tyres.RearStagger;  set => Tyres.RearStagger = value; }
         public float TreadRemainingFl { get => Tyres.TreadRemainingFl; set => Tyres.TreadRemainingFl = value; }
         public float TreadRemainingFr { get => Tyres.TreadRemainingFr; set => Tyres.TreadRemainingFr = value; }
         public float TreadRemainingRl { get => Tyres.TreadRemainingRl; set => Tyres.TreadRemainingRl = value; }

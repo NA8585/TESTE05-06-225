@@ -37,6 +37,24 @@ namespace SuperBackendNR85IA.Models
         public float LrLastHotPress { get; set; }
         public float RrLastHotPress { get; set; }
 
+        // Last recorded tire temperatures when entering the pits
+        public float LfLastTempCl { get; set; }
+        public float LfLastTempCm { get; set; }
+        public float LfLastTempCr { get; set; }
+        public float RfLastTempCl { get; set; }
+        public float RfLastTempCm { get; set; }
+        public float RfLastTempCr { get; set; }
+        public float LrLastTempCl { get; set; }
+        public float LrLastTempCm { get; set; }
+        public float LrLastTempCr { get; set; }
+        public float RrLastTempCl { get; set; }
+        public float RrLastTempCm { get; set; }
+        public float RrLastTempCr { get; set; }
+
+        // Approximate stagger values computed from ride heights (mm)
+        public float FrontStagger { get; set; }
+        public float RearStagger { get; set; }
+
         public float TreadRemainingFl { get; set; }
         public float TreadRemainingFr { get; set; }
         public float TreadRemainingRl { get; set; }
