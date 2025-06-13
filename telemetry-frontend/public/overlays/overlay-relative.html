@@ -495,8 +495,12 @@ function renderRelative(data) {
   // === Update Header and Footer ===
   document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.trackDisplayName || '--'}`;
   document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(data.sessionTime, false) || '00:00'}`;
-  const amb = typeof data.trackAirTemp === 'number' ? data.trackAirTemp
-               : (typeof data.tempValue === 'number' ? data.tempValue : undefined);
+  let amb = undefined;
+  if (typeof data.trackAirTemp === 'number' && data.trackAirTemp > 0) {
+      amb = data.trackAirTemp;
+  } else if (typeof data.tempValue === 'number' && data.tempValue > 0) {
+      amb = data.tempValue;
+  }
   document.getElementById('ambientTemp').textContent = `${typeof amb === 'number' ? amb.toFixed(1) : '--'}`;
   
   let trackTempValue = '--';
