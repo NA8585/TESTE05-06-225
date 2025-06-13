@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Overlay Relative Aprimorada (iRacing Data)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <style>
-        /* Estilos Globais da Overlay (baseado em overlay_inputs_html_v5) */
+        /* Estilos Globais da Overlay */
         html, body {
             margin:0;
             padding:0;
@@ -24,60 +24,43 @@
         }
 
         .resizable-overlay-wrapper {
-            position:absolute;
-            top:50px; /* Posição inicial de exemplo */
-            left:50px; /* Posição inicial de exemplo */
-            width:450px; /* Largura inicial ajustada */
-            height:400px; /* Altura inicial ajustada para acomodar o conteúdo */
-            min-width:320px; 
-            min-height:250px;
+            position: absolute; /* Posição absoluta para fácil localização */
+            top: 50px; /* Inicia a 50px do topo */
+            left: 50px; /* Inicia a 50px da esquerda */
+            width:480px;
+            height:450px;
+            min-width:450px; /* Largura mínima ajustada para compactação */
+            min-height:460px; /* Altura mínima ajustada para compactação */
             background:rgb(17,24,39);
             border:2px solid #3b82f6;
             border-radius:1rem;
             box-shadow:0 4px 10px rgba(0,0,0,0.5);
             display:flex;
             flex-direction:column;
-            overflow:hidden; /* Importante para o conteúdo interno não vazar */
-            -webkit-app-region:drag;
+            overflow:hidden;
+            resize: both; /* Permite redimensionar em todas as direções */
+            transition: opacity 0.3s ease-in-out, filter 0.3s ease-in-out; /* Transições suaves para opacidade e contraste */
         }
-
-        .resize-handle {
-            position:absolute;
-            width:15px;
-            height:15px;
-            z-index:1001;
-            background:transparent;
-            -webkit-app-region:no-drag;
-            pointer-events: auto;
-        }
-        .resize-handle.top-left    { top:0; left:0; cursor:nwse-resize; }
-        .resize-handle.top-center  { top:0; left:50%; transform:translateX(-50%); cursor:ns-resize; }
-        .resize-handle.top-right   { top:0; right:0; cursor:nesw-resize; }
-        .resize-handle.right-center{ top:50%; right:0; transform:translateY(-50%); cursor:ew-resize; }
-        .resize-handle.bottom-right{ bottom:0; right:0; cursor:se-resize; }
-        .resize-handle.bottom-center{ bottom:0; left:50%; transform:translateX(-50%); cursor:ns-resize; }
-        .resize-handle.bottom-left { bottom:0; left:0; cursor:sw-resize; }
-        .resize-handle.left-center { top:50%; left:0; transform:translateY(-50%); cursor:ew-resize; }
 
         .overlay-container {
             flex:1;
             display:flex;
             flex-direction:column;
-            overflow:hidden; /* Garante que o conteúdo interno não ultrapasse */
+            overflow:hidden;
         }
 
-        .overlay-header { /* Renomeado para evitar conflito com .header-bar */
+        .overlay-header {
             display:flex;
             align-items:center;
             justify-content:space-between;
-            padding:4px 8px;
+            padding:3px 8px; /* Altura reduzida */
             background:inherit;
-            cursor:move;
-            -webkit-app-region:drag;
+            cursor:move; /* Indica que o cabeçalho pode ser arrastado */
+            -webkit-app-region:drag; /* Para arrastar a janela em ambientes como Electron */
             border-top-left-radius:0.875rem;
             border-top-right-radius:0.875rem;
             pointer-events: auto;
-            border-bottom: 1px solid #334155; /* Linha divisória sutil */
+            border-bottom: 1px solid #334155;
         }
 
         .overlay-header .logo {
@@ -85,10 +68,10 @@
             align-items:center;
             gap:4px;
             font-size:0.75rem;
-            -webkit-app-region:no-drag;
+            -webkit-app-region:no-drag; /* Exclui o logo da área de arrasto */
         }
-        
-        @keyframes pulse {
+
+        @keyframes pulse { /* Animação de pulsação para o ícone do headset */
             0% { transform: scale(1); opacity: 0.7; }
             50% { transform: scale(1.15); opacity: 1; }
             100% { transform: scale(1); opacity: 0.7; }
@@ -97,16 +80,26 @@
             animation: pulse 2s infinite ease-in-out;
         }
 
+        @keyframes subtlePulse { /* Animação suave para o título "Relative" */
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
         .overlay-header .title {
             font-size:0.75rem;
             font-weight:600;
             white-space:nowrap;
+            background:linear-gradient(to right, #00ffff, #00bfff);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            animation: subtlePulse 2s infinite ease-in-out;
         }
 
         .overlay-header .controls {
             display:flex;
             gap:4px;
-            -webkit-app-region:no-drag;
+            -webkit-app-region:no-drag; /* Exclui os controles da área de arrasto */
         }
 
         .overlay-header .controls button {
@@ -120,6 +113,11 @@
             transition:background 0.2s;
             pointer-events: auto;
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
         }
         .overlay-header .controls button:hover {
             background:#475569;
@@ -127,713 +125,678 @@
         .overlay-header #closeBtn { background:#dc2626;}
         .overlay-header #closeBtn:hover { background:#ef4444;}
 
-        /* Container para o conteúdo da overlay-relative */
         .relative-content-pane {
-            flex-grow: 1; /* Ocupa o espaço restante */
-            padding: 8px; /* Espaçamento interno */
-            overflow-y: auto; /* Permite rolagem se o conteúdo for maior */
+            flex-grow: 1;
+            padding: 8px;
+            overflow-y: hidden;
             display: flex;
             flex-direction: column;
-            gap: 8px; /* Espaço entre header-bar, list, footer-bar */
+            gap: 8px;
         }
 
-        /* Estilos da overlay-relative.html (adaptados) */
         .header-bar, .footer-bar {
           display: flex;
           justify-content: space-around;
-          align-items: center; /* Alinha itens verticalmente */
-          padding: 0.5rem 0.75rem; /* Padding ajustado */
-          font-size: 0.7rem; /* Fonte ligeiramente menor */
+          align-items: center;
+          padding: 0.4rem 0.6rem;
+          font-size: 0.65rem;
           border-radius: 0.5rem;
           font-weight: 600;
-          background-color: rgba(17, 24, 39, 0.85); 
+          background-color: rgba(17, 24, 39, 0.85);
           color: #cbd5e1;
-          backdrop-filter: blur(4px); /* Blur sutil */
-          width: 100%; 
+          backdrop-filter: blur(4px);
+          width: 100%;
           box-sizing: border-box;
         }
         .header-bar div, .footer-bar div {
-          padding: 0 0.4rem; /* Espaçamento horizontal entre itens */
-          white-space: nowrap; /* Evita quebra de linha */
+          padding: 0 0.3rem;
+          white-space: nowrap;
         }
 
-        #competitor-list-container { 
+        #competitor-list-container {
           display: flex;
           flex-direction: column;
-          gap: 3px; /* Espaço entre linhas reduzido */
+          gap: 3px;
           width: 100%;
-          flex-grow: 1; 
-          overflow-y: auto; 
-          min-height: 150px; 
+          flex-grow: 1;
         }
 
         .driver-row {
-          display: flex;
+          display: grid;
+          /* Layout de colunas: Posição, Número do Carro, Pit Status, SR/iRating, Nome, Gap/Voltas */
+          grid-template-columns: 25px 35px 35px 85px 1fr 80px;
           align-items: center;
-          justify-content: space-between;
-          background-color: rgba(49, 60, 77, 0.8); /* Opacidade levemente reduzida */
-          padding: 0.25rem 0.5rem; /* Padding reduzido */
-          border-radius: 0.3rem; /* Raio da borda reduzido */
-          font-size: 0.75rem; /* Fonte reduzida */
-          color: #e5e7eb;
-          border: 1px solid transparent;
-          transition: border-color 0.3s ease, background-color 0.3s ease;
+          gap: 6px; /* Reduzido para acomodar a nova coluna */
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.3rem;
+          font-size: 0.75rem;
+          height: 30px; /* Altura da linha ajustada para 30px */
+          box-sizing: border-box;
+          transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
         }
 
-        .highlight-self {
-          background-color: rgba(26, 43, 91, 0.95) !important; 
-          color: white !important;
-          border-color: #facc15 !important; 
+        .highlight-self { /* Destaque para a linha do jogador */
+          background-color: rgba(190, 242, 100, 0.25) !important;
+          border: 1px solid transparent !important;
         }
-        
-        .driver-row.dnf {
-            opacity: 0.5;
-            background-color: rgba(75, 85, 99, 0.5); /* Cinza para DNF */
-        }
-        .driver-row.pit {
-            background-color: rgba(202, 138, 4, 0.3); /* Amarelo sutil para pits */
+        .highlight-self .driver-name {
+            color: #bef264; 
+            border: 1px solid #000000; 
+            padding: 0 2px; 
+            border-radius: 4px; 
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); 
         }
 
-
-        /* Cores das classes de carro */
-        .class-color-GT3 { color: #a855f7; font-weight: 500; } 
-        .class-color-LMP2 { color: #60a5fa; font-weight: 500; } 
-        .class-color-GTE { color: #facc15; font-weight: 500; } 
-        .class-color-TCR { color: #10b981; font-weight: 500; } 
-        .class-color-GT4 { color: #fb923c; font-weight: 500; } 
-        .class-color-LMP3 { color: #c084fc; font-weight: 500; }
-        .class-color-DEFAULT { color: #9ca3af; font-weight: 500; } /* Cor padrão para classes não mapeadas */
-
-
-        .badge {
-          display: inline-block;
-          padding: 0.1rem 0.3rem; /* Padding reduzido */
-          border-radius: 0.2rem; /* Raio reduzido */
-          font-size: 0.6rem; /* Fonte reduzida */
-          font-weight: bold;
-          line-height: 1.2; /* Ajuste de altura da linha */
+        .driver-row.pit { /* Estilo para pilotos nos boxes */
+            background-color: rgba(255, 193, 7, 0.1) !important; /* Fundo Ambar claro */
+        }
+        .pit-status {
+            font-weight: bold;
+            color: #FFC107; /* Ambar */
+            text-align: center;
+            font-size: 0.7rem;
         }
 
-        .sr-badge {
-          border: 1px solid;
-          margin-right: 3px; /* Espaço reduzido */
-        }
-        .sr-R { border-color: #ef4444; color: #ef4444; } /* Rookie - Red */
-        .sr-D { border-color: #f87171; color: #f87171; } /* D - Light Red */
-        .sr-C { border-color: #facc15; color: #facc15; } /* C - Yellow */
-        .sr-B { border-color: #3b82f6; color: #3b82f6; } /* B - Blue */
-        .sr-A { border-color: #10b981; color: #10b981; } /* A - Green */
-        .sr-P { border-color: #a855f7; color: #a855f7; } /* Pro/WC - Purple */
-        .sr-DEFAULT { border-color: #6b7280; color: #6b7280; } /* Grey for unknown */
 
-
-        .irating-badge {
-          background-color: #374151; 
-          color: #e5e7eb;
+        .lap-ahead { /* Estilo para pilotos uma volta à frente (verde) */
+            background-color: rgba(34, 197, 94, 0.15);
+            border: 1px solid #22c55e;
+            color: #bbf7d0;
+            border-left: 3px solid #22c55e;
         }
 
-        .car-logo {
-          width: 16px; /* Reduzido */
-          height: 16px; /* Reduzido */
-          margin-right: 3px; /* Espaço reduzido */
-          object-fit: contain;
-          background-color: rgba(255,255,255,0.1); /* Fundo sutil para logos transparentes */
-          border-radius: 2px;
-          vertical-align: middle;
+        .lap-behind { /* Estilo para pilotos uma volta atrás (vermelho) */
+            background-color: rgba(248, 113, 113, 0.15);
+            border: 1px solid #f87171;
+            color: #fecaca;
+            border-left: 3px solid #f87171;
         }
 
-        .status-dry { color: #facc15; } /* Yellow for Dry/Damp */
-        .status-wet { color: #3b82f6; } /* Blue for Wet */
-        .status-cloudy { color: #9ca3af; } /* Grey for Cloudy/Default */
-        .status-critical { animation: pulseStatus 1s infinite; color: #ef4444; }
-
-        .penalty-warning { color: #facc15; }
-        .penalty-critical { color: #ef4444; animation: pulseStatus 1s infinite; }
-
-        @keyframes pulseStatus { 
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
+        .same-lap { /* Estilo para carros na mesma volta (azul escuro transparente) */
+            background-color: rgba(23, 37, 84, 0.7);
+            border: 1px solid transparent;
+            color: #e2e8f0;
+            border-left: 3px solid rgba(23, 37, 84, 0.7);
         }
 
-        .driver-row > span, .driver-row > div {
-            white-space: nowrap;
-            flex-shrink: 0; /* Impede que encolham demais */
-            overflow: hidden; /* Garante que texto longo não quebre o layout */
-            text-overflow: ellipsis; /* Adiciona "..." se o texto for muito longo */
+        .driver-row > span, .driver-row > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
+        .driver-row .pos { justify-content: center; }
+        .driver-row .car-number { /* Cor será definida dinamicamente */ }
+        .driver-row .driver-name { justify-content: flex-start; }
+        .driver-row .rating-container {
+            justify-content: center;
+            gap: 4px;
+            flex-wrap: nowrap;
+            min-width: 60px;
+            max-width: 85px; 
+            overflow: hidden;
+        }
+        .driver-row .gap-time { 
             display: flex;
             align-items: center;
-        }
-        .driver-row span.pos { width: 2.2rem; text-align: left; justify-content: flex-start;} 
-        .driver-row span.car-name-class { width: 7.5rem; text-align: left; font-size: 0.7rem; justify-content: flex-start;} 
-        .driver-row span.driver-name { flex-grow: 1; margin: 0 0.3rem; text-align: left; min-width: 70px; justify-content: flex-start;} 
-        .driver-row div.rating-container { width: 6rem; text-align: center; display: flex; justify-content: center; align-items: center; } 
-        .driver-row span.lap-count { width: 3rem; text-align: right; font-size: 0.7rem; justify-content: flex-end; }
-        .driver-row span.gap-time { width: 4rem; text-align: right; font-size: 0.7rem; justify-content: flex-end;}
-        .driver-row span.last-lap-time { width: 4.5rem; text-align: right; font-size: 0.7rem; justify-content: flex-end; color: #a1a1aa;}
-
-
-        .gap-positive { color: #f87171; } 
-        .gap-negative { color: #4ade80; } 
-        .gap-neutral { color: #e5e7eb; } 
-
-        /* Popover de Ajustes */
-        #settings-popover {
-            position:absolute; top:35px; right:10px;
-            display:none;
-            background-color:rgba(30,41,59,0.95);
-            border:1px solid #3b82f6; border-radius:0.5rem;
-            padding:0.75rem;
-            z-index:1000;
-            pointer-events: auto;
-            width: 180px;
-        }
-        #settings-popover label {
-            color:#cbd5e1;
-            font-size:0.75rem;
-            display: block;
-            margin-bottom: 2px;
-        }
-        #settings-popover input[type="range"] {
-            width: 100%;
-            margin-bottom: 8px;
-            accent-color: #3b82f6;
-        }
-        #settings-popover input[type="range"]:last-child {
-            margin-bottom: 0;
+            justify-content: flex-end;
+            font-size: 0.8rem;
+            font-weight: 500;
+            gap: 4px;
+            height: 100%;
+            flex-wrap: nowrap;
+            min-width: 70px;
+            max-width: 80px;
+            overflow: hidden;
         }
 
-          /* Scrollbar styles */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); border-radius: 0.25rem;}
-        ::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 0.25rem; }
-        ::-webkit-scrollbar-thumb:hover { background-color: #6b7280; }
+        .gap-time-value { 
+            padding: 2px 4px;
+            border-radius: 4px;
+            /* border: 1px solid transparent; Remove border specific to ahead/behind/pit from here */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-sizing: border-box;
+        }
+        .gap-positive { color: #4ade80; /* Verde Tailwind green-400 */ }
+        .gap-negative { color: #f87171; /* Vermelho Tailwind red-400 */ }
 
+
+        .lap-diff-indicator {
+            font-size: 0.7em;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .badge { display: inline-block; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-size: 0.6rem; font-weight: bold; line-height: 1.2; box-sizing: border-box; white-space: nowrap; }
+        .sr-badge { border: 1px solid; } 
+        .sr-R { border-color: #ef4444; color: #ef4444; }
+        .sr-D { border-color: #f97316; color: #f97316; }
+        .sr-C { border-color: #facc15; color: #facc15; }
+        .sr-B { border-color: #22c55e; color: #22c55e; }
+        .sr-A { border-color: #3b82f6; color: #3b82f6; }
+        .sr-P { border-color: #a855f7; color: #a855f7; }
+        .sr-DEFAULT { border-color: #6b7280; color: #6b7280; }
+        .irating-badge { background-color: #374151; color: #e5e7eb; }
+
+        .car-number.category-GTP { color: #ef4444 !important; } 
+        .car-number.category-LMP3 { color: #facc15 !important; } 
+        .car-number.category-GT3 { color: #a855f7 !important; } 
+        .car-number.category-GT4 { color: #2563eb !important; } 
+        .car-number.category-default { color: #4b5563 !important; } 
+        .car-number.single-class { color: #fff !important; } 
+        .car-number.player-car-number { 
+            color: #bef264 !important;
+            text-shadow: 0 0 5px rgba(190, 242, 100, 0.8), 0 0 10px rgba(190, 242, 100, 0.6) !important;
+        }
     </style>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div class="resizable-overlay-wrapper" id="wrapper">
-        <div class="resize-handle top-left" id="h-tl"></div>
-        <div class="resize-handle top-center" id="h-tc"></div>
-        <div class="resize-handle top-right" id="h-tr"></div>
-        <div class="resize-handle right-center" id="h-rc"></div>
-        <div class="resize-handle bottom-right" id="h-br"></div>
-        <div class="resize-handle bottom-center" id="h-bc"></div>
-        <div class="resize-handle bottom-left" id="h-bl"></div>
-        <div class="resize-handle left-center" id="h-lc"></div>
-
         <div class="overlay-container">
-            <div class="overlay-header">
+            <header class="overlay-header">
                 <div class="logo">
-                    <i class="fas fa-headset text-slate-400 pulsing-headset"></i> 
-                    <span class="text-slate-300">Coaching</span>
+                    <i class="fas fa-headset text-slate-400 pulsing-headset"></i>
+                    <span style="color:#e2e8f0;">Coaching</span>
                     <span style="background:linear-gradient(to right,#ff0000,#fff,#00ff00);-webkit-background-clip:text;-webkit-text-fill-color:transparent; font-weight: 600;">NR85</span>
                     <span style="background:linear-gradient(to right,#00ffff,#00bfff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:'Orbitron';font-weight:700;">IA</span>
                 </div>
-                <div class="title text-slate-200">Relative</div>
+                <div class="title text-slate-200">Relative</div> 
                 <div class="controls">
-                    <button id="pinBtn" title="Sempre visível">📌</button>
-                    <button id="lockBtn" title="Travar/Destravar posição">🔒</button>
-                    <button id="clickBtn" title="Ignorar cliques">🖱️</button>
+                    <button id="pinBtn" title="Fixar overlay (sobrepor janelas)">📌</button>
+                    <button id="lockBtn" title="Bloquear/Desbloquear movimento e redimensionamento">🔒</button>
+                    <button id="passThroughBtn" title="Ativar/Desativar passagem de clique">➡️</button>
                     <button id="settingsBtn" title="Ajustes">⚙️</button>
-                    <button id="minimizeBtn" title="Minimizar">🗕</button>
                     <button id="closeBtn" title="Fechar overlay">✖</button>
                 </div>
+            </header>
+
+            <div id="settings-popover" class="hidden absolute top-10 right-2 bg-gray-800 p-4 rounded-lg shadow-lg z-10 w-64 -webkit-app-region:no-drag;">
+                <h3 class="text-white text-md font-semibold mb-3">Configurações da Overlay</h3>
+                <div class="mb-4">
+                    <label for="rangeOpacity" class="block text-gray-300 text-sm font-bold mb-2">Opacidade:</label>
+                    <input type="range" id="rangeOpacity" min="0.2" max="1" step="0.05" value="1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="mb-4">
+                    <label for="rangeContrast" class="block text-gray-300 text-sm font-bold mb-2">Contraste:</label>
+                    <input type="range" id="rangeContrast" min="0.5" max="2" step="0.05" value="1" class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                </div>
             </div>
 
-            <div class="relative-content-pane">
+            <main class="relative-content-pane"> 
                 <div class="header-bar">
-                    <div id="raceName" class="text-blue-400">Race: --</div>
-                    <div class="text-white" id="raceTime">Sim: 00:00:00</div>
-                    <div class="text-yellow-300">Amb: <span id="ambientTemp">--</span>°C</div>
-                    <div class="text-sky-400">Track: <span id="trackTemp">--</span>°C</div>
-                    <div class="text-gray-400">BB: <span id="brakeBias">--</span>%</div>
+                    <div id="raceName">Corrida: --</div>
+                    <div id="raceTime">Sim: 00:00:00</div>
+                    <div>Amb: <span id="ambientTemp">--</span>°C</div>
+                    <div>Pista: <span id="trackTemp">--</span>°C</div>
+                    <div>BB: <span id="brakeBias">--</span>%</div>
                 </div>
 
-                <div id="competitor-list-container">
-                    </div>
+                <div id="competitor-list-container"></div> 
 
                 <div class="footer-bar">
-                    <div class="text-white">Session: <span id="sessionTimeRemaining">00:00:00</span></div>
-                    <div class="text-green-300">Laps: <span id="lapsCompleted">--</span>/<span id="totalLaps">--</span></div>
-                    <div class="text-white" id="penaltyStatus">Inc: --/--</div>
-                    <div class="status-cloudy" id="trackStatus">Track: --</div>
+                    <div>Sessão: <span id="sessionTimeRemaining">00:00:00</span></div>
+                    <div>Voltas: <span id="lapsCompleted">--</span>/<span id="totalLaps">--</span></div>
+                    <div id="penaltyStatus">Inc: --/--</div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="settings-popover">
-        <div>
-            <label for="rangeOpacity">Opacidade</label>
-            <input type="range" id="rangeOpacity" min="0.1" max="1" step="0.01" value="0.98">
-        </div>
-        <div>
-            <label for="rangeContrast">Contraste</label>
-            <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1">
+            </main>
         </div>
     </div>
 
     <script>
+        const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
+        let competitorListContainer = null;
+        let websocket = null;
 
-const competitorListContainer = document.getElementById('competitor-list-container');
-const overlayAPI = window.overlayAPI || window.api || {}; // For potential interactions
-const overlayHeader = document.querySelector('.overlay-header');
-let isElectron = !!window.electronAPI;
+        let cachedDriverInfo = null;
+        let cachedWeekendInfo = null;
+        let cachedSessionInfo = null;
+        let lastSessionInfoYaml = '';
 
-// --- Helper Functions ---
-function parseYaml(yamlStr) {
-  try {
-    // Note: The backend is now sending parsed YAML data as part of the TelemetryModel,
-    // so direct YAML parsing in the frontend might not be strictly necessary for all fields,
-    // but it's kept here for SessionInfoYaml which is still passed as a string.
-    return jsyaml.load(yamlStr || '');
-  } catch (e) {
-    console.error('Error parsing YAML:', e, "Raw YAML:", yamlStr);
-    return {};
-  }
-}
-
-function fmtTimeSimple(s, showHundredths = true) {
-  if (typeof s !== 'number' || !isFinite(s) || s < 0) return '---';
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const secs = Math.floor(s % 60);
-  const hundreths = Math.floor((s * 100) % 100);
-
-  if (h > 0) {
-    return `${h.toString()}:${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }
-  if (showHundredths) {
-    return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${hundreths.toString().padStart(2, '0')}`;
-  }
-  return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-function getSRClass(licString) {
-    if (!licString || typeof licString !== 'string') return 'sr-DEFAULT';
-    const srPart = licString.split(' ')[0]; // "A", "B3.45" -> "A" or "B3.45"
-    const match = srPart?.match(/^([ABCDRPIX])/i); // Added X for potential other classes
-    return match ? `sr-${match[1].toUpperCase()}` : 'sr-DEFAULT';
-}
-
-function getCarClassColorCss(carClassShortName) {
-    if (!carClassShortName) return 'class-color-DEFAULT';
-    const upperClass = carClassShortName.toUpperCase().replace(/[^A-Z0-9]/g, ''); // Sanitize
-    switch (upperClass) {
-        case 'GT3': return 'class-color-GT3';
-        case 'LMP2': return 'class-color-LMP2';
-        case 'GTE': return 'class-color-GTE';
-        case 'TCR': return 'class-color-TCR';
-        case 'GT4': return 'class-color-GT4';
-        case 'LMP3': return 'class-color-LMP3';
-        // Add more common iRacing classes if needed
-        default: return 'class-color-DEFAULT';
-    }
-}
-
-function getCarLogoPath(carScreenName) {
-    // This remains a placeholder. You'd fill this with actual paths based on carScreenName
-    // const logos = { 'Porsche 911 GT3 R (992)': 'logos/porsche_992_gt3r.png', ... };
-    // return logos[carScreenName] || '';
-    return ''; 
-}
-
-// Global cache for YAML data to avoid re-parsing on every tick if session info doesn't change
-let cachedDriverInfo = null;
-let cachedWeekendInfo = null;
-let cachedSessionInfo = null;
-let lastSessionInfoYaml = '';
-
-function renderRelative(data) {
-  if (!data) {
-    console.warn("renderRelative called with no data.");
-    return;
-  }
-
-  // Flatten possible sub-models from new TelemetryModel structure
-  data = { ...data, ...(data.session || {}), ...(data.vehicle || {}), ...(data.tyres || {}), ...(data.damage || {}) };
-
-  // Prefer typed YAML objects from the backend when available
-  if (Array.isArray(data.yamlDrivers)) {
-      cachedDriverInfo = data.yamlDrivers;
-  }
-  if (data.yamlWeekendInfo) {
-      cachedWeekendInfo = data.yamlWeekendInfo;
-  }
-  if (data.yamlSessionInfo) {
-      cachedSessionInfo = data.yamlSessionInfo;
-  }
-
-  // Fallback: parse raw YAML only if typed info missing
-  if (!cachedDriverInfo && data.sessionInfoYaml && data.sessionInfoYaml !== lastSessionInfoYaml) {
-      const parsedYaml = parseYaml(data.sessionInfoYaml);
-      cachedDriverInfo = parsedYaml?.DriverInfo?.Drivers;
-      cachedWeekendInfo = parsedYaml?.WeekendInfo;
-      if (parsedYaml?.SessionInfo) {
-          cachedSessionInfo = { ...parsedYaml.SessionInfo };
-          if (Array.isArray(parsedYaml.SessionInfo.Sessions)) {
-              cachedSessionInfo.allSessionsFromYaml = parsedYaml.SessionInfo.Sessions;
-          }
-      }
-      lastSessionInfoYaml = data.sessionInfoYaml;
-  }
-
-  const weekendInfo = cachedWeekendInfo || {};
-  let currentSessionYamlData = {};
-  if (cachedSessionInfo) {
-      if (Array.isArray(cachedSessionInfo.allSessionsFromYaml)) {
-          currentSessionYamlData = cachedSessionInfo.allSessionsFromYaml.find(s => s.sessionNum === data.sessionNum) || cachedSessionInfo;
-      } else if (Array.isArray(cachedSessionInfo)) {
-          currentSessionYamlData = cachedSessionInfo.find(s => s.SessionNum === data.sessionNum) || {};
-      } else {
-          currentSessionYamlData = cachedSessionInfo;
-      }
-  }
-  const playerDriverYaml = (cachedDriverInfo || []).find(d => (d.carIdx ?? d.CarIdx) === data.playerCarIdx);
-
-
-  // === Update Header and Footer ===
-  document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.trackDisplayName || '--'}`;
-  document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(data.sessionTime, false) || '00:00'}`;
-  let amb = undefined;
-  if (typeof data.trackAirTemp === 'number' && data.trackAirTemp > 0) {
-      amb = data.trackAirTemp;
-  } else if (typeof data.tempValue === 'number' && data.tempValue > 0) {
-      amb = data.tempValue;
-  }
-  document.getElementById('ambientTemp').textContent = `${typeof amb === 'number' ? amb.toFixed(1) : '--'}`;
-  
-  let trackTempValue = '--';
-  if (typeof data.trackSurfaceTemp === 'number' && data.trackSurfaceTemp > -100) {
-      trackTempValue = data.trackSurfaceTemp.toFixed(1);
-  } else if (typeof data.trackTempCrew === 'number' && data.trackTempCrew > -100) {
-      trackTempValue = data.trackTempCrew.toFixed(1);
-  }
-  document.getElementById('trackTemp').textContent = trackTempValue;
-  document.getElementById('brakeBias').textContent = `${typeof data.dcBrakeBias === 'number' ? (data.dcBrakeBias * 100).toFixed(1) : '--'}`;
-  
-  document.getElementById('sessionTimeRemaining').textContent = `${fmtTimeSimple(data.sessionTimeRemain, false) || '00:00'}`;
-  const playerLap = data.lap ?? '--';
-  const totalLapsSess = currentSessionYamlData?.currentSessionTotalLaps === -1
-        ? '∞'
-        : (currentSessionYamlData?.currentSessionTotalLaps ?? currentSessionYamlData?.sessionLapsTotal ?? '--');
-  document.getElementById('lapsCompleted').textContent = `${playerLap}`;
-  document.getElementById('totalLaps').textContent = `${totalLapsSess}`;
-
-  // Use IncidentLimit from the current session in YAML
-  const incidentLimit = currentSessionYamlData?.incidentLimit ?? weekendInfo.incidentLimit ?? 'N/A';
-  const playerIncidents = data.playerCarTeamIncidentCount ?? '--';
-  const penaltyEl = document.getElementById('penaltyStatus');
-  penaltyEl.textContent = `Inc: ${playerIncidents}/${incidentLimit}`;
-  penaltyEl.className = 'text-white'; 
-  if (playerDriverYaml?.IsSpectator === 1) { // Check from YAML driver info
-      penaltyEl.textContent = 'Spectator';
-  } else if (typeof playerIncidents === 'number' && typeof incidentLimit === 'number' && incidentLimit > 0) {
-    if (playerIncidents >= incidentLimit) {
-        penaltyEl.classList.remove('penalty-warning');
-        penaltyEl.classList.add('penalty-critical');
-    } else if (playerIncidents >= incidentLimit * 0.75) {
-        penaltyEl.classList.remove('penalty-critical');
-        penaltyEl.classList.add('penalty-warning');
-    } else {
-        penaltyEl.classList.remove('penalty-warning', 'penalty-critical');
-    }
-  }
-
-  // Track Status based on TelemetryModel.TrackGripStatus (calculated in backend)
-  const trackStatusEl = document.getElementById('trackStatus');
-  let trackStatusText = data.trackGripStatus || data.skies || '--'; // Use trackGripStatus first, then skies
-  let trackStatusClass = 'status-cloudy'; 
-
-  // Map backend's TrackGripStatus to frontend classes
-  if (trackStatusText.toLowerCase().includes('very wet') || trackStatusText.toLowerCase().includes('wet')) {
-      trackStatusClass = 'status-wet';
-  } else if (trackStatusText.toLowerCase().includes('damp') || trackStatusText.toLowerCase().includes('dry')) {
-      trackStatusClass = 'status-dry';
-  } else if (trackStatusText.toLowerCase().includes('clear') || trackStatusText.toLowerCase().includes('sunny')) { // Fallback for 'Skies'
-      trackStatusClass = 'status-dry';
-  }
-
-  trackStatusEl.textContent = `Track: ${trackStatusText}`;
-  trackStatusEl.className = ''; // Reset classes
-  trackStatusEl.classList.add(trackStatusClass);
-
-
-  // === Process Driver Data for Relative Display ===
-  const driversFromYaml = cachedDriverInfo || []; // Use cached driver info from YAML
-  const playerCarIdx = data.playerCarIdx;
-
-  // Arrays provided by TelemetryModel for each car index
-  // (carIdxPosition, carIdxLap, carIdxOnPitRoad, carIdxTrackSurface,
-  //  carIdxLastLapTime, carIdxF2Time, etc.) are used to build the table below.
-
-  // Placeholder/simulated data for demonstration IF backend doesn't send arrays
-  // In a real scenario, these arrays should come directly from 'data' object.
-  const carPositionsFromBackend = data.carIdxPosition || []; // This needs to be populated in backend
-  const carLapsCompletedFromBackend = data.carIdxLap || []; // This needs to be populated in backend
-  const carOnPitRoadFromBackend = data.carIdxOnPitRoad || []; // This needs to be populated in backend
-  const carTrackSurfaceFromBackend = data.carIdxTrackSurface || []; // This needs to be populated in backend (for DNF)
-  const carLastLapTimesFromBackend = data.carIdxLastLapTime || []; // This needs to be populated in backend
-  const carF2TimeFromBackend = data.carIdxF2Time || []; // This needs to be populated in backend
-
-  let carsData = [];
-
-  // Iterate through all drivers found in YAML to build the list
-  // and try to match with real-time data from backend
-  for (let i = 0; i < driversFromYaml.length; i++) {
-    const driverYaml = driversFromYaml[i];
-    const carIdx = driverYaml.carIdx ?? driverYaml.CarIdx;
-
-    // We need real-time position for filtering/sorting. If not available, skip.
-    // Assuming carPositionsFromBackend has valid position at carIdx.
-    const pos = carPositionsFromBackend[carIdx];
-    if (pos === undefined || pos < 0) continue; // Skip if no valid real-time position
-
-    carsData.push({
-      idx: carIdx,
-      pos: pos,
-      num: driverYaml.carNumberRaw !== undefined ? driverYaml.carNumberRaw.toString() : (driverYaml.carNumber ?? driverYaml.CarNumber || '--'),
-      name: driverYaml.userName ?? driverYaml.UserName || 'Desconhecido',
-      team: driverYaml.teamName ?? driverYaml.TeamName || '',
-      irating: driverYaml.iRating ?? driverYaml.IRating || 0,
-      lic: driverYaml.licString ?? driverYaml.LicString || 'R ----',
-      carClassShort: driverYaml.carClassShortName ?? driverYaml.CarClassShortName || '',
-      carScreenName: driverYaml.carScreenName ?? driverYaml.CarScreenName || '',
-      lap: carLapsCompletedFromBackend[carIdx],
-      lastLapTime: carLastLapTimesFromBackend[carIdx],
-      onPit: carOnPitRoadFromBackend[carIdx],
-      isDNF: carTrackSurfaceFromBackend[carIdx] === 4, // irsdk_TrkLoc.irsdk_NotInWorld
-      f2Time: carF2TimeFromBackend[carIdx], // Time relative to player if available
-    });
-  }
-
-  // Sort by actual race position
-  carsData.sort((a, b) => a.pos - b.pos);
-
-  const playerInSortedList = carsData.find(c => c.idx === playerCarIdx);
-  const playerDisplayIndex = playerInSortedList ? carsData.indexOf(playerInSortedList) : -1;
-
-  if (!competitorListContainer) {
-    console.error("#competitor-list-container not found");
-    return;
-  }
-  competitorListContainer.innerHTML = ''; // Clear previous entries
-
-  const N_BEFORE = 4;
-  const N_AFTER = 5; 
-  const displayStartIdx = playerDisplayIndex !== -1 ? Math.max(0, playerDisplayIndex - N_BEFORE) : 0;
-  const displayEndIdx = playerDisplayIndex !== -1 ? Math.min(carsData.length, playerDisplayIndex + N_AFTER + 1) : Math.min(carsData.length, N_BEFORE + N_AFTER + 1);
-
-  for (let i = displayStartIdx; i < displayEndIdx; i++) {
-    const car = carsData[i];
-    if (!car) continue;
-
-    const driverRow = document.createElement('div');
-    driverRow.className = 'driver-row';
-    if (car.idx === playerCarIdx) driverRow.classList.add('highlight-self');
-    if (car.isDNF) driverRow.classList.add('dnf');
-    if (car.onPit && !car.isDNF) driverRow.classList.add('pit');
-    
-    let gapText = '---';
-    let gapClass = 'gap-neutral';
-
-    if (playerInSortedList && car.idx !== playerCarIdx) {
-        if (playerInSortedList.lap === car.lap && car.f2Time !== undefined && car.f2Time !== -1) {
-            const timeDiff = car.f2Time;
-            if (Math.abs(timeDiff) <= 60) {
-                gapText = (timeDiff > 0 ? '+' : '') + timeDiff.toFixed(2);
-                gapClass = timeDiff > 0 ? 'gap-positive' : (timeDiff < 0 ? 'gap-negative' : 'gap-neutral');
+        function parseYaml(yamlStr) {
+            try {
+                if (typeof jsyaml === 'undefined') {
+                    console.error('Erro: jsyaml não está definido. Certifique-se de que a biblioteca js-yaml está carregada.');
+                    return null;
+                }
+                return jsyaml.load(yamlStr.replace(/\0/g, ''));
+            } catch (e) {
+                console.error('Erro ao analisar YAML:', e);
+                return null;
             }
-        } else if (playerInSortedList.lap !== undefined && car.lap !== undefined) {
-            const lapDiff = car.lap - playerInSortedList.lap;
-            if (lapDiff !== 0) {
-                gapText = (lapDiff > 0 ? '+' : '') + `${Math.abs(lapDiff)}L`; // Show absolute lap diff
-                gapClass = lapDiff > 0 ? 'gap-positive' : 'gap-negative';
+        }
+
+        function fmtTimeSimple(s) {
+            if (typeof s !== 'number' || !isFinite(s) || s < 0 || s > 1e9) return '--:--:--';
+            const date = new Date(s * 1000);
+            const hh = date.getUTCHours().toString().padStart(2, '0');
+            const mm = date.getUTCMinutes().toString().padStart(2, '0');
+            const ss = date.getUTCSeconds().toString().padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
+        }
+
+        function getSRClass(lic) {
+            if (!lic) return 'sr-DEFAULT';
+            const srPart = lic.split(' ')[0];
+            return `sr-${srPart.charAt(0).toUpperCase()}` || 'sr-DEFAULT';
+        }
+
+        function getCarNumberColorClass(carClassShortName, numCarClasses) {
+            if (numCarClasses === 1) {
+                return 'single-class';
+            }
+            // Adjusted to match mock data CarClassShortName values
+            switch (carClassShortName) {
+                case 'GTP': return 'category-GTP';
+                case 'LMP2': return 'category-LMP3'; // Using LMP3 color for LMP2 for now
+                case 'GT3': return 'category-GT3';
+                case 'GT4': return 'category-GT4';
+                default: return 'category-default';
+            }
+        }
+
+
+        function renderRelative(data) { 
+            if (!competitorListContainer) {
+                competitorListContainer = document.getElementById('competitor-list-container');
+                if (!competitorListContainer) {
+                    console.error("competitor-list-container não encontrado no DOM.");
+                    return;
+                }
+            }
+
+            if (!data) {
+                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Sem dados para exibir.</div>`;
+                return;
+            }
+            // flatData is used to give preference to root properties (mock/TelemetryModel direct)
+            // or properties from data.session / data.vehicle if they exist (TelemetryModel sub-objects)
+            const flatData = { ...data, ...(data.session || {}), ...(data.vehicle || {}) };
+
+            const sessionInfoYamlFromData = data.sessionInfoYaml || flatData.sessionInfoYaml;
+            if (sessionInfoYamlFromData && sessionInfoYamlFromData !== lastSessionInfoYaml) {
+                const parsed = parseYaml(sessionInfoYamlFromData);
+                if (parsed) {
+                    cachedDriverInfo = parsed.DriverInfo?.Drivers;
+                    cachedWeekendInfo = parsed.WeekendInfo;
+                    cachedSessionInfo = parsed.SessionInfo?.Sessions;
+                }
+                lastSessionInfoYaml = sessionInfoYamlFromData;
+            }
+            
+            // Data Sourcing: Try direct on `data` (mock/TM), then TM sub-objects (via flatData), then FP sub-objects
+            const currentSessionNum = flatData.sessionNum ?? data.telemetry?.sessionNum; // Assuming sessionNum might be in telemetry for FP
+            const sessionType = (cachedSessionInfo || []).find(s => s.SessionNum === currentSessionNum)?.SessionType || data.sessionInfo?.sessionType || 'Practice';
+            
+            const trackDisplayNameValue = flatData.trackDisplayName ?? data.weekendInfo?.trackDisplayName ?? cachedWeekendInfo?.TrackDisplayName ?? '--';
+            document.getElementById('raceName').textContent = `Corrida: ${trackDisplayNameValue}`;
+
+            const sessionTimeValue = flatData.sessionTime ?? data.telemetry?.sessionTime;
+            document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(sessionTimeValue)}`;
+            
+            const trackAirTempValue = data.airTemp ?? flatData.trackAirTemp ?? data.weekendInfo?.trackAirTemp;
+            document.getElementById('ambientTemp').textContent = (typeof trackAirTempValue === 'number') ? trackAirTempValue.toFixed(1) : '--';
+
+            const trackSurfaceTempValue = flatData.trackSurfaceTemp ?? data.telemetry?.trackTemp;
+            document.getElementById('trackTemp').textContent = (typeof trackSurfaceTempValue === 'number' && trackSurfaceTempValue > -100) ? trackSurfaceTempValue.toFixed(1) : '--';
+            
+            const dcBrakeBiasValue = flatData.dcBrakeBias ?? data.telemetry?.dcBrakeBias;
+            document.getElementById('brakeBias').textContent = `${typeof dcBrakeBiasValue === 'number' ? dcBrakeBiasValue.toFixed(1) : '--'}`;
+
+            const sessionTimeRemainValue = flatData.sessionTimeRemain ?? data.telemetry?.sessionTimeRemain;
+            document.getElementById('sessionTimeRemaining').textContent = `${fmtTimeSimple(sessionTimeRemainValue)}`;
+
+            const lapCompletedValue = flatData.lap ?? data.telemetry?.lapCompleted ?? '--';
+            document.getElementById('lapsCompleted').textContent = `${lapCompletedValue}`;
+
+            let totalLapsCalculated;
+            if (flatData.totalLaps !== undefined) { // Mock data or TM might have pre-calculated totalLaps
+                totalLapsCalculated = flatData.totalLaps;
+            } else if (data.sessionInfo?.currentSessionTotalLaps !== undefined) { // FP
+                totalLapsCalculated = data.sessionInfo.currentSessionTotalLaps;
+                 // If FP indicates 0 laps for a timed session, treat as unlimited for display.
+                if (totalLapsCalculated === 0 && (cachedSessionInfo?.find(s => s.SessionNum === currentSessionNum)?.SessionTime.includes("sec")) && !(cachedSessionInfo?.find(s => s.SessionNum === currentSessionNum)?.SessionLaps.includes("laps"))) {
+                    totalLapsCalculated = -1;
+                }
+            } else if (cachedSessionInfo) { // Fallback to YAML parsed info
+                 const sessionLapsFromYaml = (cachedSessionInfo || []).find(s => s.SessionNum === currentSessionNum)?.SessionLaps;
+                 if (sessionLapsFromYaml === "unlimited" || sessionLapsFromYaml === undefined) totalLapsCalculated = -1;
+                 else totalLapsCalculated = parseInt(sessionLapsFromYaml);
+            }
+            const totalLapsDisplay = (totalLapsCalculated < 0 || isNaN(totalLapsCalculated)) ? '∞' : totalLapsCalculated;
+            document.getElementById('totalLaps').textContent = `${totalLapsDisplay}`;
+            
+            const incidentLimitFromYaml = cachedWeekendInfo?.IncidentLimit;
+            const incidentLimitLive = data.sessionInfo?.incidentLimit;
+            const incidentLimitValue = incidentLimitFromYaml ?? incidentLimitLive;
+            const incidentLimitDisplay = (incidentLimitValue === 'unlimited' || incidentLimitValue === 0 || incidentLimitValue === undefined) ? 'N/A' : incidentLimitValue;
+
+            const playerCarIdxValue = flatData.playerCarIdx ?? data.telemetry?.playerCarIdx;
+            let playerIncidentsValue = flatData.playerCarTeamIncidentCount ?? flatData.playerCarMyIncidentCount;
+            if (playerIncidentsValue === undefined && data.telemetry?.playerCarMyIncidentCount !== undefined) {
+                 playerIncidentsValue = data.telemetry.playerCarMyIncidentCount;
+            } else if (playerIncidentsValue === undefined && data.drivers && playerCarIdxValue !== undefined) {
+                 const playerDriverPayload = data.drivers.find(d => d.carIdx === playerCarIdxValue);
+                 if (playerDriverPayload?.teamIncidentCount !== undefined) {
+                    playerIncidentsValue = playerDriverPayload.teamIncidentCount;
+                 } else if (playerDriverPayload?.myIncidentCount !== undefined) { // Assuming myIncidentCount could be on driver payload
+                    playerIncidentsValue = playerDriverPayload.myIncidentCount;
+                 }
+            }
+            document.getElementById('penaltyStatus').textContent = `Inc: ${playerIncidentsValue ?? '--'}/${incidentLimitDisplay}`;
+
+            const driversFromYaml = cachedDriverInfo || [];
+            const numCarClasses = cachedWeekendInfo?.NumCarClasses || 1;
+
+            if (!driversFromYaml.length || playerCarIdxValue === undefined || !cachedWeekendInfo || !cachedSessionInfo) {
+                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Aguardando dados YAML...</div>`;
+                return;
+            }
+            
+            const { carIdxPosition, carIdxLap, carIdxOnPitRoad, carIdxTrackSurface, carIdxLapDistPct, carIdxBestLapTime, carIdxLastLapTime, carIdxF2Time, carIdxLapCompleted: carIdxLapCompletedArray } = flatData;
+
+            // Preliminary check for essential telemetry arrays
+            if (!Array.isArray(carIdxLapDistPct) || !Array.isArray(carIdxLap) || !Array.isArray(carIdxPosition)) {
+                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Dados de telemetria dos carros ausentes ou malformados.</div>`;
+                return;
+            }
+
+            const allDriversMapped = driversFromYaml.map(dYaml => {
+                const carIdx = dYaml?.CarIdx ?? -1;
+                const surface = carIdxTrackSurface?.[carIdx] ?? -1; 
+                const distPct = carIdxLapDistPct?.[carIdx] ?? -1;   
+                
+                const isActive = surface !== 4 && surface !== 5 && surface !== -1 && distPct >= 0; // Surface 4 & 5 considered inactive as per mock, -1 NotInWorld
+
+                return {
+                    idx: carIdx,
+                    pos: carIdxPosition?.[carIdx] ?? 0,
+                    name: dYaml?.UserName || '---',
+                    num: dYaml?.CarNumberRaw || '--',
+                    lap: carIdxLap?.[carIdx] ?? -1,
+                    distPct: distPct,
+                    onPit: carIdxOnPitRoad?.[carIdx] ?? false,
+                    irating: dYaml?.IRating || 0,
+                    lic: dYaml?.LicString || '',
+                    carClassShortName: dYaml?.CarClassShortName || '',
+                    estLap: parseFloat(dYaml?.CarClassEstLapTime) || 0,
+                    bestLapTime: carIdxBestLapTime?.[carIdx] ?? 0,
+                    lastLapTime: carIdxLastLapTime?.[carIdx] ?? 0,
+                    pitTime: carIdxF2Time?.[carIdx] ?? 0,
+                    tireCompound: dYaml?.TireCompound || '---',
+                    stintLaps: carIdxLapCompletedArray?.[carIdx] ?? (flatData.carIdxLapCompleted?.[carIdx]) ?? 0,
+                    surface: surface, 
+                    isActive: isActive,
+                    effectiveGap: undefined, 
+                    timeGap: undefined,      
+                    lapDiff: undefined       
+                };
+            });
+
+            const player = allDriversMapped.find(d => d.idx === playerCarIdxValue);
+            if (!player) { 
+                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Dados do jogador (CarIdx: ${playerCarIdxValue}) não encontrados na lista YAML.</div>`;
+                return;
+            }
+             if (!player.isActive) {
+                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Jogador (CarIdx: ${playerCarIdxValue}) inativo ou fora da pista.</div>`;
+                createRelativeRow(player, player, sessionType, numCarClasses); // Still render player's row if found, even if inactive
+                return;
+            }
+            player.timeGap = 0; 
+            player.lapDiff = 0;
+            player.effectiveGap = 0;
+
+
+            const trackLen = (parseFloat(cachedWeekendInfo?.TrackLength) * 1000) || 4000; 
+            const playerEstLap = player.estLap || 120; 
+
+            const activeOthers = allDriversMapped.filter(d => d.idx !== player.idx && d.isActive);
+
+            activeOthers.forEach(d => {
+                const otherCarEstLapTime = d.estLap || playerEstLap; 
+
+                const playerDistAbsolute = (player.lap * trackLen) + (player.distPct * trackLen);
+                const otherDistAbsolute = (d.lap * trackLen) + (d.distPct * trackLen);
+
+                d.effectiveGap = (otherDistAbsolute - playerDistAbsolute) / (trackLen / otherCarEstLapTime);
+                d.lapDiff = (d.lap || 0) - (player.lap || 0);
+
+                if (d.carClassShortName === player.carClassShortName) {
+                    let normalizedShortestGap = d.effectiveGap - (d.lapDiff * otherCarEstLapTime);
+                    if (normalizedShortestGap > otherCarEstLapTime / 1.95) { 
+                        normalizedShortestGap -= otherCarEstLapTime;
+                    } else if (normalizedShortestGap < -otherCarEstLapTime / 1.95) { 
+                        normalizedShortestGap += otherCarEstLapTime;
+                    }
+                    d.timeGap = normalizedShortestGap; // Sign is determined by normalizedShortestGap itself
+                } else {
+                    d.timeGap = undefined; 
+                }
+            });
+            
+            competitorListContainer.innerHTML = ''; // Clear previous entries
+
+            if (activeOthers.length === 0) {
+                createRelativeRow(player, player, sessionType, numCarClasses); // Render player
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'driver-row';
+                messageDiv.style.justifyContent = 'center';
+                messageDiv.textContent = 'Aguardando outros pilotos ativos...';
+                competitorListContainer.appendChild(messageDiv);
+                return;
+            }
+            
+            const carsPhysicallyAhead = activeOthers
+                .filter(d => d.effectiveGap !== undefined && d.effectiveGap > 0)
+                .sort((a, b) => a.effectiveGap - b.effectiveGap); 
+
+            const carsPhysicallyBehind = activeOthers
+                .filter(d => d.effectiveGap !== undefined && d.effectiveGap < 0)
+                .sort((a, b) => Math.abs(a.effectiveGap) - Math.abs(b.effectiveGap)); 
+
+            const N_DISPLAY = 5;
+            const potential_ahead_list = carsPhysicallyAhead.slice(0, N_DISPLAY);
+            const potential_behind_list = carsPhysicallyBehind.slice(0, N_DISPLAY);
+            
+            let render_count_ahead = potential_ahead_list.length;
+            let render_count_behind = potential_behind_list.length;
+
+            if (render_count_ahead > render_count_behind + 1 && render_count_ahead > N_DISPLAY /2) { // Try to balance more if list is larger
+                render_count_ahead = Math.min(render_count_ahead, render_count_behind + 1);
+            } else if (render_count_behind > render_count_ahead + 1 && render_count_behind > N_DISPLAY /2) {
+                render_count_behind = Math.min(render_count_behind, render_count_ahead + 1);
+            }
+
+
+            const ahead_to_render = potential_ahead_list.slice(0, render_count_ahead).reverse(); 
+            const behind_to_render = potential_behind_list.slice(0, render_count_behind);
+
+
+            for (const car of ahead_to_render) { 
+                createRelativeRow(car, player, sessionType, numCarClasses);
+            }
+            createRelativeRow(player, player, sessionType, numCarClasses); 
+            for (const car of behind_to_render) { 
+                createRelativeRow(car, player, sessionType, numCarClasses);
+            }
+        }
+
+        function createRelativeRow(car, player, sessionType, numCarClasses) {
+            const el = document.createElement('div');
+            let classes = 'driver-row';
+
+            if (car.idx === player.idx) {
+                classes += ' highlight-self';
             } else {
-                gapText = "<0.1"; 
-                gapClass = car.pos < playerInSortedList.pos ? 'gap-negative' : 'gap-positive';
+                 // Determine class based on lap difference for Race, otherwise default
+                if (sessionType === 'Race' && car.lapDiff !== undefined && car.lapDiff !== null) {
+                    if (car.lapDiff > 0) classes += ' lap-ahead';
+                    else if (car.lapDiff < 0) classes += ' lap-behind';
+                    else classes += ' same-lap';
+                } else {
+                    classes += ' same-lap'; // Default for non-Race or undefined lapDiff
+                }
             }
-        }
-    } else if (car.idx === playerCarIdx) {
-        gapText = '0.00'; // Player's gap to self
-        gapClass = 'gap-neutral';
-    }
-
-    const carLogoSrc = getCarLogoPath(car.carScreenName);
-    const iRatingDisplay = car.irating > 0 ? `${(car.irating / 1000).toFixed(1)}k` : '---';
-    const srBadgeLetter = (car.lic.split(' ')[0] || 'R').charAt(0).toUpperCase();
-
-    driverRow.innerHTML = `
-      <span class="pos">${car.pos + 1}</span>
-      <span class="car-name-class">
-        ${carLogoSrc ? `<img src="${carLogoSrc}" class="car-logo" alt="Car">` : ''}
-        <span class="${getCarClassColorCss(car.carClassShort)}">${car.carClassShort || 'N/A'}</span>
-      </span>
-      <span class="driver-name">${car.name}</span>
-      <div class="rating-container">
-        <span class="sr-badge badge ${getSRClass(car.lic)}">${srBadgeLetter}</span>
-        <span class="irating-badge badge">${iRatingDisplay}</span>
-      </div>
-      <span class="lap-count">${car.lap ?? '--'}</span>
-      <span class="gap-time ${gapClass}">${gapText}</span>
-      <span class="last-lap-time">${fmtTimeSimple(car.lastLapTime)}</span>
-    `;
-    competitorListContainer.appendChild(driverRow);
-  }
-}
 
 
-function handleData(data) {
-  renderRelative(data);
-}
+            if (car.onPit) classes += ' pit';
+            el.className = classes;
 
-// --- UI Interactions (same as before) ---
-document.addEventListener('DOMContentLoaded', async () => {
-    const settingsPopover = document.getElementById('settings-popover');
-    const settingsBtn = document.getElementById('settingsBtn');
-    const wrapper = document.getElementById('wrapper');
-    const rangeOpacity = document.getElementById('rangeOpacity');
-    const rangeContrast = document.getElementById('rangeContrast');
+            let gapText;
+            let gapTextColorClass = '';
+            let lapDiffIndicator = '';
 
-    if (settingsBtn && settingsPopover) {
-        settingsBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent click from immediately closing popover
-            settingsPopover.style.display = settingsPopover.style.display === 'block' ? 'none' : 'block';
-        });
-    }
-    // Close popover if clicked outside
-    document.addEventListener('click', (e) => {
-        if (settingsPopover && settingsPopover.style.display === 'block' && 
-            !settingsPopover.contains(e.target) && e.target !== settingsBtn) {
-            settingsPopover.style.display = 'none';
-        }
-    });
-
-    if (rangeOpacity && wrapper) {
-        rangeOpacity.addEventListener('input', (e) => wrapper.style.opacity = e.target.value);
-        wrapper.style.opacity = rangeOpacity.value; // Initialize
-    }
-    if (rangeContrast && wrapper) {
-        rangeContrast.addEventListener('input', (e) => wrapper.style.filter = `contrast(${e.target.value})`);
-        wrapper.style.filter = `contrast(${rangeContrast.value})`; // Initialize
-    }
-    
-    const closeBtn = document.getElementById('closeBtn');
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            if (overlayAPI.close) overlayAPI.close();
-            else window.close(); // Fallback for browser testing
-        };
-    }
-    const pinBtn = document.getElementById('pinBtn');
-    let isPinned = false; 
-    if (pinBtn) {
-        pinBtn.onclick = () => {
-            isPinned = !isPinned;
-            if (overlayAPI.pin) overlayAPI.pin(isPinned);
-            else if (overlayAPI.setAlwaysOnTop) overlayAPI.setAlwaysOnTop(isPinned);
-            pinBtn.style.backgroundColor = isPinned ? '#22c55e' : '#334155';
-            pinBtn.title = isPinned ? "Desafixar do topo" : "Sempre visível";
-        };
-    }
-    const lockBtn = document.getElementById('lockBtn');
-    let isLocked = false;
-    if (lockBtn && wrapper) {
-        lockBtn.onclick = () => {
-            isLocked = !isLocked;
-            if (overlayAPI.lock) overlayAPI.lock(isLocked);
-            else {
-                   wrapper.style.webkitAppRegion = isLocked ? 'no-drag' : 'drag';
-                   Array.from(document.querySelectorAll('.resize-handle')).forEach(h => {
-                       h.style.pointerEvents = isLocked ? 'none' : 'auto';
-                   });
+            if (car.idx === player.idx) {
+                gapText = '0.0';
+            } else if (car.timeGap === undefined || car.timeGap === null) { 
+                gapText = '---';
+            } else { 
+                gapText = (car.timeGap > 0 ? '+' : '') + car.timeGap.toFixed(1);
+                if (car.timeGap > 0) {
+                    gapTextColorClass = 'gap-positive';
+                } else if (car.timeGap < 0) {
+                    gapTextColorClass = 'gap-negative';
+                }
             }
-            lockBtn.innerHTML = isLocked ? '🔓' : '🔒';
-            lockBtn.title = isLocked ? "Destravar movimento/redimensionamento" : "Travar posição/tamanho";
-            lockBtn.style.backgroundColor = isLocked ? '#22c55e' : '#334155';
-        };
-    }
-    const clickBtn = document.getElementById('clickBtn');
-    let isClickThrough = false;
-    if (clickBtn) {
-        clickBtn.onclick = () => {
-            isClickThrough = !isClickThrough;
-            if (overlayAPI.setIgnoreMouseEvents) overlayAPI.setIgnoreMouseEvents(isClickThrough);
-            clickBtn.innerHTML = isClickThrough ? '🖱️<span style="color:red;">🚫</span>' : '🖱️';
-            clickBtn.title = isClickThrough ? "Permitir cliques na overlay" : "Ignorar cliques (click-through)";
-            clickBtn.style.backgroundColor = isClickThrough ? '#ef4444' : '#334155';
-        };
-    }
-    const minimizeBtn = document.getElementById('minimizeBtn');
-    if(minimizeBtn){
-        minimizeBtn.onclick = () => {
-            if(overlayAPI.minimize) overlayAPI.minimize();
-            else console.log("Minimize action requested (no API).");
+            
+            if (sessionType === 'Race' && car.lapDiff !== 0 && car.lapDiff !== undefined && car.lapDiff !== null) {
+                const signedLapDiff = car.lapDiff > 0 ? `+${car.lapDiff}L` : `${car.lapDiff}L`;
+                lapDiffIndicator = `<span class="lap-diff-indicator">${signedLapDiff}</span>`;
+            }
+
+            const irating = car.irating > 0 ? `${(car.irating / 1000).toFixed(1)}k` : '---';
+            let carNumberColorClass = getCarNumberColorClass(car.carClassShortName, numCarClasses);
+            
+            if (car.idx === player.idx) {
+                carNumberColorClass = 'player-car-number';
+            }
+            
+            const pitStatusText = car.onPit ? 'PIT' : '';
+
+            el.innerHTML = `
+                <span class="pos">${car.pos || '--'}</span>
+                <span class="car-number ${carNumberColorClass}">#${car.num}</span>
+                <span class="pit-status">${pitStatusText}</span>
+                <div class="rating-container">
+                    <span class="sr-badge badge ${getSRClass(car.lic)}">${car.lic || '--'}</span>
+                    <span class="irating-badge badge">${irating}</span>
+                </div>
+                <span class="driver-name">${car.name}</span>
+                <span class="gap-time">
+                    <span class="gap-time-value ${gapTextColorClass}">${gapText}</span>
+                    ${lapDiffIndicator}
+                </span>`;
+            competitorListContainer.appendChild(el);
         }
-    }
 
-    let resizing = false;
-    let currentHandle = null;
-    let startX, startY, startWidth, startHeight;
+        function connectWS() {
+            if (websocket && (websocket.readyState === WebSocket.OPEN || websocket.readyState === WebSocket.CONNECTING)) {
+                console.log("WebSocket já está conectado ou conectando.");
+                return;
+            }
 
-    document.querySelectorAll('.resize-handle').forEach(handle => {
-        handle.addEventListener('mousedown', (e) => {
-            if (isLocked) return;
-            resizing = true;
-            currentHandle = handle.id;
-            startX = e.clientX;
-            startY = e.clientY;
-            const rect = wrapper.getBoundingClientRect();
-            startWidth = rect.width;
-            startHeight = rect.height;
-            wrapper.style.webkitAppRegion = 'no-drag';
-            e.preventDefault();
+            websocket = new WebSocket(WS_URL);
+
+            websocket.onopen = () => {
+                console.log('Conectado ao Backend WebSocket:', WS_URL);
+                if (competitorListContainer) {
+                     competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Conectado. Aguardando dados...</div>`;
+                }
+            };
+
+            websocket.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    renderRelative(data);
+                } catch (e) {
+                    console.error('Erro ao processar mensagem do WebSocket:', e);
+                     if (competitorListContainer) {
+                        competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Erro ao processar dados.</div>`;
+                    }
+                }
+            };
+
+            websocket.onerror = (error) => {
+                console.error('Erro no WebSocket:', error);
+                if (competitorListContainer) {
+                    competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Erro de conexão. Tentando reconectar...</div>`;
+                }
+            };
+
+            websocket.onclose = (event) => {
+                console.log('WebSocket desconectado:', event.code, event.reason);
+                if (competitorListContainer) {
+                    const message = event.wasClean ? 'Desconectado.' : 'Conexão perdida.';
+                    competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">${message} Tentando reconectar em 3s...</div>`;
+                }
+
+                // Only attempt to reconnect if it wasn't a clean close (e.g., user closed the overlay)
+                // or if the server explicitly indicates an issue that might be resolvable by reconnecting.
+                if (event.code !== 1000 && event.code !== 1001 && event.code !== 1005 ) { // 1000: Normal, 1001: Going Away, 1005: No Status Recvd
+                     setTimeout(connectWS, 3000);
+                } else if (!event.wasClean) { // If not clean and also not one of the above, still try.
+                     setTimeout(connectWS, 3000);
+                }
+
+            };
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const settingsPopover = document.getElementById('settings-popover');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const wrapper = document.getElementById('wrapper');
+            const lockBtn = document.getElementById('lockBtn');
+
+            competitorListContainer = document.getElementById('competitor-list-container');
+
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    settingsPopover.classList.toggle('hidden');
+                });
+            }
+            document.addEventListener('click', (e) => {
+                if (settingsPopover && !settingsPopover.classList.contains('hidden') && !settingsPopover.contains(e.target) && e.target !== settingsBtn) {
+                    settingsPopover.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('rangeOpacity')?.addEventListener('input', (e) => wrapper.style.opacity = e.target.value);
+            document.getElementById('rangeContrast')?.addEventListener('input', (e) => wrapper.style.filter = `contrast(${e.target.value})`);
+
+            document.getElementById('closeBtn')?.addEventListener('click', () => {
+                if (websocket && websocket.readyState === WebSocket.OPEN) {
+                    websocket.close(1000, "User closed overlay"); 
+                }
+                if (window.overlayAPI && window.overlayAPI.close) {
+                    window.overlayAPI.close();
+                } else {
+                    try { window.close(); } catch (e) { console.warn("window.close() failed.")}
+                }
+            });
+
+            let isLocked = false;
+            if (lockBtn) {
+                lockBtn.addEventListener('click', (e) => {
+                    isLocked = !isLocked;
+                    wrapper.style.webkitAppRegion = isLocked ? 'no-drag' : 'drag';
+                    wrapper.style.resize = isLocked ? 'none' : 'both';
+                    e.currentTarget.innerHTML = isLocked ? '🔓' : '🔒';
+                });
+            }
+
+            document.getElementById('pinBtn')?.addEventListener('click', () => {
+                alert('A funcionalidade "Sobrepor todas as janelas" (Always On Top) geralmente requer permissões do sistema operacional ou um ambiente de aplicativo nativo (como Electron ou NW.js) para funcionar. Em um navegador web padrão, esta função não é diretamente suportada.');
+            });
+
+            document.getElementById('passThroughBtn')?.addEventListener('click', () => {
+                alert('A funcionalidade de "Passagem de Clique" (Click-Through) geralmente requer permissões do sistema operacional ou um ambiente de aplicativo nativo (como Electron ou NW.js) para funcionar. Em um navegador web padrão, esta função não é diretamente suportada.');
+            });
+
+            connectWS(); 
         });
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (!resizing || isLocked) return;
-        let newWidth = startWidth;
-        let newHeight = startHeight;
-        let newLeft = parseFloat(wrapper.style.left || getComputedStyle(wrapper).left);
-        let newTop = parseFloat(wrapper.style.top || getComputedStyle(wrapper).top);
-
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-
-        if (currentHandle.includes('right')) newWidth = startWidth + dx;
-        if (currentHandle.includes('bottom')) newHeight = startHeight + dy;
-        if (currentHandle.includes('left')) {
-            newWidth = startWidth - dx;
-        }
-        if (currentHandle.includes('top')) {
-            newHeight = startHeight - dy;
-        }
-        
-        if (currentHandle.includes('left')) {
-            wrapper.style.left = `${newLeft + dx}px`;
-        }
-        if (currentHandle.includes('top')) {
-            wrapper.style.top = `${newTop + dy}px`;
-        }
-
-        const minWidth = parseFloat(getComputedStyle(wrapper).minWidth);
-        const minHeight = parseFloat(getComputedStyle(wrapper).minHeight);
-        wrapper.style.width = `${Math.max(newWidth, minWidth)}px`;
-        wrapper.style.height = `${Math.max(newHeight, minHeight)}px`;
-    });
-
-    document.addEventListener('mouseup', () => {
-        if (resizing) {
-            resizing = false;
-            currentHandle = null;
-            if(!isLocked) wrapper.style.webkitAppRegion = 'drag';
-        }
-    });
-
-    const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
-    isElectron = enableBrowserEditMode('wrapper', overlayHeader);
-    initOverlayWebSocket(handleData);
-});
-
-</script>
+    </script>
+    <!-- <script type="module" src="index.js"></script> --> 
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
