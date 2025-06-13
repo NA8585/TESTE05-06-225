@@ -364,24 +364,281 @@
             }
         }
 
-        function fmtTimeSimple(s) {
-            if (typeof s !== 'number' || !isFinite(s) || s < 0 || s > 1e9) return '--:--:--';
-            const date = new Date(s * 1000);
-            const hh = date.getUTCHours().toString().padStart(2, '0');
-            const mm = date.getUTCMinutes().toString().padStart(2, '0');
-            const ss = date.getUTCSeconds().toString().padStart(2, '0');
-            return `${hh}:${mm}:${ss}`;
-        }
+const competitorListContainer = document.getElementById('competitor-list-container');
+const overlayAPI = window.overlayAPI || window.api || {}; // For potential interactions
+const overlayHeader = document.querySelector('.overlay-header');
+let isElectron = !!window.electronAPI;
 
-        function getSRClass(lic) {
-            if (!lic) return 'sr-DEFAULT';
-            const srPart = lic.split(' ')[0];
-            return `sr-${srPart.charAt(0).toUpperCase()}` || 'sr-DEFAULT';
-        }
+// --- Helper Functions ---
+function parseYaml(yamlStr) {
+  try {
+    // Note: The backend is now sending parsed YAML data as part of the TelemetryModel,
+    // so direct YAML parsing in the frontend might not be strictly necessary for all fields,
+    // but it's kept here for SessionInfoYaml which is still passed as a string.
+    return jsyaml.load(yamlStr || '');
+  } catch (e) {
+    console.error('Error parsing YAML:', e, "Raw YAML:", yamlStr);
+    return {};
+  }
+}
 
-        function getCarNumberColorClass(carClassShortName, numCarClasses) {
-            if (numCarClasses === 1) {
-                return 'single-class';
+function fmtTimeSimple(s, showHundredths = true) {
+  if (typeof s !== 'number' || !isFinite(s) || s < 0) return '---';
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const secs = Math.floor(s % 60);
+  const hundreths = Math.floor((s * 100) % 100);
+
+  if (h > 0) {
+    return `${h.toString()}:${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  if (showHundredths) {
+    return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${hundreths.toString().padStart(2, '0')}`;
+  }
+  return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function getSRClass(licString) {
+    if (!licString || typeof licString !== 'string') return 'sr-DEFAULT';
+    const srPart = licString.split(' ')[0]; // "A", "B3.45" -> "A" or "B3.45"
+    const match = srPart?.match(/^([ABCDRPIX])/i); // Added X for potential other classes
+    return match ? `sr-${match[1].toUpperCase()}` : 'sr-DEFAULT';
+}
+
+function getCarClassColorCss(carClassShortName) {
+    if (!carClassShortName) return 'class-color-DEFAULT';
+    const upperClass = carClassShortName.toUpperCase().replace(/[^A-Z0-9]/g, ''); // Sanitize
+    switch (upperClass) {
+        case 'GT3': return 'class-color-GT3';
+        case 'LMP2': return 'class-color-LMP2';
+        case 'GTE': return 'class-color-GTE';
+        case 'TCR': return 'class-color-TCR';
+        case 'GT4': return 'class-color-GT4';
+        case 'LMP3': return 'class-color-LMP3';
+        // Add more common iRacing classes if needed
+        default: return 'class-color-DEFAULT';
+    }
+}
+
+function getCarLogoPath(carScreenName) {
+    // This remains a placeholder. You'd fill this with actual paths based on carScreenName
+    // const logos = { 'Porsche 911 GT3 R (992)': 'logos/porsche_992_gt3r.png', ... };
+    // return logos[carScreenName] || '';
+    return ''; 
+}
+
+// Global cache for YAML data to avoid re-parsing on every tick if session info doesn't change
+let cachedDriverInfo = null;
+let cachedWeekendInfo = null;
+let cachedSessionInfo = null;
+let lastSessionInfoYaml = '';
+
+function renderRelative(data) {
+  if (!data) {
+    console.warn("renderRelative called with no data.");
+    return;
+  }
+
+  // Flatten possible sub-models from new TelemetryModel structure
+  data = { ...data, ...(data.session || {}), ...(data.vehicle || {}), ...(data.tyres || {}), ...(data.damage || {}) };
+
+  // Prefer typed YAML objects from the backend when available
+  if (Array.isArray(data.yamlDrivers)) {
+      cachedDriverInfo = data.yamlDrivers;
+  }
+  if (data.yamlWeekendInfo) {
+      cachedWeekendInfo = data.yamlWeekendInfo;
+  }
+  if (data.yamlSessionInfo) {
+      cachedSessionInfo = data.yamlSessionInfo;
+  }
+
+  // Fallback: parse raw YAML only if typed info missing
+  if (!cachedDriverInfo && data.sessionInfoYaml && data.sessionInfoYaml !== lastSessionInfoYaml) {
+      const parsedYaml = parseYaml(data.sessionInfoYaml);
+      cachedDriverInfo = parsedYaml?.DriverInfo?.Drivers;
+      cachedWeekendInfo = parsedYaml?.WeekendInfo;
+      if (parsedYaml?.SessionInfo) {
+          cachedSessionInfo = { ...parsedYaml.SessionInfo };
+          if (Array.isArray(parsedYaml.SessionInfo.Sessions)) {
+              cachedSessionInfo.allSessionsFromYaml = parsedYaml.SessionInfo.Sessions;
+          }
+      }
+      lastSessionInfoYaml = data.sessionInfoYaml;
+  }
+
+  const weekendInfo = cachedWeekendInfo || {};
+  let currentSessionYamlData = {};
+  if (cachedSessionInfo) {
+      if (Array.isArray(cachedSessionInfo.allSessionsFromYaml)) {
+          currentSessionYamlData = cachedSessionInfo.allSessionsFromYaml.find(s => s.sessionNum === data.sessionNum) || cachedSessionInfo;
+      } else if (Array.isArray(cachedSessionInfo)) {
+          currentSessionYamlData = cachedSessionInfo.find(s => s.SessionNum === data.sessionNum) || {};
+      } else {
+          currentSessionYamlData = cachedSessionInfo;
+      }
+  }
+  const playerDriverYaml = (cachedDriverInfo || []).find(d => (d.carIdx ?? d.CarIdx) === data.playerCarIdx);
+
+
+  // === Update Header and Footer ===
+  document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.trackDisplayName || '--'}`;
+  document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(data.sessionTime, false) || '00:00'}`;
+  let amb = undefined;
+  if (typeof data.airTemp === 'number' && data.airTemp > 0) {
+      amb = data.airTemp;
+  } else if (typeof data.trackAirTemp === 'number' && data.trackAirTemp > 0) {
+      amb = data.trackAirTemp;
+  } else if (typeof data.tempValue === 'number' && data.tempValue > 0) {
+      amb = data.tempValue;
+  } else if (typeof weekendInfo.trackAirTemp === 'number' &&
+             weekendInfo.trackAirTemp > 0) {
+      amb = weekendInfo.trackAirTemp;
+  }
+  document.getElementById('ambientTemp').textContent = `${typeof amb === 'number' ? amb.toFixed(1) : '--'}`;
+  
+  let trackTempValue = '--';
+  if (typeof data.trackSurfaceTemp === 'number' && data.trackSurfaceTemp > -100) {
+      trackTempValue = data.trackSurfaceTemp.toFixed(1);
+  } else if (typeof data.trackTempCrew === 'number' && data.trackTempCrew > -100) {
+      trackTempValue = data.trackTempCrew.toFixed(1);
+  }
+  document.getElementById('trackTemp').textContent = trackTempValue;
+  document.getElementById('brakeBias').textContent = `${typeof data.dcBrakeBias === 'number' ? (data.dcBrakeBias * 100).toFixed(1) : '--'}`;
+  
+  document.getElementById('sessionTimeRemaining').textContent = `${fmtTimeSimple(data.sessionTimeRemain, false) || '00:00'}`;
+  const playerLap = data.lap ?? '--';
+  const totalLapsSess = currentSessionYamlData?.currentSessionTotalLaps === -1
+        ? '∞'
+        : (currentSessionYamlData?.currentSessionTotalLaps ?? currentSessionYamlData?.sessionLapsTotal ?? '--');
+  document.getElementById('lapsCompleted').textContent = `${playerLap}`;
+  document.getElementById('totalLaps').textContent = `${totalLapsSess}`;
+
+  // Use IncidentLimit from the current session in YAML
+  const incidentLimit = currentSessionYamlData?.incidentLimit ?? weekendInfo.incidentLimit ?? 'N/A';
+  const playerIncidents = data.playerCarTeamIncidentCount ?? '--';
+  const penaltyEl = document.getElementById('penaltyStatus');
+  penaltyEl.textContent = `Inc: ${playerIncidents}/${incidentLimit}`;
+  penaltyEl.className = 'text-white'; 
+  if (playerDriverYaml?.IsSpectator === 1) { // Check from YAML driver info
+      penaltyEl.textContent = 'Spectator';
+  } else if (typeof playerIncidents === 'number' && typeof incidentLimit === 'number' && incidentLimit > 0) {
+    if (playerIncidents >= incidentLimit) {
+        penaltyEl.classList.remove('penalty-warning');
+        penaltyEl.classList.add('penalty-critical');
+    } else if (playerIncidents >= incidentLimit * 0.75) {
+        penaltyEl.classList.remove('penalty-critical');
+        penaltyEl.classList.add('penalty-warning');
+    } else {
+        penaltyEl.classList.remove('penalty-warning', 'penalty-critical');
+    }
+  }
+
+  // Track Status based on TelemetryModel.TrackGripStatus (calculated in backend)
+  const trackStatusEl = document.getElementById('trackStatus');
+  let trackStatusText = data.trackGripStatus || data.skies || '--'; // Use trackGripStatus first, then skies
+  let trackStatusClass = 'status-cloudy'; 
+
+  // Map backend's TrackGripStatus to frontend classes
+  if (trackStatusText.toLowerCase().includes('very wet') || trackStatusText.toLowerCase().includes('wet')) {
+      trackStatusClass = 'status-wet';
+  } else if (trackStatusText.toLowerCase().includes('damp') || trackStatusText.toLowerCase().includes('dry')) {
+      trackStatusClass = 'status-dry';
+  } else if (trackStatusText.toLowerCase().includes('clear') || trackStatusText.toLowerCase().includes('sunny')) { // Fallback for 'Skies'
+      trackStatusClass = 'status-dry';
+  }
+
+  trackStatusEl.textContent = `Track: ${trackStatusText}`;
+  trackStatusEl.className = ''; // Reset classes
+  trackStatusEl.classList.add(trackStatusClass);
+
+
+  // === Process Driver Data for Relative Display ===
+  const driversFromYaml = cachedDriverInfo || []; // Use cached driver info from YAML
+  const playerCarIdx = data.playerCarIdx;
+
+  // Arrays provided by TelemetryModel for each car index
+  // (carIdxPosition, carIdxLap, carIdxOnPitRoad, carIdxTrackSurface,
+  //  carIdxLastLapTime, carIdxF2Time, etc.) are used to build the table below.
+
+  // Placeholder/simulated data for demonstration IF backend doesn't send arrays
+  // In a real scenario, these arrays should come directly from 'data' object.
+  const carPositionsFromBackend = data.carIdxPosition || []; // This needs to be populated in backend
+  const carLapsCompletedFromBackend = data.carIdxLap || []; // This needs to be populated in backend
+  const carOnPitRoadFromBackend = data.carIdxOnPitRoad || []; // This needs to be populated in backend
+  const carTrackSurfaceFromBackend = data.carIdxTrackSurface || []; // This needs to be populated in backend (for DNF)
+  const carLastLapTimesFromBackend = data.carIdxLastLapTime || []; // This needs to be populated in backend
+  const carF2TimeFromBackend = data.carIdxF2Time || []; // This needs to be populated in backend
+
+  let carsData = [];
+
+  // Iterate through all drivers found in YAML to build the list
+  // and try to match with real-time data from backend
+  for (let i = 0; i < driversFromYaml.length; i++) {
+    const driverYaml = driversFromYaml[i];
+    const carIdx = driverYaml.carIdx ?? driverYaml.CarIdx;
+
+    // We need real-time position for filtering/sorting. If not available, skip.
+    // Assuming carPositionsFromBackend has valid position at carIdx.
+    const pos = carPositionsFromBackend[carIdx];
+    if (pos === undefined || pos < 0) continue; // Skip if no valid real-time position
+
+    carsData.push({
+      idx: carIdx,
+      pos: pos,
+      num: driverYaml.carNumberRaw !== undefined
+            ? driverYaml.carNumberRaw.toString()
+            : ((driverYaml.carNumber ?? driverYaml.CarNumber) || '--'),
+      name: (driverYaml.userName ?? driverYaml.UserName) || 'Desconhecido',
+      team: (driverYaml.teamName ?? driverYaml.TeamName) || '',
+      irating: (driverYaml.iRating ?? driverYaml.IRating) || 0,
+      lic: (driverYaml.licString ?? driverYaml.LicString) || 'R ----',
+      carClassShort: (driverYaml.carClassShortName ?? driverYaml.CarClassShortName) || '',
+      carScreenName: (driverYaml.carScreenName ?? driverYaml.CarScreenName) || '',
+      lap: carLapsCompletedFromBackend[carIdx],
+      lastLapTime: carLastLapTimesFromBackend[carIdx],
+      onPit: carOnPitRoadFromBackend[carIdx],
+      isDNF: carTrackSurfaceFromBackend[carIdx] === 4, // irsdk_TrkLoc.irsdk_NotInWorld
+      f2Time: carF2TimeFromBackend[carIdx], // Time relative to player if available
+    });
+  }
+
+  // Sort by actual race position
+  carsData.sort((a, b) => a.pos - b.pos);
+
+  const playerInSortedList = carsData.find(c => c.idx === playerCarIdx);
+  const playerDisplayIndex = playerInSortedList ? carsData.indexOf(playerInSortedList) : -1;
+
+  if (!competitorListContainer) {
+    console.error("#competitor-list-container not found");
+    return;
+  }
+  competitorListContainer.innerHTML = ''; // Clear previous entries
+
+  const N_BEFORE = 4;
+  const N_AFTER = 5; 
+  const displayStartIdx = playerDisplayIndex !== -1 ? Math.max(0, playerDisplayIndex - N_BEFORE) : 0;
+  const displayEndIdx = playerDisplayIndex !== -1 ? Math.min(carsData.length, playerDisplayIndex + N_AFTER + 1) : Math.min(carsData.length, N_BEFORE + N_AFTER + 1);
+
+  for (let i = displayStartIdx; i < displayEndIdx; i++) {
+    const car = carsData[i];
+    if (!car) continue;
+
+    const driverRow = document.createElement('div');
+    driverRow.className = 'driver-row';
+    if (car.idx === playerCarIdx) driverRow.classList.add('highlight-self');
+    if (car.isDNF) driverRow.classList.add('dnf');
+    if (car.onPit && !car.isDNF) driverRow.classList.add('pit');
+    
+    let gapText = '---';
+    let gapClass = 'gap-neutral';
+
+    if (playerInSortedList && car.idx !== playerCarIdx) {
+        if (playerInSortedList.lap === car.lap && car.f2Time !== undefined && car.f2Time !== -1) {
+            const timeDiff = car.f2Time;
+            if (Math.abs(timeDiff) <= 60) {
+                gapText = (timeDiff > 0 ? '+' : '') + timeDiff.toFixed(2);
+                gapClass = timeDiff > 0 ? 'gap-positive' : (timeDiff < 0 ? 'gap-negative' : 'gap-neutral');
             }
             // Adjusted to match mock data CarClassShortName values
             switch (carClassShortName) {

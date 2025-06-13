@@ -516,7 +516,8 @@ namespace SuperBackendNR85IA.Services
                 t.TrackWindVel        = wkd.TrackWindVel;
                 t.WindSpeed           = wkd.WindSpeed;
                 t.WindDir             = wkd.WindDir;
-                t.TrackAirTemp        = wkd.TrackAirTemp;
+                t.TrackAirTemp        = wkd.TrackAirTemp > 0 ?
+                                         wkd.TrackAirTemp : t.AirTemp;
                 t.TrackNumTurns       = wkd.TrackNumTurns;
                 t.AirPressure         = wkd.AirPressure;
                 t.RelativeHumidity    = wkd.RelativeHumidity;
