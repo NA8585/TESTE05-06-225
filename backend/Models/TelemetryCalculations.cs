@@ -112,6 +112,22 @@ namespace SuperBackendNR85IA.Calculations
             return (gapAhead, gapBehind);
         }
 
+        public static (int idxAhead, int idxBehind) GetAdjacentIndices(int playerIdx, int[] carPositions)
+        {
+            int ahead = -1, behind = -1;
+            if (carPositions != null && playerIdx >= 0 && playerIdx < carPositions.Length)
+            {
+                int myPos = carPositions[playerIdx];
+                for (int i = 0; i < carPositions.Length; i++)
+                {
+                    if (carPositions[i] == myPos - 1) ahead = i;
+                    else if (carPositions[i] == myPos + 1) behind = i;
+                    if (ahead >= 0 && behind >= 0) break;
+                }
+            }
+            return (ahead, behind);
+        }
+
         // --- STANDINGS ---
         public static List<T> GetRelativeData<T>(List<T> relativeCars) =>
             relativeCars ?? new List<T>();
