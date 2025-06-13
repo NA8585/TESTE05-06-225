@@ -20,6 +20,7 @@ namespace SuperBackendNR85IA.Services
                 object? value = null;
                 if (typeof(T) == typeof(float)) value = data.GetFloat(datum);
                 else if (typeof(T) == typeof(int)) value = data.GetInt(datum);
+                else if (typeof(T) == typeof(long)) value = (long)data.GetInt(datum);
                 else if (typeof(T) == typeof(bool)) value = data.GetBool(datum);
                 else if (typeof(T) == typeof(double)) value = data.GetDouble(datum);
                 else
