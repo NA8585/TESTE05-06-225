@@ -150,7 +150,17 @@
         document.getElementById('raceTime').textContent = fmtTime(t);
       }
 
-      const ambient = data.trackAirTemp ?? data.weekendInfo?.trackAirTemp;
+      let ambient = undefined;
+      if (typeof data.airTemp === 'number' && data.airTemp > 0) {
+        ambient = data.airTemp;
+      } else if (typeof data.trackAirTemp === 'number' && data.trackAirTemp > 0) {
+        ambient = data.trackAirTemp;
+      } else if (typeof data.tempValue === 'number' && data.tempValue > 0) {
+        ambient = data.tempValue;
+      } else if (typeof data.weekendInfo?.trackAirTemp === 'number' &&
+                 data.weekendInfo.trackAirTemp > 0) {
+        ambient = data.weekendInfo.trackAirTemp;
+      }
       if (ambient !== undefined) {
         document.getElementById('ambientTemp').textContent = Math.round(ambient);
       }

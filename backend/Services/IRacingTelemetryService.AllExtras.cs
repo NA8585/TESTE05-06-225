@@ -72,7 +72,7 @@ namespace SuperBackendNR85IA.Services
 
         private void PopulateSessionEnvironmentData(IRacingSdkData d, TelemetryModel t)
         {
-            t.Session.SessionUniqueID = GetSdkValue<int>(d, "SessionUniqueID") ?? 0;
+            t.Session.SessionUniqueID = GetSdkValue<long>(d, "SessionUniqueID") ?? 0;
             t.Session.SessionTick = GetSdkValue<int>(d, "SessionTick") ?? 0;
             t.Session.SessionTimeTotal = GetSdkValue<float>(d, "SessionTimeTotal") ?? 0f;
             t.Environment.WeatherDeclaredWet = GetSdkValue<bool>(d, "WeatherDeclaredWet") ?? false;

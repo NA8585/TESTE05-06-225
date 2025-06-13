@@ -495,8 +495,17 @@ function renderRelative(data) {
   // === Update Header and Footer ===
   document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.trackDisplayName || '--'}`;
   document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(data.sessionTime, false) || '00:00'}`;
-  const amb = typeof data.trackAirTemp === 'number' ? data.trackAirTemp
-               : (typeof data.tempValue === 'number' ? data.tempValue : undefined);
+  let amb = undefined;
+  if (typeof data.airTemp === 'number' && data.airTemp > 0) {
+      amb = data.airTemp;
+  } else if (typeof data.trackAirTemp === 'number' && data.trackAirTemp > 0) {
+      amb = data.trackAirTemp;
+  } else if (typeof data.tempValue === 'number' && data.tempValue > 0) {
+      amb = data.tempValue;
+  } else if (typeof weekendInfo.trackAirTemp === 'number' &&
+             weekendInfo.trackAirTemp > 0) {
+      amb = weekendInfo.trackAirTemp;
+  }
   document.getElementById('ambientTemp').textContent = `${typeof amb === 'number' ? amb.toFixed(1) : '--'}`;
   
   let trackTempValue = '--';
@@ -588,13 +597,15 @@ function renderRelative(data) {
     carsData.push({
       idx: carIdx,
       pos: pos,
-      num: driverYaml.carNumberRaw !== undefined ? driverYaml.carNumberRaw.toString() : (driverYaml.carNumber ?? driverYaml.CarNumber || '--'),
-      name: driverYaml.userName ?? driverYaml.UserName || 'Desconhecido',
-      team: driverYaml.teamName ?? driverYaml.TeamName || '',
-      irating: driverYaml.iRating ?? driverYaml.IRating || 0,
-      lic: driverYaml.licString ?? driverYaml.LicString || 'R ----',
-      carClassShort: driverYaml.carClassShortName ?? driverYaml.CarClassShortName || '',
-      carScreenName: driverYaml.carScreenName ?? driverYaml.CarScreenName || '',
+      num: driverYaml.carNumberRaw !== undefined
+            ? driverYaml.carNumberRaw.toString()
+            : ((driverYaml.carNumber ?? driverYaml.CarNumber) || '--'),
+      name: (driverYaml.userName ?? driverYaml.UserName) || 'Desconhecido',
+      team: (driverYaml.teamName ?? driverYaml.TeamName) || '',
+      irating: (driverYaml.iRating ?? driverYaml.IRating) || 0,
+      lic: (driverYaml.licString ?? driverYaml.LicString) || 'R ----',
+      carClassShort: (driverYaml.carClassShortName ?? driverYaml.CarClassShortName) || '',
+      carScreenName: (driverYaml.carScreenName ?? driverYaml.CarScreenName) || '',
       lap: carLapsCompletedFromBackend[carIdx],
       lastLapTime: carLastLapTimesFromBackend[carIdx],
       onPit: carOnPitRoadFromBackend[carIdx],

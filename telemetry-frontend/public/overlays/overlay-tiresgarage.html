@@ -750,7 +750,7 @@
                     wear:  { left:(src.lfWear?.[0]||0), middle:(src.lfWear?.[1]||0), right:(src.lfWear?.[2]||0) },
                     temp:  { left:src.lfTempCl||0, middle:src.lfTempCm||0, right:src.lfTempCr||0 },
                     pressure: src.lfPress || 0,
-                    lastHotPressure: src.lfLastHotPress ?? src.lfPress || 0,
+                    lastHotPressure: (src.lfLastHotPress ?? src.lfPress) || 0,
                     treadRemaining: { left:(src.lfTreadRemainingParts?.[0]||src.lfWear?.[0]||0), middle:(src.lfTreadRemainingParts?.[1]||src.lfWear?.[1]||0), right:(src.lfTreadRemainingParts?.[2]||src.lfWear?.[2]||0) },
                     compound: comp
                 },
@@ -758,7 +758,7 @@
                     wear:  { left:(src.rfWear?.[0]||0), middle:(src.rfWear?.[1]||0), right:(src.rfWear?.[2]||0) },
                     temp:  { left:src.rfTempCl||0, middle:src.rfTempCm||0, right:src.rfTempCr||0 },
                     pressure: src.rfPress || 0,
-                    lastHotPressure: src.rfLastHotPress ?? src.rfPress || 0,
+                    lastHotPressure: (src.rfLastHotPress ?? src.rfPress) || 0,
                     treadRemaining: { left:(src.rfTreadRemainingParts?.[0]||src.rfWear?.[0]||0), middle:(src.rfTreadRemainingParts?.[1]||src.rfWear?.[1]||0), right:(src.rfTreadRemainingParts?.[2]||src.rfWear?.[2]||0) },
                     compound: comp
                 },
@@ -766,7 +766,7 @@
                     wear:  { left:(src.lrWear?.[0]||0), middle:(src.lrWear?.[1]||0), right:(src.lrWear?.[2]||0) },
                     temp:  { left:src.lrTempCl||0, middle:src.lrTempCm||0, right:src.lrTempCr||0 },
                     pressure: src.lrPress || 0,
-                    lastHotPressure: src.lrLastHotPress ?? src.lrPress || 0,
+                    lastHotPressure: (src.lrLastHotPress ?? src.lrPress) || 0,
                     treadRemaining: { left:(src.lrTreadRemainingParts?.[0]||src.lrWear?.[0]||0), middle:(src.lrTreadRemainingParts?.[1]||src.lrWear?.[1]||0), right:(src.lrTreadRemainingParts?.[2]||src.lrWear?.[2]||0) },
                     compound: comp
                 },
@@ -774,7 +774,7 @@
                     wear:  { left:(src.rrWear?.[0]||0), middle:(src.rrWear?.[1]||0), right:(src.rrWear?.[2]||0) },
                     temp:  { left:src.rrTempCl||0, middle:src.rrTempCm||0, right:src.rrTempCr||0 },
                     pressure: src.rrPress || 0,
-                    lastHotPressure: src.rrLastHotPress ?? src.rrPress || 0,
+                    lastHotPressure: (src.rrLastHotPress ?? src.rrPress) || 0,
                     treadRemaining: { left:(src.rrTreadRemainingParts?.[0]||src.rrWear?.[0]||0), middle:(src.rrTreadRemainingParts?.[1]||src.rrWear?.[1]||0), right:(src.rrTreadRemainingParts?.[2]||src.rrWear?.[2]||0) },
                     compound: comp
                 }
