@@ -13,6 +13,7 @@ builder.WebHost.UseUrls("http://localhost:5221");
 // DI ------------------------------------------------------------------------
 builder.Services.AddSingleton<TelemetryBroadcaster>();
 builder.Services.AddSingleton<CarTrackDataStore>();
+builder.Services.AddSingleton<SessionYamlParser>();
 builder.Services.AddHostedService<IRacingTelemetryService>();
 
 // Serializa todas as propriedades em camelCase

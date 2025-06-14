@@ -1,12 +1,40 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using SuperBackendNR85IA.Models;
 
 namespace SuperBackendNR85IA.Calculations
 {
     public static class TelemetryCalculations
     {
+        private static ILogger? _logger;
+
+        public static void SetLogger(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        private static float ValidateFloat(float value, string context)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+            {
+                _logger?.LogError($"Invalid float value in {context}: {value}");
+                return 0f;
+            }
+            return value;
+        }
+
+        private static double ValidateDouble(double value, string context)
+        {
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                _logger?.LogError($"Invalid double value in {context}: {value}");
+                return 0.0;
+            }
+            return value;
+        }
+
         // --- SESSÃO ---
         public static double GetSessionTime(double? sessionTime) => sessionTime ?? 0;
 
@@ -37,9 +65,17 @@ namespace SuperBackendNR85IA.Calculations
             float effectiveLapsCompleted = (currentLapNumber - 1) + currentLapDistPct;
             if (effectiveLapsCompleted > 0.1f && totalFuelUsedInSession > 0.01f)
             {
-                float calculatedAverageFuelPerLap = totalFuelUsedInSession / effectiveLapsCompleted;
-                if (calculatedAverageFuelPerLap > 0)
-                    return calculatedAverageFuelPerLap;
+                if (effectiveLapsCompleted <= 0f)
+                {
+                    _logger?.LogError($"Invalid laps completed value: {effectiveLapsCompleted}");
+                }
+                else
+                {
+                    float calculatedAverageFuelPerLap = totalFuelUsedInSession / effectiveLapsCompleted;
+                    calculatedAverageFuelPerLap = ValidateFloat(calculatedAverageFuelPerLap, nameof(CalculateFuelPerLap));
+                    if (calculatedAverageFuelPerLap > 0)
+                        return calculatedAverageFuelPerLap;
+                }
             }
             return sdkReportedFuelPerLap > 0 ? sdkReportedFuelPerLap : 0f;
         }
@@ -191,6 +227,7 @@ namespace SuperBackendNR85IA.Calculations
                 model.Lap,
                 model.FuelUsePerLap
             );
+            model.FuelUsePerLap = ValidateFloat(model.FuelUsePerLap, nameof(model.FuelUsePerLap));
 
             float diffLap = model.FuelLevelLapStart - model.FuelLevel;
             if (diffLap > 0 && !model.OnPitRoad)
@@ -209,29 +246,31 @@ namespace SuperBackendNR85IA.Calculations
                 }
             }
 
-            model.LapsRemaining = (int)GetFuelLapsLeft(model.FuelLevel, model.ConsumoVoltaAtual);
+            model.LapsRemaining = (int)ValidateDouble(GetFuelLapsLeft(model.FuelLevel, model.ConsumoVoltaAtual), nameof(model.LapsRemaining));
 
             float lapsEfetivos = model.Lap + model.LapDistPct;
             float novoConsumoMedio = (lapsEfetivos > 0.5f && model.FuelUsedTotal > 0)
                 ? model.FuelUsedTotal / lapsEfetivos
                 : 0f;
             if (novoConsumoMedio > 0)
-                model.ConsumoMedio = novoConsumoMedio;
+                model.ConsumoMedio = ValidateFloat(novoConsumoMedio, nameof(model.ConsumoMedio));
 
             model.VoltasRestantesMedio = model.ConsumoMedio > 0
-                ? model.FuelLevel / model.ConsumoMedio
+                ? ValidateFloat(model.FuelLevel / model.ConsumoMedio, nameof(model.VoltasRestantesMedio))
                 : 0;
 
             float consumoParaCalculo = model.ConsumoMedio > 0
                 ? model.ConsumoMedio
                 : model.ConsumoVoltaAtual;
 
-            model.NecessarioFim = (float)GetFuelForTargetLaps(
-                model.LapsRemainingRace,
-                consumoParaCalculo);
+            model.NecessarioFim = ValidateFloat(
+                (float)GetFuelForTargetLaps(
+                    model.LapsRemainingRace,
+                    consumoParaCalculo),
+                nameof(model.NecessarioFim));
 
             float faltante = model.NecessarioFim - model.FuelLevel;
-            model.RecomendacaoAbastecimento = faltante;
+            model.RecomendacaoAbastecimento = ValidateFloat(faltante, nameof(model.RecomendacaoAbastecimento));
         }
 
         public static void UpdateSectorData(ref TelemetryModel model)

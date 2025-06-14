@@ -19,7 +19,7 @@ namespace SuperBackendNR85IA.Services
         private readonly ILogger<IRacingTelemetryService> _log;
         private readonly TelemetryBroadcaster _broadcaster;
         private readonly IRacingSdk _sdk = new();
-        private readonly SessionYamlParser _yamlParser = new();
+        private readonly SessionYamlParser _yamlParser;
 
         private string _lastYaml = string.Empty;
         private (DriverInfo? Drv, WeekendInfo? Wkd, SessionInfo? Ses, SectorInfo Sec, List<DriverInfo> Drivers) _cachedYamlData;
@@ -71,11 +71,14 @@ namespace SuperBackendNR85IA.Services
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
             TelemetryBroadcaster broadcaster,
-            CarTrackDataStore store)
+            CarTrackDataStore store,
+            SessionYamlParser yamlParser)
         {
             _log = log;
+            TelemetryCalculations.SetLogger(log);
             _broadcaster = broadcaster;
             _store = store;
+            _yamlParser = yamlParser;
         }
 
         protected override async Task ExecuteAsync(CancellationToken ct)
@@ -117,8 +120,6 @@ namespace SuperBackendNR85IA.Services
                             TelemetryCalculationsOverlay.PreencherOverlaySetores(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlayDelta(ref telemetryModel);
 
-                            TelemetryCalculations.SanitizeModel(telemetryModel);
-
                             await _broadcaster.BroadcastTelemetry(telemetryModel);
                         }
                         _lastTick = _sdk.Data.TickCount;
@@ -157,6 +158,7 @@ namespace SuperBackendNR85IA.Services
                 $"ColdPress LF:{_lfColdPress} RF:{_rfColdPress} LR:{_lrColdPress} RR:{_rrColdPress}, " +
                 $"Temps LF:{t.LfTempCl}/{t.LfTempCm}/{t.LfTempCr} RF:{t.RfTempCl}/{t.RfTempCm}/{t.RfTempCr} " +
                 $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
+                $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
                 $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
             UpdateLastHotPress(t);
             await ApplyYamlData(d, t);

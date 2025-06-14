@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using YamlDotNet.RepresentationModel;
 using SuperBackendNR85IA.Models; // Assuming SectorInfo will be or is part of Models
 
@@ -10,6 +12,13 @@ namespace SuperBackendNR85IA.Services
 {
     public class SessionYamlParser
     {
+        private readonly ILogger<SessionYamlParser> _logger;
+
+        public SessionYamlParser(ILogger<SessionYamlParser> logger)
+        {
+            _logger = logger;
+        }
+
         public (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?, List<DriverInfo>) ParseSessionInfo(string yaml, int playerCarIdx, int currentSessionNum)
         {
             if (string.IsNullOrWhiteSpace(yaml))
@@ -211,31 +220,65 @@ namespace SuperBackendNR85IA.Services
         }
 
         // Helpers
-        private static string GetStr(YamlMappingNode n, string key) =>
-            n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s ? s.Value ?? "" : "";
-
-        private static int GetInt(YamlMappingNode n, string key) =>
-            n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s && int.TryParse(s.Value, out var r) ? r : 0;
-        
-        private static float GetFloat(YamlMappingNode n, string key) =>
-            n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s && float.TryParse(s.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var r) ? r : 0f;
-
-        private static float GetFloatFromSpecialFormat(YamlMappingNode n, string key)
+        private string GetStr(YamlMappingNode n, string key)
         {
-            string rawValue = GetStr(n, key); // Usa GetStr para obter o valor
-            if (!string.IsNullOrEmpty(rawValue))
+            if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s)
             {
-                // Handle cases like "101.2 kPa" or "50.0 %"
-                string numericPart = rawValue.Split(' ')[0].Trim(); 
-                if (float.TryParse(numericPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float result))
-                {
-                    return result;
-                }
+                return s.Value ?? string.Empty;
             }
+
+            _logger.LogWarning("Expected key '{Key}' was not found.", key);
+            return string.Empty;
+        }
+
+        private int GetInt(YamlMappingNode n, string key)
+        {
+            if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s)
+            {
+                if (int.TryParse(s.Value, out var r))
+                    return r;
+
+                _logger.LogWarning("Unable to parse integer from '{Value}' for key '{Key}'.", s.Value, key);
+                return 0;
+            }
+
+            _logger.LogWarning("Expected key '{Key}' was not found.", key);
+            return 0;
+        }
+
+        private float GetFloat(YamlMappingNode n, string key)
+        {
+            if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s)
+            {
+                if (float.TryParse(s.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var r))
+                    return r;
+
+                _logger.LogWarning("Unable to parse float from '{Value}' for key '{Key}'.", s.Value, key);
+                return 0f;
+            }
+
+            _logger.LogWarning("Expected key '{Key}' was not found.", key);
             return 0f;
         }
 
-        private static string GetTireCompound(YamlMappingNode driverNode)
+        private float GetFloatFromSpecialFormat(YamlMappingNode n, string key)
+        {
+            string rawValue = GetStr(n, key); // GetStr logs missing key
+            if (!string.IsNullOrEmpty(rawValue))
+            {
+                var match = Regex.Match(rawValue, "[-+]?[0-9]*\.?[0-9]+");
+                if (match.Success && float.TryParse(match.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float result))
+                {
+                    return result;
+                }
+
+                _logger.LogWarning("Unable to parse float from '{Value}' for key '{Key}'.", rawValue, key);
+            }
+
+            return 0f;
+        }
+
+        private string GetTireCompound(YamlMappingNode driverNode)
         {
             if (driverNode.Children.TryGetValue(new YamlScalarNode("CarSetup"), out var csNode) && csNode is YamlMappingNode csMap &&
                 csMap.Children.TryGetValue(new YamlScalarNode("Tires"), out var tireNode) && tireNode is YamlMappingNode tireMap)
@@ -246,7 +289,7 @@ namespace SuperBackendNR85IA.Services
         }
 
         // New helper method to parse an array of floats
-        private static float[] GetFloatArray(YamlMappingNode n, string key)
+        private float[] GetFloatArray(YamlMappingNode n, string key)
         {
             if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlSequenceNode seq)
             {
@@ -259,13 +302,15 @@ namespace SuperBackendNR85IA.Services
                     }
                     else
                     {
-                        // Optionally handle or log malformed float values within the array
-                        floatList.Add(0f); // Default value if parsing fails for an element
+                        _logger.LogWarning("Unable to parse float array element '{Value}' for key '{Key}'.", (node as YamlScalarNode)?.Value, key);
+                        floatList.Add(0f);
                     }
                 }
                 return floatList.ToArray();
             }
-            return Array.Empty<float>(); // Return empty array if key not found or not a sequence
+
+            _logger.LogWarning("Expected key '{Key}' was not found or not a sequence.", key);
+            return Array.Empty<float>();
         }
     }
 }
