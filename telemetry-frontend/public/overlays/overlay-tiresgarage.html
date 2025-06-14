@@ -799,11 +799,11 @@
     function handleData(d) {
         d = { ...d, ...(d.tyres || d.tires || {}) };
 
+        const src = d.tyres || d.tires || d;
         let tires = d.tyres || d.tires;
         const hasNested = tires && typeof tires.frontLeft === 'object';
 
         if (!hasNested) {
-            const src = d.tyres || d.tires || d;
             const compArr = d.carIdxTireCompounds || d.carIdxTireCompound;
             const comp = Array.isArray(compArr) && typeof d.playerCarIdx === 'number'
                 ? (compArr[d.playerCarIdx] || 'U')
