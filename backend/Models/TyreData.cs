@@ -75,6 +75,9 @@ namespace SuperBackendNR85IA.Models
         public float FrontStagger { get; set; }
         public float RearStagger { get; set; }
 
+        // Current tire compound for the player's car (from YAML)
+        public string Compound { get; set; } = string.Empty;
+
         public float TreadRemainingFl { get; set; }
         public float TreadRemainingFr { get; set; }
         public float TreadRemainingRl { get; set; }

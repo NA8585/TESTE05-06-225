@@ -527,6 +527,8 @@ namespace SuperBackendNR85IA.Services
                 t.LicString          = drv.LicString;
                 t.LicSafetyRating    = drv.LicLevel + drv.LicSubLevel / 1000f;
                 t.PlayerCarClassID   = drv.CarClassID;
+                t.TireCompound       = drv.TireCompound;
+                t.Tyres.Compound     = drv.TireCompound;
             }
             t.PlayerCarTeamIncidentCount = GetSdkValue<int>(d, "PlayerCarTeamIncidentCount") ?? 0;
             t.PlayerCarMyIncidentCount   = GetSdkValue<int>(d, "PlayerCarMyIncidentCount") ?? 0;
