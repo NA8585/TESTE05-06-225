@@ -143,12 +143,12 @@ namespace SuperBackendNR85IA.Services
             t.Vehicle.SteeringWheelPctTorque = GetSdkValue<float>(d, "SteeringWheelPctTorque") ?? 0f;
             t.Vehicle.SteeringWheelPctTorqueSign = GetSdkValue<float>(d, "SteeringWheelPctTorqueSign") ?? 0f;
             t.Vehicle.SteeringWheelPctTorqueSignStops = GetSdkValue<float>(d, "SteeringWheelPctTorqueSignStops") ?? 0f;
-            t.Vehicle.EnergyERSBattery        = GetSdkValue<float>(d, "EnergyERSBattery") ?? 0f;
-            t.Vehicle.EnergyERSBatteryPct     = GetSdkValue<float>(d, "EnergyERSBatteryPct") ?? 0f;
-            t.Vehicle.EnergyMGU_KLapDeployPct = GetSdkValue<float>(d, "EnergyMGU_KLapDeployPct") ?? 0f;
-            t.Vehicle.EnergyBatteryToMGU_KLap = GetSdkValue<float>(d, "EnergyBatteryToMGU_KLap") ?? 0f;
-            t.Vehicle.ManualBoost             = GetSdkValue<bool>(d, "ManualBoost") ?? false;
-            t.Vehicle.ManualNoBoost           = GetSdkValue<bool>(d, "ManualNoBoost") ?? false;
+            t.Powertrain.EnergyErsBattery        = GetSdkValue<float>(d, "EnergyERSBattery") ?? 0f;
+            t.Powertrain.EnergyErsBatteryPct     = GetSdkValue<float>(d, "EnergyERSBatteryPct") ?? 0f;
+            t.Powertrain.EnergyMguKLapDeployPct  = GetSdkValue<float>(d, "EnergyMGU_KLapDeployPct") ?? 0f;
+            t.Powertrain.EnergyBatteryToMguKLap  = GetSdkValue<float>(d, "EnergyBatteryToMGU_KLap") ?? 0f;
+            t.Powertrain.ManualBoost             = GetSdkValue<bool>(d, "ManualBoost") ?? false;
+            t.Powertrain.ManualNoBoost           = GetSdkValue<bool>(d, "ManualNoBoost") ?? false;
         }
 
         private void UpdateLapInfo(IRacingSdkData d, TelemetryModel t)
