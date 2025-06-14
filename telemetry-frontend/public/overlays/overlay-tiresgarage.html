@@ -396,6 +396,16 @@
     let localLocked = isElectron; // Travado por padrão apenas no Electron
     let localIgnoreClicks = isElectron; // Ignora cliques por padrão apenas no Electron
 
+    const globalState = {
+      wasOnPitRoad: null,
+      startTemps: {
+        frontLeft: null,
+        frontRight: null,
+        rearLeft: null,
+        rearRight: null
+      }
+    };
+
     // --- Lógica de Redimensionamento e Arraste ---
     function getCursorForHandle(handleType) {
       const cursors = { tl: 'nwse-resize', tc: 'ns-resize', tr: 'nesw-resize', rc: 'ew-resize', br: 'se-resize', bc: 'ns-resize', bl: 'sw-resize', lc: 'ew-resize' };
@@ -731,18 +741,19 @@
       const tempM_el = getTireElement(tireId, 'tempM');
       const tempR_el = getTireElement(tireId, 'tempR');
 
-      tempL_el.textContent = `${tireData.temp.left.toFixed(0)}°C`;
-      tempM_el.textContent = `${tireData.temp.middle.toFixed(0)}°C`;
-      tempR_el.textContent = `${tireData.temp.right.toFixed(0)}°C`;
+      const baseTemp = tireData.startTemp || tireData.temp;
+      tempL_el.textContent = `${baseTemp.left.toFixed(0)}°C`;
+      tempM_el.textContent = `${baseTemp.middle.toFixed(0)}°C`;
+      tempR_el.textContent = `${baseTemp.right.toFixed(0)}°C`;
 
       // Remove all previous background classes and apply new ones
       [tempL_el, tempM_el, tempR_el].forEach(el => {
         el.classList.remove('bg-temp-cold', 'bg-temp-ideal', 'bg-temp-warning', 'bg-temp-hot', 'bg-temp-default');
       });
 
-      tempL_el.classList.add(getTempBgClass(tireData.temp.left));
-      tempM_el.classList.add(getTempBgClass(tireData.temp.middle));
-      tempR_el.classList.add(getTempBgClass(tireData.temp.right));
+      tempL_el.classList.add(getTempBgClass(baseTemp.left));
+      tempM_el.classList.add(getTempBgClass(baseTemp.middle));
+      tempR_el.classList.add(getTempBgClass(baseTemp.right));
 
       // Update last temps
       const lastL_el = getTireElement(tireId, 'lastL');
@@ -763,14 +774,15 @@
       const compoundEl = getTireElement(tireId, 'compound');
       const tireContainerEl = document.getElementById(tireId);
 
-      const compoundCode = tireData.compound;
-      compoundEl.textContent = compoundsMap[compoundCode] || compoundCode; // Display full name or code
+      const rawComp = tireData.compound || 'U';
+      const shortCode = rawComp.charAt(0).toUpperCase();
+      compoundEl.textContent = shortCode;
 
       // Remove all existing border classes
       tireContainerEl.classList.remove('border-soft', 'border-medium', 'border-hard', 'border-wet', 'border-unknown');
 
       // Add the new border class based on compound
-      tireContainerEl.classList.add(getCompoundClass(compoundCode));
+      tireContainerEl.classList.add(getCompoundClass(rawComp));
     }
 
 
@@ -782,8 +794,10 @@
 
         if (!hasNested) {
             const src = d.tyres || d.tires || d;
-            const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx === 'number'
-                ? (d.carIdxTireCompounds[d.playerCarIdx] || 'U') : 'U';
+            const compArr = d.carIdxTireCompounds || d.carIdxTireCompound;
+            const comp = Array.isArray(compArr) && typeof d.playerCarIdx === 'number'
+                ? (compArr[d.playerCarIdx] || 'U')
+                : (typeof d.tireCompound === 'string' ? d.tireCompound : 'U');
 
             tires = {
                 frontLeft:  {
@@ -834,9 +848,29 @@
                     tData.treadRemaining = tData.wear;
             });
         }
+
+        // Record starting temps when leaving os pits
+        if (globalState.wasOnPitRoad === true && d.onPitRoad === false) {
+            ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
+                if (tires[key]) {
+                    globalState.startTemps[key] = { ...tires[key].temp };
+                }
+            });
+        }
+        if (globalState.wasOnPitRoad === null && d.onPitRoad === false) {
+            ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
+                if (tires[key] && !globalState.startTemps[key]) {
+                    globalState.startTemps[key] = { ...tires[key].temp };
+                }
+            });
+        }
+        globalState.wasOnPitRoad = d.onPitRoad;
+
         tireMap.forEach(({id, iRacingKey}) => {
-            if (tires[iRacingKey]) {
-                updateTireUI(id, tires[iRacingKey]);
+            const tObj = tires[iRacingKey];
+            if (tObj) {
+                tObj.startTemp = globalState.startTemps[iRacingKey] || tObj.temp;
+                updateTireUI(id, tObj);
             }
         });
 
