@@ -403,7 +403,12 @@
         frontRight: null,
         rearLeft: null,
         rearRight: null
-      }
+      },
+      startPressures: {
+        frontLeft: null,
+        frontRight: null,
+        rearLeft: null,
+        rearRight: null
     };
 
     // --- Lógica de Redimensionamento e Arraste ---
@@ -767,8 +772,9 @@
 
       // Update final pressure
       const hotVal = tireData.lastHotPressure ?? tireData.pressure ?? 0;
+      const coldVal = tireData.startPress ?? tireData.pressure ?? 0;
       getTireElement(tireId, 'hot').textContent = `${hotVal.toFixed(1)} psi`;
-      getTireElement(tireId, 'press').textContent = `${tireData.pressure.toFixed(1)} psi`;
+      getTireElement(tireId, 'press').textContent = `${coldVal.toFixed(1)} psi`;
 
       // Update compound indicator and tire container border
       const compoundEl = getTireElement(tireId, 'compound');
@@ -849,11 +855,12 @@
             });
         }
 
-        // Record starting temps when leaving os pits
+        // Record starting temps and pressures when leaving the pits
         if (globalState.wasOnPitRoad === true && d.onPitRoad === false) {
             ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
                 if (tires[key]) {
                     globalState.startTemps[key] = { ...tires[key].temp };
+                    globalState.startPressures[key] = tires[key].pressure;
                 }
             });
         }
@@ -861,6 +868,8 @@
             ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
                 if (tires[key] && !globalState.startTemps[key]) {
                     globalState.startTemps[key] = { ...tires[key].temp };
+                    globalState.startPressures[key] = tires[key].pressure;
+
                 }
             });
         }
@@ -870,6 +879,7 @@
             const tObj = tires[iRacingKey];
             if (tObj) {
                 tObj.startTemp = globalState.startTemps[iRacingKey] || tObj.temp;
+                tObj.startPress = globalState.startPressures[iRacingKey] ?? tObj.pressure;
                 updateTireUI(id, tObj);
             }
         });
