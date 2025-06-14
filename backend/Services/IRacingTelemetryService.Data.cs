@@ -489,7 +489,7 @@ namespace SuperBackendNR85IA.Services
             t.WeatherDeclaredWet = GetSdkValue<bool>(d, "WeatherDeclaredWet") ?? false;
             t.SolarAltitude    = GetSdkValue<float>(d, "SolarAltitude") ?? 0f;
             t.SolarAzimuth     = GetSdkValue<float>(d, "SolarAzimuth") ?? 0f;
-            t.CarLeftRight     = GetSdkString(d, "CarLeftRight") ?? string.Empty;
+            t.CarLeftRight     = GetSdkValue<int>(d, "CarLeftRight") ?? 0;
             t.TrackStatus      = string.Join(", ", EnumTranslations.TranslateSessionFlags(t.SessionFlags));
 
             t.FuelUsePerHour = GetSdkValue<float>(d, "FuelUsePerHour") ?? 0f;
