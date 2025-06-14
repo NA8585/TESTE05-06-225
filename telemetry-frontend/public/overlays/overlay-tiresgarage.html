@@ -763,14 +763,15 @@
       const compoundEl = getTireElement(tireId, 'compound');
       const tireContainerEl = document.getElementById(tireId);
 
-      const compoundCode = tireData.compound;
-      compoundEl.textContent = compoundsMap[compoundCode] || compoundCode; // Display full name or code
+      const rawComp = tireData.compound || 'U';
+      const shortCode = rawComp.charAt(0).toUpperCase();
+      compoundEl.textContent = shortCode;
 
       // Remove all existing border classes
       tireContainerEl.classList.remove('border-soft', 'border-medium', 'border-hard', 'border-wet', 'border-unknown');
 
       // Add the new border class based on compound
-      tireContainerEl.classList.add(getCompoundClass(compoundCode));
+      tireContainerEl.classList.add(getCompoundClass(rawComp));
     }
 
 
@@ -782,8 +783,10 @@
 
         if (!hasNested) {
             const src = d.tyres || d.tires || d;
-            const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx === 'number'
-                ? (d.carIdxTireCompounds[d.playerCarIdx] || 'U') : 'U';
+            const compArr = d.carIdxTireCompounds || d.carIdxTireCompound;
+            const comp = Array.isArray(compArr) && typeof d.playerCarIdx === 'number'
+                ? (compArr[d.playerCarIdx] || 'U')
+                : (typeof d.tireCompound === 'string' ? d.tireCompound : 'U');
 
             tires = {
                 frontLeft:  {
