@@ -318,7 +318,6 @@ namespace SuperBackendNR85IA.Services
 
             _log.LogInformation($"Raw SessionTime: {rawSessionTime}");
 
-            // Retrieve total session time to fall back when the SDK value is invalid
             float totalSessionTime = GetSdkValue<float>(d, "SessionTimeTotal") ?? 0f;
 
             t.Session.SessionTime = rawSessionTime;
@@ -342,6 +341,7 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Session.SessionTimeRemain = 0f;
             }
+
             if (t.SessionNum != _lastSessionNum)
             {
                 _lastSessionNum = t.Session.SessionNum;
