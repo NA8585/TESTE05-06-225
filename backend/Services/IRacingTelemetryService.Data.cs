@@ -309,7 +309,9 @@ namespace SuperBackendNR85IA.Services
         private void PopulateSessionInfo(IRacingSdkData d, TelemetryModel t)
         {
             t.Session.SessionNum        = GetSdkValue<int>(d, "SessionNum") ?? 0;
-            t.Session.SessionTime       = GetSdkValue<float>(d, "SessionTime") ?? 0f;
+            double rawSessionTime = GetSdkValue<double>(d, "SessionTime") ?? 0.0;
+            _log.LogInformation($"Raw SessionTime: {rawSessionTime}");
+            t.Session.SessionTime       = rawSessionTime;
             t.Session.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
             if (t.SessionNum != _lastSessionNum)
             {
