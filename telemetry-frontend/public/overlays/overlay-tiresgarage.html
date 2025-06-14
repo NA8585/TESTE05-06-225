@@ -269,9 +269,9 @@
             <div class="tire-zone" id="frt-esq-lastR">0°C</div>
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="frt-esq-hot">0.0</div>
+          <div class="hotpress text-lg font-bold" id="frt-esq-hot">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="press text-lg font-bold" id="frt-esq-press">0.0</div>
+          <div class="press text-lg font-bold" id="frt-esq-press">0.0 psi</div>
           <div class="compound-indicator" id="frt-esq-compound">S</div>
         </div>
 
@@ -295,9 +295,9 @@
             <div class="tire-zone" id="frt-dir-lastR">0°C</div>
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="frt-dir-hot">0.0</div>
+          <div class="hotpress text-lg font-bold" id="frt-dir-hot">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="press text-lg font-bold" id="frt-dir-press">0.0</div>
+          <div class="press text-lg font-bold" id="frt-dir-press">0.0 psi</div>
           <div class="compound-indicator" id="frt-dir-compound">S</div>
         </div>
 
@@ -321,9 +321,9 @@
             <div class="tire-zone" id="trs-esq-lastR">0°C</div>
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="trs-esq-hot">0.0</div>
+          <div class="hotpress text-lg font-bold" id="trs-esq-hot">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="press text-lg font-bold" id="trs-esq-press">0.0</div>
+          <div class="press text-lg font-bold" id="trs-esq-press">0.0 psi</div>
           <div class="compound-indicator" id="trs-esq-compound">S</div>
         </div>
 
@@ -347,9 +347,9 @@
             <div class="tire-zone" id="trs-dir-lastR">0°C</div>
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="trs-dir-hot">0.0</div>
+          <div class="hotpress text-lg font-bold" id="trs-dir-hot">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="press text-lg font-bold" id="trs-dir-press">0.0</div>
+          <div class="press text-lg font-bold" id="trs-dir-press">0.0 psi</div>
           <div class="compound-indicator" id="trs-dir-compound">S</div>
         </div>
       </div>
@@ -395,6 +395,22 @@
     let localPinned = false;
     let localLocked = isElectron; // Travado por padrão apenas no Electron
     let localIgnoreClicks = isElectron; // Ignora cliques por padrão apenas no Electron
+
+    const globalState = {
+      wasOnPitRoad: null,
+      startTemps: {
+        frontLeft: null,
+        frontRight: null,
+        rearLeft: null,
+        rearRight: null
+      },
+      startPressures: {
+        frontLeft: null,
+        frontRight: null,
+        rearLeft: null,
+        rearRight: null
+      }
+    };
 
     // --- Lógica de Redimensionamento e Arraste ---
     function getCursorForHandle(handleType) {
@@ -731,18 +747,19 @@
       const tempM_el = getTireElement(tireId, 'tempM');
       const tempR_el = getTireElement(tireId, 'tempR');
 
-      tempL_el.textContent = `${tireData.temp.left.toFixed(0)}°C`;
-      tempM_el.textContent = `${tireData.temp.middle.toFixed(0)}°C`;
-      tempR_el.textContent = `${tireData.temp.right.toFixed(0)}°C`;
+      const baseTemp = tireData.coldTemp || tireData.startTemp || tireData.temp;
+      tempL_el.textContent = `${baseTemp.left.toFixed(0)}°C`;
+      tempM_el.textContent = `${baseTemp.middle.toFixed(0)}°C`;
+      tempR_el.textContent = `${baseTemp.right.toFixed(0)}°C`;
 
       // Remove all previous background classes and apply new ones
       [tempL_el, tempM_el, tempR_el].forEach(el => {
         el.classList.remove('bg-temp-cold', 'bg-temp-ideal', 'bg-temp-warning', 'bg-temp-hot', 'bg-temp-default');
       });
 
-      tempL_el.classList.add(getTempBgClass(tireData.temp.left));
-      tempM_el.classList.add(getTempBgClass(tireData.temp.middle));
-      tempR_el.classList.add(getTempBgClass(tireData.temp.right));
+      tempL_el.classList.add(getTempBgClass(baseTemp.left));
+      tempM_el.classList.add(getTempBgClass(baseTemp.middle));
+      tempR_el.classList.add(getTempBgClass(baseTemp.right));
 
       // Update last temps
       const lastL_el = getTireElement(tireId, 'lastL');
@@ -756,21 +773,23 @@
 
       // Update final pressure
       const hotVal = tireData.lastHotPressure ?? tireData.pressure ?? 0;
-      getTireElement(tireId, 'hot').textContent = hotVal.toFixed(1);
-      getTireElement(tireId, 'press').textContent = tireData.pressure.toFixed(1);
+      const coldVal = tireData.coldPressure ?? tireData.startPress ?? tireData.pressure ?? 0;
+      getTireElement(tireId, 'hot').textContent = `${hotVal.toFixed(1)} psi`;
+      getTireElement(tireId, 'press').textContent = `${coldVal.toFixed(1)} psi`;
 
       // Update compound indicator and tire container border
       const compoundEl = getTireElement(tireId, 'compound');
       const tireContainerEl = document.getElementById(tireId);
 
-      const compoundCode = tireData.compound;
-      compoundEl.textContent = compoundsMap[compoundCode] || compoundCode; // Display full name or code
+      const rawComp = tireData.compound || 'U';
+      const shortCode = rawComp.charAt(0).toUpperCase();
+      compoundEl.textContent = shortCode;
 
       // Remove all existing border classes
       tireContainerEl.classList.remove('border-soft', 'border-medium', 'border-hard', 'border-wet', 'border-unknown');
 
       // Add the new border class based on compound
-      tireContainerEl.classList.add(getCompoundClass(compoundCode));
+      tireContainerEl.classList.add(getCompoundClass(rawComp));
     }
 
 
@@ -782,15 +801,19 @@
 
         if (!hasNested) {
             const src = d.tyres || d.tires || d;
-            const comp = Array.isArray(d.carIdxTireCompounds) && typeof d.playerCarIdx === 'number'
-                ? (d.carIdxTireCompounds[d.playerCarIdx] || 'U') : 'U';
+            const compArr = d.carIdxTireCompounds || d.carIdxTireCompound;
+            const comp = Array.isArray(compArr) && typeof d.playerCarIdx === 'number'
+                ? (compArr[d.playerCarIdx] || 'U')
+                : (typeof d.tireCompound === 'string' ? d.tireCompound : 'U');
 
             tires = {
                 frontLeft:  {
                     wear:  { left:(src.lfWear?.[0]||0), middle:(src.lfWear?.[1]||0), right:(src.lfWear?.[2]||0) },
                     temp:  { left:src.lfTempCl||0, middle:src.lfTempCm||0, right:src.lfTempCr||0 },
                     lastTemp: { left:src.lfLastTempCl||0, middle:src.lfLastTempCm||0, right:src.lfLastTempCr||0 },
+                    coldTemp: { left:src.lfColdTempCl||0, middle:src.lfColdTempCm||0, right:src.lfColdTempCr||0 },
                     pressure: src.lfPress || 0,
+                    coldPressure: src.lfColdPress || 0,
                     lastHotPressure: (src.lfLastHotPress ?? src.lfPress) || 0,
                     treadRemaining: { left:(src.lfTreadRemainingParts?.[0]||src.lfWear?.[0]||0), middle:(src.lfTreadRemainingParts?.[1]||src.lfWear?.[1]||0), right:(src.lfTreadRemainingParts?.[2]||src.lfWear?.[2]||0) },
                     compound: comp
@@ -799,7 +822,9 @@
                     wear:  { left:(src.rfWear?.[0]||0), middle:(src.rfWear?.[1]||0), right:(src.rfWear?.[2]||0) },
                     temp:  { left:src.rfTempCl||0, middle:src.rfTempCm||0, right:src.rfTempCr||0 },
                     lastTemp: { left:src.rfLastTempCl||0, middle:src.rfLastTempCm||0, right:src.rfLastTempCr||0 },
+                    coldTemp: { left:src.rfColdTempCl||0, middle:src.rfColdTempCm||0, right:src.rfColdTempCr||0 },
                     pressure: src.rfPress || 0,
+                    coldPressure: src.rfColdPress || 0,
                     lastHotPressure: (src.rfLastHotPress ?? src.rfPress) || 0,
                     treadRemaining: { left:(src.rfTreadRemainingParts?.[0]||src.rfWear?.[0]||0), middle:(src.rfTreadRemainingParts?.[1]||src.rfWear?.[1]||0), right:(src.rfTreadRemainingParts?.[2]||src.rfWear?.[2]||0) },
                     compound: comp
@@ -808,7 +833,9 @@
                     wear:  { left:(src.lrWear?.[0]||0), middle:(src.lrWear?.[1]||0), right:(src.lrWear?.[2]||0) },
                     temp:  { left:src.lrTempCl||0, middle:src.lrTempCm||0, right:src.lrTempCr||0 },
                     lastTemp: { left:src.lrLastTempCl||0, middle:src.lrLastTempCm||0, right:src.lrLastTempCr||0 },
+                    coldTemp: { left:src.lrColdTempCl||0, middle:src.lrColdTempCm||0, right:src.lrColdTempCr||0 },
                     pressure: src.lrPress || 0,
+                    coldPressure: src.lrColdPress || 0,
                     lastHotPressure: (src.lrLastHotPress ?? src.lrPress) || 0,
                     treadRemaining: { left:(src.lrTreadRemainingParts?.[0]||src.lrWear?.[0]||0), middle:(src.lrTreadRemainingParts?.[1]||src.lrWear?.[1]||0), right:(src.lrTreadRemainingParts?.[2]||src.lrWear?.[2]||0) },
                     compound: comp
@@ -817,7 +844,9 @@
                     wear:  { left:(src.rrWear?.[0]||0), middle:(src.rrWear?.[1]||0), right:(src.rrWear?.[2]||0) },
                     temp:  { left:src.rrTempCl||0, middle:src.rrTempCm||0, right:src.rrTempCr||0 },
                     lastTemp: { left:src.rrLastTempCl||0, middle:src.rrLastTempCm||0, right:src.rrLastTempCr||0 },
+                    coldTemp: { left:src.rrColdTempCl||0, middle:src.rrColdTempCm||0, right:src.rrColdTempCr||0 },
                     pressure: src.rrPress || 0,
+                    coldPressure: src.rrColdPress || 0,
                     lastHotPressure: (src.rrLastHotPress ?? src.rrPress) || 0,
                     treadRemaining: { left:(src.rrTreadRemainingParts?.[0]||src.rrWear?.[0]||0), middle:(src.rrTreadRemainingParts?.[1]||src.rrWear?.[1]||0), right:(src.rrTreadRemainingParts?.[2]||src.rrWear?.[2]||0) },
                     compound: comp
@@ -834,9 +863,66 @@
                     tData.treadRemaining = tData.wear;
             });
         }
+
+        // Atualiza valores iniciais vindos do backend, se disponíveis
+        if (src.lfColdPress !== undefined) {
+            globalState.startPressures.frontLeft = src.lfColdPress;
+            globalState.startTemps.frontLeft = {
+                left: src.lfColdTempCl||0,
+                middle: src.lfColdTempCm||0,
+                right: src.lfColdTempCr||0
+            };
+        }
+        if (src.rfColdPress !== undefined) {
+            globalState.startPressures.frontRight = src.rfColdPress;
+            globalState.startTemps.frontRight = {
+                left: src.rfColdTempCl||0,
+                middle: src.rfColdTempCm||0,
+                right: src.rfColdTempCr||0
+            };
+        }
+        if (src.lrColdPress !== undefined) {
+            globalState.startPressures.rearLeft = src.lrColdPress;
+            globalState.startTemps.rearLeft = {
+                left: src.lrColdTempCl||0,
+                middle: src.lrColdTempCm||0,
+                right: src.lrColdTempCr||0
+            };
+        }
+        if (src.rrColdPress !== undefined) {
+            globalState.startPressures.rearRight = src.rrColdPress;
+            globalState.startTemps.rearRight = {
+                left: src.rrColdTempCl||0,
+                middle: src.rrColdTempCm||0,
+                right: src.rrColdTempCr||0
+            };
+        }
+
+        // Record starting temps and pressures when leaving the pits
+        if (globalState.wasOnPitRoad === true && d.onPitRoad === false) {
+            ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
+                if (tires[key]) {
+                    globalState.startTemps[key] = { ...tires[key].temp };
+                    globalState.startPressures[key] = tires[key].pressure;
+                }
+            });
+        }
+        if (globalState.wasOnPitRoad === null && d.onPitRoad === false) {
+            ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
+                if (tires[key] && !globalState.startTemps[key]) {
+                    globalState.startTemps[key] = { ...tires[key].temp };
+                    globalState.startPressures[key] = tires[key].pressure;
+                }
+            });
+        }
+        globalState.wasOnPitRoad = d.onPitRoad;
+
         tireMap.forEach(({id, iRacingKey}) => {
-            if (tires[iRacingKey]) {
-                updateTireUI(id, tires[iRacingKey]);
+            const tObj = tires[iRacingKey];
+            if (tObj) {
+                tObj.coldTemp = globalState.startTemps[iRacingKey] || tObj.coldTemp || tObj.temp;
+                tObj.coldPressure = globalState.startPressures[iRacingKey] ?? tObj.coldPressure ?? tObj.pressure;
+                updateTireUI(id, tObj);
             }
         });
 

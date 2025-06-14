@@ -91,6 +91,10 @@ namespace SuperBackendNR85IA.Models
         public float RfPress { get => Tyres.RfPress; set => Tyres.RfPress = value; }
         public float LrPress { get => Tyres.LrPress; set => Tyres.LrPress = value; }
         public float RrPress { get => Tyres.RrPress; set => Tyres.RrPress = value; }
+        public float LfColdPress { get => Tyres.LfColdPress; set => Tyres.LfColdPress = value; }
+        public float RfColdPress { get => Tyres.RfColdPress; set => Tyres.RfColdPress = value; }
+        public float LrColdPress { get => Tyres.LrColdPress; set => Tyres.LrColdPress = value; }
+        public float RrColdPress { get => Tyres.RrColdPress; set => Tyres.RrColdPress = value; }
         public float[] LfWear { get => Tyres.LfWear; set => Tyres.LfWear = value; }
         public float[] RfWear { get => Tyres.RfWear; set => Tyres.RfWear = value; }
         public float[] LrWear { get => Tyres.LrWear; set => Tyres.LrWear = value; }
@@ -103,6 +107,18 @@ namespace SuperBackendNR85IA.Models
         public float RfLastHotPress { get => Tyres.RfLastHotPress; set => Tyres.RfLastHotPress = value; }
         public float LrLastHotPress { get => Tyres.LrLastHotPress; set => Tyres.LrLastHotPress = value; }
         public float RrLastHotPress { get => Tyres.RrLastHotPress; set => Tyres.RrLastHotPress = value; }
+        public float LfColdTempCl { get => Tyres.LfColdTempCl; set => Tyres.LfColdTempCl = value; }
+        public float LfColdTempCm { get => Tyres.LfColdTempCm; set => Tyres.LfColdTempCm = value; }
+        public float LfColdTempCr { get => Tyres.LfColdTempCr; set => Tyres.LfColdTempCr = value; }
+        public float RfColdTempCl { get => Tyres.RfColdTempCl; set => Tyres.RfColdTempCl = value; }
+        public float RfColdTempCm { get => Tyres.RfColdTempCm; set => Tyres.RfColdTempCm = value; }
+        public float RfColdTempCr { get => Tyres.RfColdTempCr; set => Tyres.RfColdTempCr = value; }
+        public float LrColdTempCl { get => Tyres.LrColdTempCl; set => Tyres.LrColdTempCl = value; }
+        public float LrColdTempCm { get => Tyres.LrColdTempCm; set => Tyres.LrColdTempCm = value; }
+        public float LrColdTempCr { get => Tyres.LrColdTempCr; set => Tyres.LrColdTempCr = value; }
+        public float RrColdTempCl { get => Tyres.RrColdTempCl; set => Tyres.RrColdTempCl = value; }
+        public float RrColdTempCm { get => Tyres.RrColdTempCm; set => Tyres.RrColdTempCm = value; }
+        public float RrColdTempCr { get => Tyres.RrColdTempCr; set => Tyres.RrColdTempCr = value; }
         public float LfLastTempCl { get => Tyres.LfLastTempCl; set => Tyres.LfLastTempCl = value; }
         public float LfLastTempCm { get => Tyres.LfLastTempCm; set => Tyres.LfLastTempCm = value; }
         public float LfLastTempCr { get => Tyres.LfLastTempCr; set => Tyres.LfLastTempCr = value; }

@@ -22,6 +22,12 @@ namespace SuperBackendNR85IA.Models
         public float LrPress { get; set; }
         public float RrPress { get; set; }
 
+        // Pressões registradas ao sair dos boxes (pneus frios)
+        public float LfColdPress { get; set; }
+        public float RfColdPress { get; set; }
+        public float LrColdPress { get; set; }
+        public float RrColdPress { get; set; }
+
         public float[] LfWear { get; set; } = Array.Empty<float>();
         public float[] RfWear { get; set; } = Array.Empty<float>();
         public float[] LrWear { get; set; } = Array.Empty<float>();
@@ -36,6 +42,20 @@ namespace SuperBackendNR85IA.Models
         public float RfLastHotPress { get; set; }
         public float LrLastHotPress { get; set; }
         public float RrLastHotPress { get; set; }
+
+        // Temperaturas registradas ao sair dos boxes (pneus frios)
+        public float LfColdTempCl { get; set; }
+        public float LfColdTempCm { get; set; }
+        public float LfColdTempCr { get; set; }
+        public float RfColdTempCl { get; set; }
+        public float RfColdTempCm { get; set; }
+        public float RfColdTempCr { get; set; }
+        public float LrColdTempCl { get; set; }
+        public float LrColdTempCm { get; set; }
+        public float LrColdTempCr { get; set; }
+        public float RrColdTempCl { get; set; }
+        public float RrColdTempCm { get; set; }
+        public float RrColdTempCr { get; set; }
 
         // Last recorded tire temperatures when entering the pits
         public float LfLastTempCl { get; set; }
