@@ -334,7 +334,6 @@ namespace SuperBackendNR85IA.Services
                 computedRemain = 0f;
             }
             t.Session.SessionTimeRemain = computedRemain;
-
             if (t.SessionNum != _lastSessionNum)
             {
                 _lastSessionNum = t.Session.SessionNum;
