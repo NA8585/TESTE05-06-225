@@ -409,7 +409,6 @@
         frontRight: null,
         rearLeft: null,
         rearRight: null
-      }
     };
 
     // --- Lógica de Redimensionamento e Arraste ---
@@ -870,6 +869,7 @@
                 if (tires[key] && !globalState.startTemps[key]) {
                     globalState.startTemps[key] = { ...tires[key].temp };
                     globalState.startPressures[key] = tires[key].pressure;
+
                 }
             });
         }
