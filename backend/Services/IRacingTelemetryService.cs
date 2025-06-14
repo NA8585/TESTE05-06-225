@@ -19,7 +19,7 @@ namespace SuperBackendNR85IA.Services
         private readonly ILogger<IRacingTelemetryService> _log;
         private readonly TelemetryBroadcaster _broadcaster;
         private readonly IRacingSdk _sdk = new();
-        private readonly SessionYamlParser _yamlParser = new();
+        private readonly SessionYamlParser _yamlParser;
 
         private string _lastYaml = string.Empty;
         private (DriverInfo? Drv, WeekendInfo? Wkd, SessionInfo? Ses, SectorInfo Sec, List<DriverInfo> Drivers) _cachedYamlData;
@@ -71,11 +71,13 @@ namespace SuperBackendNR85IA.Services
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
             TelemetryBroadcaster broadcaster,
-            CarTrackDataStore store)
+            CarTrackDataStore store,
+            SessionYamlParser yamlParser)
         {
             _log = log;
             _broadcaster = broadcaster;
             _store = store;
+            _yamlParser = yamlParser;
         }
 
         protected override async Task ExecuteAsync(CancellationToken ct)
