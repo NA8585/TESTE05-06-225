@@ -301,7 +301,7 @@ namespace SuperBackendNR85IA.Models
         public bool WeatherDeclaredWet { get; set; }
         public float SolarAltitude { get; set; }
         public float SolarAzimuth { get; set; }
-        public string CarLeftRight { get; set; } = string.Empty;
+        public int CarLeftRight { get; set; }
         public float ChanceOfRain { get; set; }
         public int IncidentLimit { get; set; }
         public float TrackAirTemp { get; set; }
