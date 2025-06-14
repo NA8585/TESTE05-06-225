@@ -465,7 +465,10 @@ namespace SuperBackendNR85IA.Services
                 (GetSdkValue<float>(d, "LRsuspDamPct") ?? 0f) +
                 (GetSdkValue<float>(d, "RRsuspDamPct") ?? 0f)
             ) / 4f;
-            t.Damage.ChassisDamage = t.Damage.SuspensionDamage;
+            t.Damage.ChassisDamage =
+                (t.Damage.SuspensionDamage * 0.6f) +
+                (t.Damage.FrontWingDamage * 0.2f) +
+                (t.Damage.RearWingDamage * 0.2f);
 
             t.DrsStatus      = GetSdkValue<int>(d, "DrsStatus") ?? 0;
             t.CarIdxP2PCount = GetSdkArray<int>(d, "CarIdxP2P_Count").Select(v => v ?? 0).ToArray();
