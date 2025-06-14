@@ -310,6 +310,11 @@ namespace SuperBackendNR85IA.Services
         {
             t.Session.SessionNum        = GetSdkValue<int>(d, "SessionNum") ?? 0;
             double rawSessionTime = GetSdkValue<double>(d, "SessionTime") ?? 0.0;
+            if (rawSessionTime < 0)
+            {
+                _log.LogWarning($"Negative SessionTime received: {rawSessionTime}");
+                rawSessionTime = 0.0;
+
             _log.LogInformation($"Raw SessionTime: {rawSessionTime}");
             t.Session.SessionTime       = rawSessionTime;
             t.Session.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;

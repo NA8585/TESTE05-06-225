@@ -301,6 +301,12 @@ namespace SuperBackendNR85IA.Calculations
                     if (float.IsNaN(val) || float.IsInfinity(val))
                         prop.SetValue(obj, 0f);
                 }
+                else if (prop.PropertyType == typeof(double))
+                {
+                    double val = (double)(prop.GetValue(obj) ?? 0.0);
+                    if (double.IsNaN(val) || double.IsInfinity(val) || val < 0)
+                        prop.SetValue(obj, 0.0);
+                }
                 else if (prop.PropertyType == typeof(float[]))
                 {
                     var arr = (float[]?)prop.GetValue(obj);
@@ -309,6 +315,16 @@ namespace SuperBackendNR85IA.Calculations
                         for (int i = 0; i < arr.Length; i++)
                             if (float.IsNaN(arr[i]) || float.IsInfinity(arr[i]))
                                 arr[i] = 0f;
+                    }
+                }
+                else if (prop.PropertyType == typeof(double[]))
+                {
+                    var arr = (double[]?)prop.GetValue(obj);
+                    if (arr != null)
+                    {
+                        for (int i = 0; i < arr.Length; i++)
+                            if (double.IsNaN(arr[i]) || double.IsInfinity(arr[i]) || arr[i] < 0)
+                                arr[i] = 0.0;
                     }
                 }
                 else if (prop.PropertyType.IsArray)
