@@ -31,6 +31,11 @@ namespace SuperBackendNR85IA.Calculations
 
         public static void PreencherOverlayPneus(ref TelemetryModel model)
         {
+            var comp = string.IsNullOrEmpty(model.TireCompound)
+                ? model.Tyres.Compound
+                : model.TireCompound;
+            model.Compound = string.IsNullOrEmpty(model.Compound) ? comp : model.Compound;
+            model.Tyres.Compound = comp;
             model.Tyres.LfWear ??= new float[3];
             model.Tyres.RfWear ??= new float[3];
             model.Tyres.LrWear ??= new float[3];

@@ -739,9 +739,12 @@
       // Update wear percentages
       const wearData = tireData.treadRemaining || tireData.wear ||
             { left:0, middle:0, right:0 };
-      getTireElement(tireId, 'wearL').textContent = `${(wearData.left * 100).toFixed(1)}%`;
-      getTireElement(tireId, 'wearM').textContent = `${(wearData.middle * 100).toFixed(1)}%`;
-      getTireElement(tireId, 'wearR').textContent = `${(wearData.right * 100).toFixed(1)}%`;
+
+      const fmtWear = v => (v > 1 ? v : v * 100).toFixed(1);
+
+      getTireElement(tireId, 'wearL').textContent = `${fmtWear(wearData.left)}%`;
+      getTireElement(tireId, 'wearM').textContent = `${fmtWear(wearData.middle)}%`;
+      getTireElement(tireId, 'wearR').textContent = `${fmtWear(wearData.right)}%`;
 
       // Update temperatures and apply color classes
       const tempL_el = getTireElement(tireId, 'tempL');
@@ -776,7 +779,7 @@
       // Update final pressure
       const hotVal = tireData.lastHotPressure ?? tireData.pressure ?? 0;
 
-      const coldVal = tireData.coldPressure ?? tireData.startPress ?? tireData.pressure ?? 0;
+      const coldVal = tireData.coldPressure ?? tireData.pressure ?? 0;
       getTireElement(tireId, 'hot').textContent = `${hotVal.toFixed(1)} psi`;
       getTireElement(tireId, 'press').textContent = `${coldVal.toFixed(1)} psi`;
 
@@ -799,11 +802,11 @@
     function handleData(d) {
         d = { ...d, ...(d.tyres || d.tires || {}) };
 
+        const src = d.tyres || d.tires || d;
         let tires = d.tyres || d.tires;
         const hasNested = tires && typeof tires.frontLeft === 'object';
 
         if (!hasNested) {
-            const src = d.tyres || d.tires || d;
             const compArr = d.carIdxTireCompounds || d.carIdxTireCompound;
             const comp = Array.isArray(compArr) && typeof d.playerCarIdx === 'number'
                 ? (compArr[d.playerCarIdx] || 'U')
