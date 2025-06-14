@@ -410,6 +410,7 @@
         rearLeft: null,
         rearRight: null
       }
+
     };
 
     // --- Lógica de Redimensionamento e Arraste ---
@@ -748,6 +749,7 @@
       const tempR_el = getTireElement(tireId, 'tempR');
 
       const baseTemp = tireData.coldTemp || tireData.startTemp || tireData.temp;
+
       tempL_el.textContent = `${baseTemp.left.toFixed(0)}°C`;
       tempM_el.textContent = `${baseTemp.middle.toFixed(0)}°C`;
       tempR_el.textContent = `${baseTemp.right.toFixed(0)}°C`;
@@ -773,6 +775,7 @@
 
       // Update final pressure
       const hotVal = tireData.lastHotPressure ?? tireData.pressure ?? 0;
+
       const coldVal = tireData.coldPressure ?? tireData.startPress ?? tireData.pressure ?? 0;
       getTireElement(tireId, 'hot').textContent = `${hotVal.toFixed(1)} psi`;
       getTireElement(tireId, 'press').textContent = `${coldVal.toFixed(1)} psi`;
@@ -912,6 +915,7 @@
                 if (tires[key] && !globalState.startTemps[key]) {
                     globalState.startTemps[key] = { ...tires[key].temp };
                     globalState.startPressures[key] = tires[key].pressure;
+
                 }
             });
         }
@@ -922,6 +926,7 @@
             if (tObj) {
                 tObj.coldTemp = globalState.startTemps[iRacingKey] || tObj.coldTemp || tObj.temp;
                 tObj.coldPressure = globalState.startPressures[iRacingKey] ?? tObj.coldPressure ?? tObj.pressure;
+
                 updateTireUI(id, tObj);
             }
         });
