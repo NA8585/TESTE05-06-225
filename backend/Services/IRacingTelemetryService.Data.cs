@@ -317,8 +317,31 @@ namespace SuperBackendNR85IA.Services
             }
 
             _log.LogInformation($"Raw SessionTime: {rawSessionTime}");
-            t.Session.SessionTime       = rawSessionTime;
-            t.Session.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
+
+            // Retrieve total session time to fall back when the SDK value is invalid
+            float totalSessionTime = GetSdkValue<float>(d, "SessionTimeTotal") ?? 0f;
+
+            t.Session.SessionTime = rawSessionTime;
+
+            float rawRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? -1f;
+            if (rawRemain >= 0)
+            {
+                t.Session.SessionTimeRemain = rawRemain;
+            }
+            else if (totalSessionTime > 0)
+            {
+                float recomputed = (float)(totalSessionTime - rawSessionTime);
+                if (recomputed < 0)
+                {
+                    _log.LogWarning($"Negative recomputed SessionTimeRemain: {recomputed}");
+                    recomputed = 0f;
+                }
+                t.Session.SessionTimeRemain = recomputed;
+            }
+            else
+            {
+                t.Session.SessionTimeRemain = 0f;
+            }
             if (t.SessionNum != _lastSessionNum)
             {
                 _lastSessionNum = t.Session.SessionNum;
@@ -334,7 +357,7 @@ namespace SuperBackendNR85IA.Services
             t.Session.PlayerCarIdx      = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
             t.Session.TotalLaps         = GetSdkValue<int>(d, "CurrentSessionTotalLaps") ?? -1;
             t.Session.LapsRemainingRace = GetSdkValue<int>(d, "LapsRemainingRace") ?? 0;
-            t.Session.SessionTimeTotal  = GetSdkValue<float>(d, "SessionTimeTotal") ?? 0f;
+            t.Session.SessionTimeTotal  = totalSessionTime;
             t.Session.SessionLapsTotal  = GetSdkValue<int>(d, "SessionLapsTotal") ?? 0;
             t.Session.SessionLapsRemain = GetSdkValue<int>(d, "SessionLapsRemain") ?? 0;
             t.Session.RaceLaps         = GetSdkValue<int>(d, "RaceLaps") ?? 0;
