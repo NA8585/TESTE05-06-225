@@ -3,7 +3,7 @@ namespace SuperBackendNR85IA.Models
     public record SessionData
     {
         public int SessionNum { get; set; }
-        public float SessionTime { get; set; }
+        public double SessionTime { get; set; }
         public float SessionTimeRemain { get; set; }
         public int SessionState { get; set; }
         public int PaceMode { get; set; }

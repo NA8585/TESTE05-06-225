@@ -13,7 +13,7 @@ namespace SuperBackendNR85IA.Models
         // Wrapper properties to keep legacy flat structure
         // ---- Session ----
         public int SessionNum { get => Session.SessionNum; set => Session.SessionNum = value; }
-        public float SessionTime { get => Session.SessionTime; set => Session.SessionTime = value; }
+        public double SessionTime { get => Session.SessionTime; set => Session.SessionTime = value; }
         public float SessionTimeRemain { get => Session.SessionTimeRemain; set => Session.SessionTimeRemain = value; }
         public int SessionState { get => Session.SessionState; set => Session.SessionState = value; }
         public int PaceMode { get => Session.PaceMode; set => Session.PaceMode = value; }
@@ -307,9 +307,9 @@ namespace SuperBackendNR85IA.Models
         public string SessionInfoYaml { get; set; } = string.Empty;
         public List<ResultPosition> Results { get; set; } = new();
 
-        public static string FormatTime(float seconds)
+        public static string FormatTime(double seconds)
         {
-            if (float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds < 0 || seconds > 60 * 60 * 24 * 365)
+            if (double.IsNaN(seconds) || double.IsInfinity(seconds) || seconds < 0 || seconds > 60 * 60 * 24 * 365)
                 return "--:--:--";
             TimeSpan t = TimeSpan.FromSeconds(seconds);
             return $"{(int)t.TotalHours:D2}:{t.Minutes:D2}:{t.Seconds:D2}";
