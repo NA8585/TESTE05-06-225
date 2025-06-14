@@ -203,6 +203,19 @@ namespace SuperBackendNR85IA.Services
                 _rrColdTempCm = t.RrTempCm;
                 _rrColdTempCr = t.RrTempCr;
             }
+            else
+            {
+                // Valores iniciais caso o serviço seja iniciado no meio da pista
+                if (_lfColdPress == 0f) _lfColdPress = t.LfPress;
+                if (_rfColdPress == 0f) _rfColdPress = t.RfPress;
+                if (_lrColdPress == 0f) _lrColdPress = t.LrPress;
+                if (_rrColdPress == 0f) _rrColdPress = t.RrPress;
+
+                if (_lfLastHotPress == 0f && t.OnPitRoad) _lfLastHotPress = t.LfPress;
+                if (_rfLastHotPress == 0f && t.OnPitRoad) _rfLastHotPress = t.RfPress;
+                if (_lrLastHotPress == 0f && t.OnPitRoad) _lrLastHotPress = t.LrPress;
+                if (_rrLastHotPress == 0f && t.OnPitRoad) _rrLastHotPress = t.RrPress;
+            }
             _wasOnPitRoad = t.OnPitRoad;
 
             t.LfColdPress = _lfColdPress;

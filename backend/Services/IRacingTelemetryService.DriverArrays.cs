@@ -30,6 +30,11 @@ namespace SuperBackendNR85IA.Services
                 var classShort = t.CarIdxCarClassShortNames; Resize(ref classShort);   classShort[d.CarIdx] = d.CarClassShortName; t.CarIdxCarClassShortNames = classShort;
                 var estTimes = t.CarIdxCarClassEstLapTimes; Resize(ref estTimes);      estTimes[d.CarIdx] = d.CarClassEstLapTime; t.CarIdxCarClassEstLapTimes = estTimes;
                 var compounds = t.CarIdxTireCompounds;     Resize(ref compounds);       compounds[d.CarIdx] = d.TireCompound;     t.CarIdxTireCompounds = compounds;
+                if (d.CarIdx == t.PlayerCarIdx)
+                {
+                    t.TireCompound   = d.TireCompound;
+                    t.Tyres.Compound = d.TireCompound;
+                }
 
                 var irDeltas = t.CarIdxIRatingDeltas;      Resize(ref irDeltas);        if (_irStart.Length <= d.CarIdx) Array.Resize(ref _irStart, d.CarIdx + 1);
                 if (_irStart[d.CarIdx] == 0) _irStart[d.CarIdx] = d.IRating;           irDeltas[d.CarIdx] = d.IRating - _irStart[d.CarIdx];
