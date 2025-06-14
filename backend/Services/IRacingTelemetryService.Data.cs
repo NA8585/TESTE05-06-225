@@ -329,6 +329,7 @@ namespace SuperBackendNR85IA.Services
             {
                 rawRemain = (float)(totalSessionTime - rawSessionTime);
             }
+
             if (rawRemain < 0)
             {
                 _log.LogWarning($"Negative SessionTimeRemain received: {rawRemain}");
