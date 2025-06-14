@@ -174,10 +174,8 @@ namespace SuperBackendNR85IA.Models
         public bool[] SectorIsBest { get; set; } = Array.Empty<bool>();
         public bool AreSectorsValid { get; set; }
         public string SectorTimesDebug { get; set; } = string.Empty;
-
         public float FfbPercent { get; set; }
         public bool FfbClip { get; set; }
-
         public float[] CarIdxLapDistPct { get; set; } = Array.Empty<float>();
         public int[] CarIdxPosition { get; set; } = Array.Empty<int>();
         public int[] CarIdxLap { get; set; } = Array.Empty<int>();
@@ -200,6 +198,7 @@ namespace SuperBackendNR85IA.Models
         public float[] CarIdxCarClassEstLapTimes { get; set; } = Array.Empty<float>();
         public string[] CarIdxTireCompounds { get; set; } = Array.Empty<string>();
         public string TireCompound { get; set; } = string.Empty;
+        public string Compound { get => Tyres.Compound; set => Tyres.Compound = value; }
         public int[] CarIdxGear { get; set; } = Array.Empty<int>();
         public float[] CarIdxRPM { get; set; } = Array.Empty<float>();
         public int[] CarIdxPaceFlags { get; set; } = Array.Empty<int>();
@@ -209,7 +208,6 @@ namespace SuperBackendNR85IA.Models
         public bool IsMultiClassSession { get; set; }
         public string CarAheadName { get; set; } = string.Empty;
         public string CarBehindName { get; set; } = string.Empty;
-
         public float[] BrakeTemp { get; set; } = Array.Empty<float>();
         public float LfBrakeLinePress { get; set; }
         public float RfBrakeLinePress { get; set; }
@@ -223,7 +221,6 @@ namespace SuperBackendNR85IA.Models
         public int DcDiffEntry { get; set; }
         public int DcDiffMiddle { get; set; }
         public int DcDiffExit { get; set; }
-
         public float LfSuspPos { get; set; }
         public float RfSuspPos { get; set; }
         public float LrSuspPos { get; set; }
@@ -242,12 +239,10 @@ namespace SuperBackendNR85IA.Models
         public float Yaw { get; set; }
         public float Pitch { get; set; }
         public float Roll { get; set; }
-
         public int DrsStatus { get; set; }
         public int[] CarIdxP2PCount { get; set; } = Array.Empty<int>();
         public int[] CarIdxP2PStatus { get; set; } = Array.Empty<int>();
         public int DcEnginePower { get; set; }
-
         public float TrackSurfaceTemp { get; set; }
         public float TrackTempCrew { get; set; }
         public int TempUnits { get; set; }
@@ -256,7 +251,6 @@ namespace SuperBackendNR85IA.Models
         public string TrackGripStatus { get; set; } = string.Empty;
         public float TrackWetnessPCA { get; set; }
         public string TrackStatus { get; set; } = string.Empty;
-
         public float FuelUsePerHour { get; set; }
         public float FuelUsePerLap { get; set; }
         public float FuelPerLap { get; set; }
@@ -264,7 +258,6 @@ namespace SuperBackendNR85IA.Models
         public float LapDistTotal { get; set; }
         public float FuelLevelLapStart { get; set; }
         public float FuelUsedTotal { get; set; }
-
         public float FuelUsePerLapCalc { get; set; }
         public float EstLapTimeCalc { get; set; }
         public float ConsumoVoltaAtual { get; set; }
@@ -277,9 +270,7 @@ namespace SuperBackendNR85IA.Models
         public float RecomendacaoAbastecimento { get; set; }
         public float FuelRemaining { get; set; }
         public float FuelEta { get; set; }
-
         public FuelStatus FuelStatus { get; set; } = new FuelStatus();
-
         public string UserName { get; set; } = string.Empty;
         public string TeamName { get; set; } = string.Empty;
         public string CarNumber { get; set; } = string.Empty;
