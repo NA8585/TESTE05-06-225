@@ -20,26 +20,35 @@
             color:#fff;
             font-family:'Poppins',sans-serif;
             -webkit-user-select:none;
+            user-select:none;
             overflow:hidden;
         }
 
         .resizable-overlay-wrapper {
-            position: absolute; /* Posição absoluta para fácil localização */
-            top: 50px; /* Inicia a 50px do topo */
-            left: 50px; /* Inicia a 50px da esquerda */
+            position: absolute;
+            top: 50px;
+            left: 50px;
             width:480px;
             height:450px;
-            min-width:450px; /* Largura mínima ajustada para compactação */
-            min-height:460px; /* Altura mínima ajustada para compactação */
+            min-width:450px;
+            min-height:420px; /* Reduzido para nova contagem */
             background:rgb(17,24,39);
             border:2px solid #3b82f6;
             border-radius:1rem;
-            box-shadow:0 4px 10px rgba(0,0,0,0.5);
+            box-shadow:0 4px S10px rgba(0,0,0,0.5);
             display:flex;
             flex-direction:column;
             overflow:hidden;
-            resize: both; /* Permite redimensionar em todas as direções */
-            transition: opacity 0.3s ease-in-out, filter 0.3s ease-in-out; /* Transições suaves para opacidade e contraste */
+            resize: both;
+            transition: opacity 0.3s ease-in-out, filter 0.3s ease-in-out, border-color 0.3s ease;
+        }
+        
+        .resizable-overlay-wrapper.locked {
+            resize: none;
+        }
+        
+        .resizable-overlay-wrapper.disconnected {
+            border-color: #ef4444; /* Borda vermelha quando desconectado */
         }
 
         .overlay-container {
@@ -53,14 +62,17 @@
             display:flex;
             align-items:center;
             justify-content:space-between;
-            padding:3px 8px; /* Altura reduzida */
+            padding:3px 8px;
             background:inherit;
-            cursor:move; /* Indica que o cabeçalho pode ser arrastado */
-            -webkit-app-region:drag; /* Para arrastar a janela em ambientes como Electron */
+            cursor:move;
             border-top-left-radius:0.875rem;
             border-top-right-radius:0.875rem;
             pointer-events: auto;
             border-bottom: 1px solid #334155;
+        }
+        
+        .overlay-header.locked {
+            cursor: default;
         }
 
         .overlay-header .logo {
@@ -68,19 +80,25 @@
             align-items:center;
             gap:4px;
             font-size:0.75rem;
-            -webkit-app-region:no-drag; /* Exclui o logo da área de arrasto */
         }
 
-        @keyframes pulse { /* Animação de pulsação para o ícone do headset */
+        @keyframes pulse {
             0% { transform: scale(1); opacity: 0.7; }
             50% { transform: scale(1.15); opacity: 1; }
             100% { transform: scale(1); opacity: 0.7; }
         }
         .pulsing-headset {
             animation: pulse 2s infinite ease-in-out;
+            transition: color 0.3s ease;
+        }
+        
+        .disconnected .pulsing-headset {
+            color: #ef4444 !important;
+            animation: none;
         }
 
-        @keyframes subtlePulse { /* Animação suave para o título "Relative" */
+
+        @keyframes subtlePulse {
             0% { opacity: 0.8; }
             50% { opacity: 1; }
             100% { opacity: 0.8; }
@@ -99,7 +117,6 @@
         .overlay-header .controls {
             display:flex;
             gap:4px;
-            -webkit-app-region:no-drag; /* Exclui os controles da área de arrasto */
         }
 
         .overlay-header .controls button {
@@ -135,49 +152,57 @@
         }
 
         .header-bar, .footer-bar {
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          padding: 0.4rem 0.6rem;
-          font-size: 0.65rem;
-          border-radius: 0.5rem;
-          font-weight: 600;
-          background-color: rgba(17, 24, 39, 0.85);
-          color: #cbd5e1;
-          backdrop-filter: blur(4px);
-          width: 100%;
-          box-sizing: border-box;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.65rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            background-color: rgba(17, 24, 39, 0.85);
+            color: #cbd5e1;
+            backdrop-filter: blur(4px);
+            width: 100%;
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
         .header-bar div, .footer-bar div {
-          padding: 0 0.3rem;
-          white-space: nowrap;
+            padding: 0 0.3rem;
+            white-space: nowrap;
         }
 
         #competitor-list-container {
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-          width: 100%;
-          flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 100%;
+            flex-grow: 1;
+            overflow: hidden;
         }
 
         .driver-row {
-          display: grid;
-          /* Layout de colunas: Posição, Número do Carro, Pit Status, SR/iRating, Nome, Gap/Voltas */
-          grid-template-columns: 25px 35px 35px 85px 1fr 80px;
-          align-items: center;
-          gap: 6px; /* Reduzido para acomodar a nova coluna */
-          padding: 0.25rem 0.5rem;
-          border-radius: 0.3rem;
-          font-size: 0.75rem;
-          height: 30px; /* Altura da linha ajustada para 30px */
-          box-sizing: border-box;
-          transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+            display: grid;
+            grid-template-columns: 25px 35px 35px 85px 1fr 80px;
+            align-items: center;
+            gap: 6px;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.3rem;
+            font-size: 0.75rem;
+            height: 30px;
+            box-sizing: border-box;
+            transform: scale(1);
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .driver-row.status-message {
+            grid-template-columns: 1fr;
+            justify-content: center;
+            text-align: center;
         }
 
-        .highlight-self { /* Destaque para a linha do jogador */
-          background-color: rgba(190, 242, 100, 0.25) !important;
-          border: 1px solid transparent !important;
+        .highlight-self {
+            background-color: rgba(190, 242, 100, 0.25) !important;
+            border: 1px solid transparent !important;
         }
         .highlight-self .driver-name {
             color: #bef264; 
@@ -187,113 +212,129 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); 
         }
 
-        .driver-row.pit { /* Estilo para pilotos nos boxes */
-            background-color: rgba(255, 193, 7, 0.1) !important; /* Fundo Ambar claro */
-        }
+        .driver-row.pit { background-color: rgba(255, 193, 7, 0.1) !important; }
         .pit-status {
             font-weight: bold;
-            color: #FFC107; /* Ambar */
+            color: #FFC107;
             text-align: center;
             font-size: 0.7rem;
         }
 
-
-        .lap-ahead { /* Estilo para pilotos uma volta à frente (verde) */
+        .lap-ahead {
             background-color: rgba(34, 197, 94, 0.15);
             border: 1px solid #22c55e;
             color: #bbf7d0;
             border-left: 3px solid #22c55e;
         }
 
-        .lap-behind { /* Estilo para pilotos uma volta atrás (vermelho) */
+        .lap-behind {
             background-color: rgba(248, 113, 113, 0.15);
             border: 1px solid #f87171;
             color: #fecaca;
             border-left: 3px solid #f87171;
         }
 
-        .same-lap { /* Estilo para carros na mesma volta (azul escuro transparente) */
-            background-color: rgba(23, 37, 84, 0.7);
+        .same-lap {
+            background-color: rgba(51, 65, 85, 0.7); /* Cor alterada para cinza-ardósia */
             border: 1px solid transparent;
             color: #e2e8f0;
-            border-left: 3px solid rgba(23, 37, 84, 0.7);
+            border-left: 3px solid rgba(51, 65, 85, 0.7);
         }
 
         .driver-row > span, .driver-row > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
         .driver-row .pos { justify-content: center; }
-        .driver-row .car-number { /* Cor será definida dinamicamente */ }
-        .driver-row .driver-name { justify-content: flex-start; }
-        .driver-row .rating-container {
-            justify-content: center;
-            gap: 4px;
-            flex-wrap: nowrap;
-            min-width: 60px;
-            max-width: 85px; 
-            overflow: hidden;
-        }
-        .driver-row .gap-time { 
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            font-size: 0.8rem;
-            font-weight: 500;
-            gap: 4px;
-            height: 100%;
-            flex-wrap: nowrap;
-            min-width: 70px;
-            max-width: 80px;
-            overflow: hidden;
-        }
+        .driver-row .car-number { /* Dynamic color */ }
+        .driver-row .driver-name { justify-content: flex-start; transition: color 0.3s ease; }
+        .driver-row .rating-container { justify-content: center; gap: 4px; flex-wrap: nowrap; min-width: 60px; max-width: 85px; overflow: hidden; }
+        .driver-row .gap-time { display: flex; align-items: center; justify-content: flex-end; font-size: 0.8rem; font-weight: 500; gap: 4px; height: 100%; flex-wrap: nowrap; min-width: 70px; max-width: 80px; overflow: hidden; }
 
-        .gap-time-value { 
-            padding: 2px 4px;
-            border-radius: 4px;
-            /* border: 1px solid transparent; Remove border specific to ahead/behind/pit from here */
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            box-sizing: border-box;
-        }
-        .gap-positive { color: #4ade80; /* Verde Tailwind green-400 */ }
-        .gap-negative { color: #f87171; /* Vermelho Tailwind red-400 */ }
+        .gap-time-value { padding: 2px 4px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; line-height: 1; box-sizing: border-box; }
+        .gap-positive { color: #4ade80; }
+        .gap-negative { color: #f87171; }
 
-
-        .lap-diff-indicator {
-            font-size: 0.7em;
-            font-weight: bold;
-            line-height: 1;
-        }
+        .lap-diff-indicator { font-size: 0.7em; font-weight: bold; line-height: 1; }
 
         .badge { display: inline-block; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-size: 0.6rem; font-weight: bold; line-height: 1.2; box-sizing: border-box; white-space: nowrap; }
         .sr-badge { border: 1px solid; } 
-        .sr-R { border-color: #ef4444; color: #ef4444; }
-        .sr-D { border-color: #f97316; color: #f97316; }
-        .sr-C { border-color: #facc15; color: #facc15; }
-        .sr-B { border-color: #22c55e; color: #22c55e; }
-        .sr-A { border-color: #3b82f6; color: #3b82f6; }
-        .sr-P { border-color: #a855f7; color: #a855f7; }
-        .sr-DEFAULT { border-color: #6b7280; color: #6b7280; }
+        .sr-R { border-color: #ef4444; color: #ef4444; } .sr-D { border-color: #f97316; color: #f97316; } .sr-C { border-color: #facc15; color: #facc15; } .sr-B { border-color: #22c55e; color: #22c55e; } .sr-A { border-color: #3b82f6; color: #3b82f6; } .sr-P { border-color: #a855f7; color: #a855f7; } .sr-DEFAULT { border-color: #6b7280; color: #6b7280; }
         .irating-badge { background-color: #374151; color: #e5e7eb; }
 
-        .car-number.category-GTP { color: #ef4444 !important; } 
-        .car-number.category-LMP3 { color: #facc15 !important; } 
-        .car-number.category-GT3 { color: #a855f7 !important; } 
-        .car-number.category-GT4 { color: #2563eb !important; } 
-        .car-number.category-default { color: #4b5563 !important; } 
-        .car-number.single-class { color: #fff !important; } 
-        .car-number.player-car-number { 
-            color: #bef264 !important;
-            text-shadow: 0 0 5px rgba(190, 242, 100, 0.8), 0 0 10px rgba(190, 242, 100, 0.6) !important;
+        .car-number.category-GTP { color: #ef4444 !important; } .car-number.category-LMP3 { color: #facc15 !important; } .car-number.category-GT3 { color: #a855f7 !important; } .car-number.category-GT4 { color: #2563eb !important; } .car-number.category-default { color: #4b5563 !important; } .car-number.single-class { color: #fff !important; } 
+        .car-number.player-car-number { color: #bef264 !important; text-shadow: 0 0 5px rgba(190, 242, 100, 0.8), 0 0 10px rgba(190, 242, 100, 0.6) !important; }
+
+        /* Novo estilo para pilotos inativos (pit/outlap) */
+        .driver-name.inactive {
+            color: #6b7280 !important; /* Tailwind gray-500 */
+            font-style: italic;
+        }
+
+        /* Custom Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-backdrop.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: #1f2937;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #4b5563;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-backdrop.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #e5e7eb;
+        }
+        .modal-body {
+            font-size: 0.9rem;
+            color: #d1d5db;
+            margin-bottom: 20px;
+        }
+        .modal-footer {
+            text-align: right;
+        }
+        .modal-close-btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .modal-close-btn:hover {
+            background-color: #2563eb;
         }
     </style>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div class="resizable-overlay-wrapper" id="wrapper">
         <div class="overlay-container">
-            <header class="overlay-header">
-                <div class="logo">
+            <header class="overlay-header" id="overlayHeader">
+                <div class="logo" id="logo">
                     <i class="fas fa-headset text-slate-400 pulsing-headset"></i>
                     <span style="color:#e2e8f0;">Coaching</span>
                     <span style="background:linear-gradient(to right,#ff0000,#fff,#00ff00);-webkit-background-clip:text;-webkit-text-fill-color:transparent; font-weight: 600;">NR85</span>
@@ -303,13 +344,13 @@
                 <div class="controls">
                     <button id="pinBtn" title="Fixar overlay (sobrepor janelas)">📌</button>
                     <button id="lockBtn" title="Bloquear/Desbloquear movimento e redimensionamento">🔒</button>
-                    <button id="passThroughBtn" title="Ativar/Desativar passagem de clique">➡️</button>
+                    <button id="passThroughBtn" title="Ativar/Desativar passagem de clique">🖱️</button>
                     <button id="settingsBtn" title="Ajustes">⚙️</button>
                     <button id="closeBtn" title="Fechar overlay">✖</button>
                 </div>
             </header>
 
-            <div id="settings-popover" class="hidden absolute top-10 right-2 bg-gray-800 p-4 rounded-lg shadow-lg z-10 w-64 -webkit-app-region:no-drag;">
+            <div id="settings-popover" class="hidden absolute top-10 right-2 bg-gray-800 p-4 rounded-lg shadow-lg z-10 w-64">
                 <h3 class="text-white text-md font-semibold mb-3">Configurações da Overlay</h3>
                 <div class="mb-4">
                     <label for="rangeOpacity" class="block text-gray-300 text-sm font-bold mb-2">Opacidade:</label>
@@ -341,719 +382,443 @@
         </div>
     </div>
 
+    <!-- Custom Modal for Notifications -->
+    <div id="customModal" class="modal-backdrop">
+        <div class="modal-content">
+            <h2 id="modalTitle" class="modal-header">Aviso</h2>
+            <p id="modalBody" class="modal-body">Este é um aviso.</p>
+            <div class="modal-footer">
+                <button id="modalCloseBtn" class="modal-close-btn">Entendi</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const WS_URL = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
-        let competitorListContainer = null;
-        let websocket = null;
+        // --- CACHE & STATE ---
+        const dom = {
+            wrapper: document.getElementById('wrapper'),
+            header: document.getElementById('overlayHeader'),
+            competitorList: document.getElementById('competitor-list-container'),
+            logo: document.getElementById('logo'),
+        };
+        
+        const state = {
+            isLocked: false,
+            isDragging: false,
+            dragStartX: 0,
+            dragStartY: 0,
+            overlayX: 50,
+            overlayY: 50,
+            lastSessionInfoYaml: '',
+            cachedData: {
+                driverInfo: null,
+                weekendInfo: null,
+                sessionInfo: null,
+            },
+            websocket: null,
+            displayedCarIdx: new Set(),
+            reconnectAttempts: 0, 
+        };
 
-        let cachedDriverInfo = null;
-        let cachedWeekendInfo = null;
-        let cachedSessionInfo = null;
-        let lastSessionInfoYaml = '';
+        const WS_URL = window.OVERLAY_WS_URL || 'ws://127.0.0.1:5221/ws';
 
+        // --- UTILITY FUNCTIONS ---
         function parseYaml(yamlStr) {
             try {
                 if (typeof jsyaml === 'undefined') {
-                    console.error('Erro: jsyaml não está definido. Certifique-se de que a biblioteca js-yaml está carregada.');
+                    console.error('Error: jsyaml is not defined. Ensure js-yaml library is loaded.');
                     return null;
                 }
                 return jsyaml.load(yamlStr.replace(/\0/g, ''));
             } catch (e) {
-                console.error('Erro ao analisar YAML:', e);
+                console.error('Error parsing YAML:', e);
                 return null;
             }
         }
 
-const competitorListContainer = document.getElementById('competitor-list-container');
-const overlayAPI = window.overlayAPI || window.api || {}; // For potential interactions
-const overlayHeader = document.querySelector('.overlay-header');
-let isElectron = !!window.electronAPI;
+        function fmtTimeSimple(s) {
+            if (typeof s !== 'number' || !isFinite(s) || s < 0 || s > 1e9) return '--:--:--';
+            const date = new Date(s * 1000);
+            const hh = date.getUTCHours().toString().padStart(2, '0');
+            const mm = date.getUTCMinutes().toString().padStart(2, '0');
+            const ss = date.getUTCSeconds().toString().padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
+        }
 
-// --- Helper Functions ---
-function parseYaml(yamlStr) {
-  try {
-    // Note: The backend is now sending parsed YAML data as part of the TelemetryModel,
-    // so direct YAML parsing in the frontend might not be strictly necessary for all fields,
-    // but it's kept here for SessionInfoYaml which is still passed as a string.
-    return jsyaml.load(yamlStr || '');
-  } catch (e) {
-    console.error('Error parsing YAML:', e, "Raw YAML:", yamlStr);
-    return {};
-  }
-}
+        function getSRClass(lic) {
+            if (!lic) return 'sr-DEFAULT';
+            const srPart = lic.split(' ')[0];
+            return `sr-${srPart.charAt(0).toUpperCase()}` || 'sr-DEFAULT';
+        }
 
-function fmtTimeSimple(s, showHundredths = true) {
-  if (typeof s !== 'number' || !isFinite(s) || s < 0) return '---';
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const secs = Math.floor(s % 60);
-  const hundreths = Math.floor((s * 100) % 100);
-
-  if (h > 0) {
-    return `${h.toString()}:${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }
-  if (showHundredths) {
-    return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${hundreths.toString().padStart(2, '0')}`;
-  }
-  return `${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-function getSRClass(licString) {
-    if (!licString || typeof licString !== 'string') return 'sr-DEFAULT';
-    const srPart = licString.split(' ')[0]; // "A", "B3.45" -> "A" or "B3.45"
-    const match = srPart?.match(/^([ABCDRPIX])/i); // Added X for potential other classes
-    return match ? `sr-${match[1].toUpperCase()}` : 'sr-DEFAULT';
-}
-
-function getCarClassColorCss(carClassShortName) {
-    if (!carClassShortName) return 'class-color-DEFAULT';
-    const upperClass = carClassShortName.toUpperCase().replace(/[^A-Z0-9]/g, ''); // Sanitize
-    switch (upperClass) {
-        case 'GT3': return 'class-color-GT3';
-        case 'LMP2': return 'class-color-LMP2';
-        case 'GTE': return 'class-color-GTE';
-        case 'TCR': return 'class-color-TCR';
-        case 'GT4': return 'class-color-GT4';
-        case 'LMP3': return 'class-color-LMP3';
-        // Add more common iRacing classes if needed
-        default: return 'class-color-DEFAULT';
-    }
-}
-
-function getCarLogoPath(carScreenName) {
-    // This remains a placeholder. You'd fill this with actual paths based on carScreenName
-    // const logos = { 'Porsche 911 GT3 R (992)': 'logos/porsche_992_gt3r.png', ... };
-    // return logos[carScreenName] || '';
-    return ''; 
-}
-
-// Global cache for YAML data to avoid re-parsing on every tick if session info doesn't change
-let cachedDriverInfo = null;
-let cachedWeekendInfo = null;
-let cachedSessionInfo = null;
-let lastSessionInfoYaml = '';
-
-function renderRelative(data) {
-  if (!data) {
-    console.warn("renderRelative called with no data.");
-    return;
-  }
-
-  // Flatten possible sub-models from new TelemetryModel structure
-  data = { ...data, ...(data.session || {}), ...(data.vehicle || {}), ...(data.tyres || {}), ...(data.damage || {}) };
-
-  // Prefer typed YAML objects from the backend when available
-  if (Array.isArray(data.yamlDrivers)) {
-      cachedDriverInfo = data.yamlDrivers;
-  }
-  if (data.yamlWeekendInfo) {
-      cachedWeekendInfo = data.yamlWeekendInfo;
-  }
-  if (data.yamlSessionInfo) {
-      cachedSessionInfo = data.yamlSessionInfo;
-  }
-
-  // Fallback: parse raw YAML only if typed info missing
-  if (!cachedDriverInfo && data.sessionInfoYaml && data.sessionInfoYaml !== lastSessionInfoYaml) {
-      const parsedYaml = parseYaml(data.sessionInfoYaml);
-      cachedDriverInfo = parsedYaml?.DriverInfo?.Drivers;
-      cachedWeekendInfo = parsedYaml?.WeekendInfo;
-      if (parsedYaml?.SessionInfo) {
-          cachedSessionInfo = { ...parsedYaml.SessionInfo };
-          if (Array.isArray(parsedYaml.SessionInfo.Sessions)) {
-              cachedSessionInfo.allSessionsFromYaml = parsedYaml.SessionInfo.Sessions;
-          }
-      }
-      lastSessionInfoYaml = data.sessionInfoYaml;
-  }
-
-  const weekendInfo = cachedWeekendInfo || {};
-  let currentSessionYamlData = {};
-  if (cachedSessionInfo) {
-      if (Array.isArray(cachedSessionInfo.allSessionsFromYaml)) {
-          currentSessionYamlData = cachedSessionInfo.allSessionsFromYaml.find(s => s.sessionNum === data.sessionNum) || cachedSessionInfo;
-      } else if (Array.isArray(cachedSessionInfo)) {
-          currentSessionYamlData = cachedSessionInfo.find(s => s.SessionNum === data.sessionNum) || {};
-      } else {
-          currentSessionYamlData = cachedSessionInfo;
-      }
-  }
-  const playerDriverYaml = (cachedDriverInfo || []).find(d => (d.carIdx ?? d.CarIdx) === data.playerCarIdx);
-
-
-  // === Update Header and Footer ===
-  document.getElementById('raceName').textContent = `Race: ${data.trackDisplayName || weekendInfo.trackDisplayName || '--'}`;
-  document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(data.sessionTime, false) || '00:00'}`;
-  let amb = undefined;
-  if (typeof data.airTemp === 'number' && data.airTemp > 0) {
-      amb = data.airTemp;
-  } else if (typeof data.trackAirTemp === 'number' && data.trackAirTemp > 0) {
-      amb = data.trackAirTemp;
-  } else if (typeof data.tempValue === 'number' && data.tempValue > 0) {
-      amb = data.tempValue;
-  } else if (typeof weekendInfo.trackAirTemp === 'number' &&
-             weekendInfo.trackAirTemp > 0) {
-      amb = weekendInfo.trackAirTemp;
-  }
-  document.getElementById('ambientTemp').textContent = `${typeof amb === 'number' ? amb.toFixed(1) : '--'}`;
-  
-  let trackTempValue = '--';
-  if (typeof data.trackSurfaceTemp === 'number' && data.trackSurfaceTemp > -100) {
-      trackTempValue = data.trackSurfaceTemp.toFixed(1);
-  } else if (typeof data.trackTempCrew === 'number' && data.trackTempCrew > -100) {
-      trackTempValue = data.trackTempCrew.toFixed(1);
-  }
-  document.getElementById('trackTemp').textContent = trackTempValue;
-  document.getElementById('brakeBias').textContent = `${typeof data.dcBrakeBias === 'number' ? (data.dcBrakeBias * 100).toFixed(1) : '--'}`;
-  
-  document.getElementById('sessionTimeRemaining').textContent = `${fmtTimeSimple(data.sessionTimeRemain, false) || '00:00'}`;
-  const playerLap = data.lap ?? '--';
-  const totalLapsSess = currentSessionYamlData?.currentSessionTotalLaps === -1
-        ? '∞'
-        : (currentSessionYamlData?.currentSessionTotalLaps ?? currentSessionYamlData?.sessionLapsTotal ?? '--');
-  document.getElementById('lapsCompleted').textContent = `${playerLap}`;
-  document.getElementById('totalLaps').textContent = `${totalLapsSess}`;
-
-  // Use IncidentLimit from the current session in YAML
-  const incidentLimit = currentSessionYamlData?.incidentLimit ?? weekendInfo.incidentLimit ?? 'N/A';
-  const playerIncidents = data.playerCarTeamIncidentCount ?? '--';
-  const penaltyEl = document.getElementById('penaltyStatus');
-  penaltyEl.textContent = `Inc: ${playerIncidents}/${incidentLimit}`;
-  penaltyEl.className = 'text-white'; 
-  if (playerDriverYaml?.IsSpectator === 1) { // Check from YAML driver info
-      penaltyEl.textContent = 'Spectator';
-  } else if (typeof playerIncidents === 'number' && typeof incidentLimit === 'number' && incidentLimit > 0) {
-    if (playerIncidents >= incidentLimit) {
-        penaltyEl.classList.remove('penalty-warning');
-        penaltyEl.classList.add('penalty-critical');
-    } else if (playerIncidents >= incidentLimit * 0.75) {
-        penaltyEl.classList.remove('penalty-critical');
-        penaltyEl.classList.add('penalty-warning');
-    } else {
-        penaltyEl.classList.remove('penalty-warning', 'penalty-critical');
-    }
-  }
-
-  // Track Status based on TelemetryModel.TrackGripStatus (calculated in backend)
-  const trackStatusEl = document.getElementById('trackStatus');
-  let trackStatusText = data.trackGripStatus || data.skies || '--'; // Use trackGripStatus first, then skies
-  let trackStatusClass = 'status-cloudy'; 
-
-  // Map backend's TrackGripStatus to frontend classes
-  if (trackStatusText.toLowerCase().includes('very wet') || trackStatusText.toLowerCase().includes('wet')) {
-      trackStatusClass = 'status-wet';
-  } else if (trackStatusText.toLowerCase().includes('damp') || trackStatusText.toLowerCase().includes('dry')) {
-      trackStatusClass = 'status-dry';
-  } else if (trackStatusText.toLowerCase().includes('clear') || trackStatusText.toLowerCase().includes('sunny')) { // Fallback for 'Skies'
-      trackStatusClass = 'status-dry';
-  }
-
-  trackStatusEl.textContent = `Track: ${trackStatusText}`;
-  trackStatusEl.className = ''; // Reset classes
-  trackStatusEl.classList.add(trackStatusClass);
-
-
-  // === Process Driver Data for Relative Display ===
-  const driversFromYaml = cachedDriverInfo || []; // Use cached driver info from YAML
-  const playerCarIdx = data.playerCarIdx;
-
-  // Arrays provided by TelemetryModel for each car index
-  // (carIdxPosition, carIdxLap, carIdxOnPitRoad, carIdxTrackSurface,
-  //  carIdxLastLapTime, carIdxF2Time, etc.) are used to build the table below.
-
-  // Placeholder/simulated data for demonstration IF backend doesn't send arrays
-  // In a real scenario, these arrays should come directly from 'data' object.
-  const carPositionsFromBackend = data.carIdxPosition || []; // This needs to be populated in backend
-  const carLapsCompletedFromBackend = data.carIdxLap || []; // This needs to be populated in backend
-  const carOnPitRoadFromBackend = data.carIdxOnPitRoad || []; // This needs to be populated in backend
-  const carTrackSurfaceFromBackend = data.carIdxTrackSurface || []; // This needs to be populated in backend (for DNF)
-  const carLastLapTimesFromBackend = data.carIdxLastLapTime || []; // This needs to be populated in backend
-  const carF2TimeFromBackend = data.carIdxF2Time || []; // This needs to be populated in backend
-
-  let carsData = [];
-
-  // Iterate through all drivers found in YAML to build the list
-  // and try to match with real-time data from backend
-  for (let i = 0; i < driversFromYaml.length; i++) {
-    const driverYaml = driversFromYaml[i];
-    const carIdx = driverYaml.carIdx ?? driverYaml.CarIdx;
-
-    // We need real-time position for filtering/sorting. If not available, skip.
-    // Assuming carPositionsFromBackend has valid position at carIdx.
-    const pos = carPositionsFromBackend[carIdx];
-    if (pos === undefined || pos < 0) continue; // Skip if no valid real-time position
-
-    carsData.push({
-      idx: carIdx,
-      pos: pos,
-      num: driverYaml.carNumberRaw !== undefined
-            ? driverYaml.carNumberRaw.toString()
-            : ((driverYaml.carNumber ?? driverYaml.CarNumber) || '--'),
-      name: (driverYaml.userName ?? driverYaml.UserName) || 'Desconhecido',
-      team: (driverYaml.teamName ?? driverYaml.TeamName) || '',
-      irating: (driverYaml.iRating ?? driverYaml.IRating) || 0,
-      lic: (driverYaml.licString ?? driverYaml.LicString) || 'R ----',
-      carClassShort: (driverYaml.carClassShortName ?? driverYaml.CarClassShortName) || '',
-      carScreenName: (driverYaml.carScreenName ?? driverYaml.CarScreenName) || '',
-      lap: carLapsCompletedFromBackend[carIdx],
-      lastLapTime: carLastLapTimesFromBackend[carIdx],
-      onPit: carOnPitRoadFromBackend[carIdx],
-      isDNF: carTrackSurfaceFromBackend[carIdx] === 4, // irsdk_TrkLoc.irsdk_NotInWorld
-      f2Time: carF2TimeFromBackend[carIdx], // Time relative to player if available
-    });
-  }
-
-  // Sort by actual race position
-  carsData.sort((a, b) => a.pos - b.pos);
-
-  const playerInSortedList = carsData.find(c => c.idx === playerCarIdx);
-  const playerDisplayIndex = playerInSortedList ? carsData.indexOf(playerInSortedList) : -1;
-
-  if (!competitorListContainer) {
-    console.error("#competitor-list-container not found");
-    return;
-  }
-  competitorListContainer.innerHTML = ''; // Clear previous entries
-
-  const N_BEFORE = 4;
-  const N_AFTER = 5; 
-  const displayStartIdx = playerDisplayIndex !== -1 ? Math.max(0, playerDisplayIndex - N_BEFORE) : 0;
-  const displayEndIdx = playerDisplayIndex !== -1 ? Math.min(carsData.length, playerDisplayIndex + N_AFTER + 1) : Math.min(carsData.length, N_BEFORE + N_AFTER + 1);
-
-  for (let i = displayStartIdx; i < displayEndIdx; i++) {
-    const car = carsData[i];
-    if (!car) continue;
-
-    const driverRow = document.createElement('div');
-    driverRow.className = 'driver-row';
-    if (car.idx === playerCarIdx) driverRow.classList.add('highlight-self');
-    if (car.isDNF) driverRow.classList.add('dnf');
-    if (car.onPit && !car.isDNF) driverRow.classList.add('pit');
-    
-    let gapText = '---';
-    let gapClass = 'gap-neutral';
-
-    if (playerInSortedList && car.idx !== playerCarIdx) {
-        if (playerInSortedList.lap === car.lap && car.f2Time !== undefined && car.f2Time !== -1) {
-            const timeDiff = car.f2Time;
-            if (Math.abs(timeDiff) <= 60) {
-                gapText = (timeDiff > 0 ? '+' : '') + timeDiff.toFixed(2);
-                gapClass = timeDiff > 0 ? 'gap-positive' : (timeDiff < 0 ? 'gap-negative' : 'gap-neutral');
-            }
-            // Adjusted to match mock data CarClassShortName values
+        function getCarNumberColorClass(carClassShortName, numCarClasses) {
+            if (numCarClasses === 1) return 'single-class';
             switch (carClassShortName) {
                 case 'GTP': return 'category-GTP';
-                case 'LMP2': return 'category-LMP3'; // Using LMP3 color for LMP2 for now
+                case 'LMP3': return 'category-LMP3';
                 case 'GT3': return 'category-GT3';
                 case 'GT4': return 'category-GT4';
                 default: return 'category-default';
             }
         }
 
+        // --- MODAL LOGIC ---
+        function showModal(title, message) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = message;
+            document.getElementById('customModal').classList.add('visible');
+        }
 
-        function renderRelative(data) { 
-            if (!competitorListContainer) {
-                competitorListContainer = document.getElementById('competitor-list-container');
-                if (!competitorListContainer) {
-                    console.error("competitor-list-container não encontrado no DOM.");
-                    return;
-                }
-            }
+        function hideModal() {
+            document.getElementById('customModal').classList.remove('visible');
+        }
+        
+        // --- DATA PROCESSING & RENDERING ---
+        function renderUI(data) {
+            if (!dom.competitorList) return;
 
-            if (!data) {
-                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Sem dados para exibir.</div>`;
-                return;
-            }
-            // flatData is used to give preference to root properties (mock/TelemetryModel direct)
-            // or properties from data.session / data.vehicle if they exist (TelemetryModel sub-objects)
             const flatData = { ...data, ...(data.session || {}), ...(data.vehicle || {}) };
 
-            const sessionInfoYamlFromData = data.sessionInfoYaml || flatData.sessionInfoYaml;
-            if (sessionInfoYamlFromData && sessionInfoYamlFromData !== lastSessionInfoYaml) {
-                const parsed = parseYaml(sessionInfoYamlFromData);
+            if (flatData.sessionInfoYaml && flatData.sessionInfoYaml !== state.lastSessionInfoYaml) {
+                const parsed = parseYaml(flatData.sessionInfoYaml);
                 if (parsed) {
-                    cachedDriverInfo = parsed.DriverInfo?.Drivers;
-                    cachedWeekendInfo = parsed.WeekendInfo;
-                    cachedSessionInfo = parsed.SessionInfo?.Sessions;
+                    state.cachedData.driverInfo = parsed.DriverInfo?.Drivers;
+                    state.cachedData.weekendInfo = parsed.WeekendInfo;
+                    state.cachedData.sessionInfo = parsed.SessionInfo?.Sessions;
                 }
-                lastSessionInfoYaml = sessionInfoYamlFromData;
+                state.lastSessionInfoYaml = flatData.sessionInfoYaml;
             }
             
-            // Data Sourcing: Try direct on `data` (mock/TM), then TM sub-objects (via flatData), then FP sub-objects
-            const currentSessionNum = flatData.sessionNum ?? data.telemetry?.sessionNum; // Assuming sessionNum might be in telemetry for FP
-            const sessionType = (cachedSessionInfo || []).find(s => s.SessionNum === currentSessionNum)?.SessionType || data.sessionInfo?.sessionType || 'Practice';
+            const { driverInfo, weekendInfo, sessionInfo } = state.cachedData;
+            const playerCarIdx = flatData.playerCarIdx;
             
-            const trackDisplayNameValue = flatData.trackDisplayName ?? data.weekendInfo?.trackDisplayName ?? cachedWeekendInfo?.TrackDisplayName ?? '--';
-            document.getElementById('raceName').textContent = `Corrida: ${trackDisplayNameValue}`;
-
-            const sessionTimeValue = flatData.sessionTime ?? data.telemetry?.sessionTime;
-            document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(sessionTimeValue)}`;
-            
-            const trackAirTempValue = data.airTemp ?? flatData.trackAirTemp ?? data.weekendInfo?.trackAirTemp;
-            document.getElementById('ambientTemp').textContent = (typeof trackAirTempValue === 'number') ? trackAirTempValue.toFixed(1) : '--';
-
-            const trackSurfaceTempValue = flatData.trackSurfaceTemp ?? data.telemetry?.trackTemp;
-            document.getElementById('trackTemp').textContent = (typeof trackSurfaceTempValue === 'number' && trackSurfaceTempValue > -100) ? trackSurfaceTempValue.toFixed(1) : '--';
-            
-            const dcBrakeBiasValue = flatData.dcBrakeBias ?? data.telemetry?.dcBrakeBias;
-            document.getElementById('brakeBias').textContent = `${typeof dcBrakeBiasValue === 'number' ? dcBrakeBiasValue.toFixed(1) : '--'}`;
-
-            const sessionTimeRemainValue = flatData.sessionTimeRemain ?? data.telemetry?.sessionTimeRemain;
-            document.getElementById('sessionTimeRemaining').textContent = `${fmtTimeSimple(sessionTimeRemainValue)}`;
-
-            const lapCompletedValue = flatData.lap ?? data.telemetry?.lapCompleted ?? '--';
-            document.getElementById('lapsCompleted').textContent = `${lapCompletedValue}`;
-
-            let totalLapsCalculated;
-            if (flatData.totalLaps !== undefined) { // Mock data or TM might have pre-calculated totalLaps
-                totalLapsCalculated = flatData.totalLaps;
-            } else if (data.sessionInfo?.currentSessionTotalLaps !== undefined) { // FP
-                totalLapsCalculated = data.sessionInfo.currentSessionTotalLaps;
-                 // If FP indicates 0 laps for a timed session, treat as unlimited for display.
-                if (totalLapsCalculated === 0 && (cachedSessionInfo?.find(s => s.SessionNum === currentSessionNum)?.SessionTime.includes("sec")) && !(cachedSessionInfo?.find(s => s.SessionNum === currentSessionNum)?.SessionLaps.includes("laps"))) {
-                    totalLapsCalculated = -1;
-                }
-            } else if (cachedSessionInfo) { // Fallback to YAML parsed info
-                 const sessionLapsFromYaml = (cachedSessionInfo || []).find(s => s.SessionNum === currentSessionNum)?.SessionLaps;
-                 if (sessionLapsFromYaml === "unlimited" || sessionLapsFromYaml === undefined) totalLapsCalculated = -1;
-                 else totalLapsCalculated = parseInt(sessionLapsFromYaml);
-            }
-            const totalLapsDisplay = (totalLapsCalculated < 0 || isNaN(totalLapsCalculated)) ? '∞' : totalLapsCalculated;
-            document.getElementById('totalLaps').textContent = `${totalLapsDisplay}`;
-            
-            const incidentLimitFromYaml = cachedWeekendInfo?.IncidentLimit;
-            const incidentLimitLive = data.sessionInfo?.incidentLimit;
-            const incidentLimitValue = incidentLimitFromYaml ?? incidentLimitLive;
-            const incidentLimitDisplay = (incidentLimitValue === 'unlimited' || incidentLimitValue === 0 || incidentLimitValue === undefined) ? 'N/A' : incidentLimitValue;
-
-            const playerCarIdxValue = flatData.playerCarIdx ?? data.telemetry?.playerCarIdx;
-            let playerIncidentsValue = flatData.playerCarTeamIncidentCount ?? flatData.playerCarMyIncidentCount;
-            if (playerIncidentsValue === undefined && data.telemetry?.playerCarMyIncidentCount !== undefined) {
-                 playerIncidentsValue = data.telemetry.playerCarMyIncidentCount;
-            } else if (playerIncidentsValue === undefined && data.drivers && playerCarIdxValue !== undefined) {
-                 const playerDriverPayload = data.drivers.find(d => d.carIdx === playerCarIdxValue);
-                 if (playerDriverPayload?.teamIncidentCount !== undefined) {
-                    playerIncidentsValue = playerDriverPayload.teamIncidentCount;
-                 } else if (playerDriverPayload?.myIncidentCount !== undefined) { // Assuming myIncidentCount could be on driver payload
-                    playerIncidentsValue = playerDriverPayload.myIncidentCount;
+            if (!driverInfo || !weekendInfo || !sessionInfo || playerCarIdx === undefined) {
+                 if (!dom.competitorList.querySelector('.status-message')) {
+                    dom.competitorList.innerHTML = `<div class="driver-row status-message" style="justify-content: center;">Aguardando dados da sessão...</div>`;
                  }
-            }
-            document.getElementById('penaltyStatus').textContent = `Inc: ${playerIncidentsValue ?? '--'}/${incidentLimitDisplay}`;
-
-            const driversFromYaml = cachedDriverInfo || [];
-            const numCarClasses = cachedWeekendInfo?.NumCarClasses || 1;
-
-            if (!driversFromYaml.length || playerCarIdxValue === undefined || !cachedWeekendInfo || !cachedSessionInfo) {
-                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Aguardando dados YAML...</div>`;
-                return;
-            }
-            
-            const { carIdxPosition, carIdxLap, carIdxOnPitRoad, carIdxTrackSurface, carIdxLapDistPct, carIdxBestLapTime, carIdxLastLapTime, carIdxF2Time, carIdxLapCompleted: carIdxLapCompletedArray } = flatData;
-
-            // Preliminary check for essential telemetry arrays
-            if (!Array.isArray(carIdxLapDistPct) || !Array.isArray(carIdxLap) || !Array.isArray(carIdxPosition)) {
-                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Dados de telemetria dos carros ausentes ou malformados.</div>`;
                 return;
             }
 
-            const allDriversMapped = driversFromYaml.map(dYaml => {
+            updateInfoBars(flatData, weekendInfo);
+            processAndRenderDrivers(flatData);
+        }
+
+        function updateInfoBars(flatData, weekendInfo) {
+            document.getElementById('raceName').textContent = `Corrida: ${flatData.trackDisplayName || weekendInfo.TrackDisplayName || '--'}`;
+            document.getElementById('raceTime').textContent = `Sim: ${fmtTimeSimple(flatData.sessionTime)}`;
+            document.getElementById('ambientTemp').textContent = (flatData.trackAirTemp ?? 0).toFixed(1);
+            document.getElementById('trackTemp').textContent = (typeof flatData.trackSurfaceTemp === 'number' && flatData.trackSurfaceTemp > -100) ? flatData.trackSurfaceTemp.toFixed(1) : '--';
+            document.getElementById('brakeBias').textContent = `${typeof flatData.dcBrakeBias === 'number' ? flatData.dcBrakeBias.toFixed(1) : '--'}`;
+            document.getElementById('sessionTimeRemaining').textContent = `${fmtTimeSimple(flatData.sessionTimeRemain)}`;
+            document.getElementById('lapsCompleted').textContent = `${flatData.lap ?? '--'}`;
+            const totalLaps = (flatData.totalLaps < 0 || isNaN(flatData.totalLaps)) ? '∞' : flatData.totalLaps;
+            document.getElementById('totalLaps').textContent = `${totalLaps}`;
+            const incidentLimit = weekendInfo.IncidentLimit === 'unlimited' || weekendInfo.IncidentLimit === 0 || weekendInfo.IncidentLimit === undefined ? 'N/A' : weekendInfo.IncidentLimit;
+            document.getElementById('penaltyStatus').textContent = `Inc: ${flatData.playerCarTeamIncidentCount ?? '--'}/${incidentLimit}`;
+        }
+        
+        function processAndRenderDrivers(flatData) {
+            const { driverInfo, weekendInfo, sessionInfo } = state.cachedData;
+            const playerCarIdx = flatData.playerCarIdx;
+            const numCarClasses = weekendInfo?.NumCarClasses || 1;
+            const sessionType = (sessionInfo || []).find(s => s.SessionNum === flatData.sessionNum)?.SessionType || 'Practice';
+            const { carIdxPosition, carIdxLap, carIdxOnPitRoad, carIdxTrackSurface, carIdxLapDistPct } = flatData;
+
+            const allDriversMapped = driverInfo.map(dYaml => {
                 const carIdx = dYaml?.CarIdx ?? -1;
-                const surface = carIdxTrackSurface?.[carIdx] ?? -1; 
-                const distPct = carIdxLapDistPct?.[carIdx] ?? -1;   
-                
-                const isActive = surface !== 4 && surface !== 5 && surface !== -1 && distPct >= 0; // Surface 4 & 5 considered inactive as per mock, -1 NotInWorld
+                const surface = carIdxTrackSurface?.[carIdx] ?? -1;
+                const isDisplayable = surface !== -1 && surface !== 4; 
 
                 return {
-                    idx: carIdx,
-                    pos: carIdxPosition?.[carIdx] ?? 0,
-                    name: dYaml?.UserName || '---',
-                    num: dYaml?.CarNumberRaw || '--',
-                    lap: carIdxLap?.[carIdx] ?? -1,
-                    distPct: distPct,
-                    onPit: carIdxOnPitRoad?.[carIdx] ?? false,
-                    irating: dYaml?.IRating || 0,
-                    lic: dYaml?.LicString || '',
-                    carClassShortName: dYaml?.CarClassShortName || '',
-                    estLap: parseFloat(dYaml?.CarClassEstLapTime) || 0,
-                    bestLapTime: carIdxBestLapTime?.[carIdx] ?? 0,
-                    lastLapTime: carIdxLastLapTime?.[carIdx] ?? 0,
-                    pitTime: carIdxF2Time?.[carIdx] ?? 0,
-                    tireCompound: dYaml?.TireCompound || '---',
-                    stintLaps: carIdxLapCompletedArray?.[carIdx] ?? (flatData.carIdxLapCompleted?.[carIdx]) ?? 0,
-                    surface: surface, 
-                    isActive: isActive,
-                    effectiveGap: undefined, 
-                    timeGap: undefined,      
-                    lapDiff: undefined       
+                    idx: carIdx, pos: carIdxPosition?.[carIdx] ?? 0, name: dYaml?.UserName || '---',
+                    num: dYaml?.CarNumberRaw || '--', lap: carIdxLap?.[carIdx] ?? -1, distPct: carIdxLapDistPct?.[carIdx] ?? -1,
+                    onPit: carIdxOnPitRoad?.[carIdx] ?? false, irating: dYaml?.IRating || 0, lic: dYaml?.LicString || '', 
+                    carClassShortName: dYaml?.CarClassShortName || '', estLap: parseFloat(dYaml?.CarClassEstLapTime) || 0,
+                    isDisplayable: isDisplayable
                 };
             });
 
-            const player = allDriversMapped.find(d => d.idx === playerCarIdxValue);
-            if (!player) { 
-                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Dados do jogador (CarIdx: ${playerCarIdxValue}) não encontrados na lista YAML.</div>`;
+            const displayableDrivers = allDriversMapped.filter(d => d.isDisplayable);
+            const player = displayableDrivers.find(d => d.idx === playerCarIdx);
+
+            if (!player) {
+                if (!dom.competitorList.querySelector('.status-message')) {
+                    dom.competitorList.innerHTML = `<div class="driver-row status-message" style="justify-content: center;">Dados do jogador indisponíveis.</div>`;
+                }
                 return;
             }
-             if (!player.isActive) {
-                competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Jogador (CarIdx: ${playerCarIdxValue}) inativo ou fora da pista.</div>`;
-                createRelativeRow(player, player, sessionType, numCarClasses); // Still render player's row if found, even if inactive
-                return;
-            }
-            player.timeGap = 0; 
+            player.timeGap = 0;
             player.lapDiff = 0;
             player.effectiveGap = 0;
 
+            const playerEstLap = player.estLap || 120;
+            const others = displayableDrivers.filter(d => d.idx !== player.idx);
 
-            const trackLen = (parseFloat(cachedWeekendInfo?.TrackLength) * 1000) || 4000; 
-            const playerEstLap = player.estLap || 120; 
-
-            const activeOthers = allDriversMapped.filter(d => d.idx !== player.idx && d.isActive);
-
-            activeOthers.forEach(d => {
-                const otherCarEstLapTime = d.estLap || playerEstLap; 
-
-                const playerDistAbsolute = (player.lap * trackLen) + (player.distPct * trackLen);
-                const otherDistAbsolute = (d.lap * trackLen) + (d.distPct * trackLen);
-
-                d.effectiveGap = (otherDistAbsolute - playerDistAbsolute) / (trackLen / otherCarEstLapTime);
-                d.lapDiff = (d.lap || 0) - (player.lap || 0);
-
+            others.forEach(d => {
                 if (d.carClassShortName === player.carClassShortName) {
-                    let normalizedShortestGap = d.effectiveGap - (d.lapDiff * otherCarEstLapTime);
-                    if (normalizedShortestGap > otherCarEstLapTime / 1.95) { 
-                        normalizedShortestGap -= otherCarEstLapTime;
-                    } else if (normalizedShortestGap < -otherCarEstLapTime / 1.95) { 
-                        normalizedShortestGap += otherCarEstLapTime;
+                    const estLapTime = d.estLap || playerEstLap;
+                    if (estLapTime === 0) {
+                        d.effectiveGap = undefined; d.timeGap = undefined; d.lapDiff = undefined;
+                        return;
                     }
-                    d.timeGap = normalizedShortestGap; // Sign is determined by normalizedShortestGap itself
+                    
+                    let deltaPct = d.distPct - player.distPct;
+                    if (deltaPct > 0.5) deltaPct -= 1.0;
+                    if (deltaPct < -0.5) deltaPct += 1.0;
+                    
+                    const timeGap = deltaPct * estLapTime;
+                    d.timeGap = timeGap;
+                    d.effectiveGap = timeGap;
+
+                    if (!sessionType.toLowerCase().includes('practice')) {
+                        d.lapDiff = (d.lap || 0) - (player.lap || 0);
+                        if (deltaPct > 0.5) d.lapDiff--;
+                        if (deltaPct < -0.5) d.lapDiff++;
+                    } else {
+                        d.lapDiff = undefined;
+                    }
+
                 } else {
-                    d.timeGap = undefined; 
+                    d.timeGap = undefined;
+                    d.lapDiff = undefined;
+                    d.effectiveGap = undefined;
                 }
             });
+
+            const N_AROUND = 4; // Máximo de 4 pilotos
+            const sameClassActiveOthers = others.filter(d => d.effectiveGap !== undefined);
             
-            competitorListContainer.innerHTML = ''; // Clear previous entries
+            const ahead = sameClassActiveOthers
+                .filter(d => d.effectiveGap > 0)
+                .sort((a, b) => a.effectiveGap - b.effectiveGap)
+                .slice(0, N_AROUND)
+                .reverse();
 
-            if (activeOthers.length === 0) {
-                createRelativeRow(player, player, sessionType, numCarClasses); // Render player
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'driver-row';
-                messageDiv.style.justifyContent = 'center';
-                messageDiv.textContent = 'Aguardando outros pilotos ativos...';
-                competitorListContainer.appendChild(messageDiv);
-                return;
-            }
+            const behind = sameClassActiveOthers
+                .filter(d => d.effectiveGap <= 0)
+                .sort((a, b) => b.effectiveGap - a.effectiveGap)
+                .slice(0, N_AROUND);
             
-            const carsPhysicallyAhead = activeOthers
-                .filter(d => d.effectiveGap !== undefined && d.effectiveGap > 0)
-                .sort((a, b) => a.effectiveGap - b.effectiveGap); 
+            const carsToDisplay = [...ahead, player, ...behind];
+            const currentCarIdxOnScreen = new Set(carsToDisplay.map(c => c.idx));
 
-            const carsPhysicallyBehind = activeOthers
-                .filter(d => d.effectiveGap !== undefined && d.effectiveGap < 0)
-                .sort((a, b) => Math.abs(a.effectiveGap) - Math.abs(b.effectiveGap)); 
+            state.displayedCarIdx.forEach(idx => {
+                if (!currentCarIdxOnScreen.has(idx)) {
+                    const rowToRemove = document.getElementById(`driver-row-${idx}`);
+                    if (rowToRemove) {
+                        rowToRemove.style.opacity = '0';
+                        rowToRemove.style.transform = 'scale(0.95)';
+                        setTimeout(() => rowToRemove.remove(), 300);
+                    }
+                    state.displayedCarIdx.delete(idx);
+                }
+            });
 
-            const N_DISPLAY = 5;
-            const potential_ahead_list = carsPhysicallyAhead.slice(0, N_DISPLAY);
-            const potential_behind_list = carsPhysicallyBehind.slice(0, N_DISPLAY);
-            
-            let render_count_ahead = potential_ahead_list.length;
-            let render_count_behind = potential_behind_list.length;
+            carsToDisplay.forEach(car => {
+                const rowId = `driver-row-${car.idx}`;
+                let el = document.getElementById(rowId);
+                const isNew = !el;
 
-            if (render_count_ahead > render_count_behind + 1 && render_count_ahead > N_DISPLAY /2) { // Try to balance more if list is larger
-                render_count_ahead = Math.min(render_count_ahead, render_count_behind + 1);
-            } else if (render_count_behind > render_count_ahead + 1 && render_count_behind > N_DISPLAY /2) {
-                render_count_behind = Math.min(render_count_behind, render_count_ahead + 1);
-            }
+                if (isNew) {
+                    el = document.createElement('div');
+                    el.id = rowId;
+                    el.style.opacity = '0';
+                    el.style.transform = 'scale(0.95)';
+                    state.displayedCarIdx.add(car.idx);
+                }
 
+                updateRowContent(el, car, player, sessionType, numCarClasses);
+                dom.competitorList.appendChild(el);
 
-            const ahead_to_render = potential_ahead_list.slice(0, render_count_ahead).reverse(); 
-            const behind_to_render = potential_behind_list.slice(0, render_count_behind);
-
-
-            for (const car of ahead_to_render) { 
-                createRelativeRow(car, player, sessionType, numCarClasses);
-            }
-            createRelativeRow(player, player, sessionType, numCarClasses); 
-            for (const car of behind_to_render) { 
-                createRelativeRow(car, player, sessionType, numCarClasses);
-            }
+                if (isNew) {
+                    setTimeout(() => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'scale(1)';
+                    }, 20);
+                }
+            });
         }
-
-        function createRelativeRow(car, player, sessionType, numCarClasses) {
-            const el = document.createElement('div');
+        
+        function updateRowContent(el, car, player, sessionType, numCarClasses) {
             let classes = 'driver-row';
-
             if (car.idx === player.idx) {
                 classes += ' highlight-self';
             } else {
-                 // Determine class based on lap difference for Race, otherwise default
-                if (sessionType === 'Race' && car.lapDiff !== undefined && car.lapDiff !== null) {
+                if (sessionType.toLowerCase().includes('race') && car.carClassShortName === player.carClassShortName && car.lapDiff !== undefined) {
                     if (car.lapDiff > 0) classes += ' lap-ahead';
                     else if (car.lapDiff < 0) classes += ' lap-behind';
                     else classes += ' same-lap';
                 } else {
-                    classes += ' same-lap'; // Default for non-Race or undefined lapDiff
+                    classes += ' same-lap';
                 }
             }
-
-
             if (car.onPit) classes += ' pit';
             el.className = classes;
 
-            let gapText;
-            let gapTextColorClass = '';
-            let lapDiffIndicator = '';
+            let gapText, gapTextColorClass = '', lapDiffIndicator = '';
+            const isInactive = (car.onPit || (car.lap || 0) <= 0) && car.idx !== player.idx;
+
 
             if (car.idx === player.idx) {
                 gapText = '0.0';
-            } else if (car.timeGap === undefined || car.timeGap === null) { 
-                gapText = '---';
-            } else { 
+            } else if (car.timeGap !== undefined) {
                 gapText = (car.timeGap > 0 ? '+' : '') + car.timeGap.toFixed(1);
-                if (car.timeGap > 0) {
-                    gapTextColorClass = 'gap-positive';
-                } else if (car.timeGap < 0) {
-                    gapTextColorClass = 'gap-negative';
+                gapTextColorClass = car.timeGap > 0 ? 'gap-positive' : 'gap-negative';
+                if (car.lapDiff && !sessionType.toLowerCase().includes('practice')) {
+                    lapDiffIndicator = `<span class="lap-diff-indicator">${car.lapDiff > 0 ? `+${car.lapDiff}` : car.lapDiff}L</span>`;
                 }
+            } else {
+                gapText = '---';
             }
-            
-            if (sessionType === 'Race' && car.lapDiff !== 0 && car.lapDiff !== undefined && car.lapDiff !== null) {
-                const signedLapDiff = car.lapDiff > 0 ? `+${car.lapDiff}L` : `${car.lapDiff}L`;
-                lapDiffIndicator = `<span class="lap-diff-indicator">${signedLapDiff}</span>`;
-            }
+
 
             const irating = car.irating > 0 ? `${(car.irating / 1000).toFixed(1)}k` : '---';
             let carNumberColorClass = getCarNumberColorClass(car.carClassShortName, numCarClasses);
-            
             if (car.idx === player.idx) {
                 carNumberColorClass = 'player-car-number';
             }
             
-            const pitStatusText = car.onPit ? 'PIT' : '';
-
             el.innerHTML = `
                 <span class="pos">${car.pos || '--'}</span>
                 <span class="car-number ${carNumberColorClass}">#${car.num}</span>
-                <span class="pit-status">${pitStatusText}</span>
+                <span class="pit-status">${car.onPit ? 'PIT' : ''}</span>
                 <div class="rating-container">
                     <span class="sr-badge badge ${getSRClass(car.lic)}">${car.lic || '--'}</span>
                     <span class="irating-badge badge">${irating}</span>
                 </div>
-                <span class="driver-name">${car.name}</span>
+                <span class="driver-name ${isInactive ? 'inactive' : ''}">${car.name}</span>
                 <span class="gap-time">
                     <span class="gap-time-value ${gapTextColorClass}">${gapText}</span>
                     ${lapDiffIndicator}
                 </span>`;
-            competitorListContainer.appendChild(el);
         }
 
+        // --- WEBSOCKET LOGIC ---
         function connectWS() {
-            if (websocket && (websocket.readyState === WebSocket.OPEN || websocket.readyState === WebSocket.CONNECTING)) {
-                console.log("WebSocket já está conectado ou conectando.");
-                return;
+            if (state.websocket && (state.websocket.readyState === WebSocket.OPEN || state.websocket.readyState === WebSocket.CONNECTING)) return;
+            
+            if (state.reconnectAttempts === 0 && dom.competitorList) {
+                dom.competitorList.innerHTML = `<div class="driver-row status-message" style="justify-content: center;">Conectando ao servidor...</div>`;
             }
 
-            websocket = new WebSocket(WS_URL);
-
-            websocket.onopen = () => {
+            state.websocket = new WebSocket(WS_URL);
+            
+            state.websocket.onopen = () => {
                 console.log('Conectado ao Backend WebSocket:', WS_URL);
-                if (competitorListContainer) {
-                     competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Conectado. Aguardando dados...</div>`;
+                state.reconnectAttempts = 0;
+                dom.wrapper.classList.remove('disconnected');
+                dom.logo.classList.remove('disconnected');
+                if (dom.competitorList.querySelector('.status-message')) {
+                    dom.competitorList.innerHTML = '';
                 }
             };
-
-            websocket.onmessage = (event) => {
+            state.websocket.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    renderRelative(data);
+                    renderUI(data);
                 } catch (e) {
                     console.error('Erro ao processar mensagem do WebSocket:', e);
-                     if (competitorListContainer) {
-                        competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Erro ao processar dados.</div>`;
-                    }
                 }
             };
-
-            websocket.onerror = (error) => {
-                console.error('Erro no WebSocket:', error);
-                if (competitorListContainer) {
-                    competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">Erro de conexão. Tentando reconectar...</div>`;
-                }
+            state.websocket.onerror = () => {
+                 // The onclose event will handle the UI updates and logging for connection failures.
             };
-
-            websocket.onclose = (event) => {
-                console.log('WebSocket desconectado:', event.code, event.reason);
-                if (competitorListContainer) {
-                    const message = event.wasClean ? 'Desconectado.' : 'Conexão perdida.';
-                    competitorListContainer.innerHTML = `<div class="driver-row" style="justify-content: center;">${message} Tentando reconectar em 3s...</div>`;
+            state.websocket.onclose = (event) => {
+                dom.wrapper.classList.add('disconnected');
+                dom.logo.classList.add('disconnected');
+                state.reconnectAttempts++;
+                const reconnectDelay = Math.min(30000, 3000 * state.reconnectAttempts);
+                console.log(`WebSocket disconnected. Code: ${event.code}. Tentando reconectar em ${reconnectDelay / 1000}s...`);
+                
+                if (dom.competitorList) {
+                    dom.competitorList.innerHTML = `<div class="driver-row status-message" style="flex-direction: column; height: auto; padding: 1rem; line-height: 1.5;">
+                        <div style="font-weight: bold; margin-bottom: 0.5rem; font-size: 1rem;">🚨 FALHA NA CONEXÃO 🚨</div>
+                        <div style="font-size: 0.8rem; margin-bottom: 0.75rem;">A overlay não consegue conectar ao servidor de dados.</div>
+                        <div style="font-size: 0.75rem; text-align: left; display: inline-block; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 0.25rem;">
+                            <b>Para corrigir:</b><br>
+                            1. Verifique se o <b>iRacing Web Tools</b> (ou similar) está <b>em execução</b>.<br>
+                            2. Verifique seu <b>Firewall/Antivírus</b> e permita a conexão.<br>
+                            3. Reinicie o simulador e o app de dados.
+                        </div>
+                        <div style="font-size: 0.7rem; margin-top: 0.75rem;">Tentando reconectar em ${reconnectDelay / 1000}s...</div>
+                    </div>`;
                 }
-
-                // Only attempt to reconnect if it wasn't a clean close (e.g., user closed the overlay)
-                // or if the server explicitly indicates an issue that might be resolvable by reconnecting.
-                if (event.code !== 1000 && event.code !== 1001 && event.code !== 1005 ) { // 1000: Normal, 1001: Going Away, 1005: No Status Recvd
-                     setTimeout(connectWS, 3000);
-                } else if (!event.wasClean) { // If not clean and also not one of the above, still try.
-                     setTimeout(connectWS, 3000);
-                }
-
+                
+                state.websocket = null;
+                setTimeout(connectWS, reconnectDelay);
             };
         }
-
+        
+        // --- EVENT HANDLERS & INITIALIZATION ---
+        function handleDrag(e) {
+            if (!state.isDragging || state.isLocked) return;
+            e.preventDefault();
+            const currentX = e.clientX || e.touches[0].clientX;
+            const currentY = e.clientY || e.touches[0].clientY;
+            state.overlayX = state.overlayX + (currentX - state.dragStartX);
+            state.overlayY = state.overlayY + (currentY - state.dragStartY);
+            state.dragStartX = currentX;
+            state.dragStartY = currentY;
+            dom.wrapper.style.left = `${state.overlayX}px`;
+            dom.wrapper.style.top = `${state.overlayY}px`;
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
+            connectWS();
+            
+            // UI Controls
             const settingsPopover = document.getElementById('settings-popover');
             const settingsBtn = document.getElementById('settingsBtn');
-            const wrapper = document.getElementById('wrapper');
             const lockBtn = document.getElementById('lockBtn');
+            const closeBtn = document.getElementById('closeBtn');
+            const pinBtn = document.getElementById('pinBtn');
+            const passThroughBtn = document.getElementById('passThroughBtn');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            const customModal = document.getElementById('customModal');
 
-            competitorListContainer = document.getElementById('competitor-list-container');
-
-            if (settingsBtn) {
-                settingsBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    settingsPopover.classList.toggle('hidden');
-                });
-            }
+            settingsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                settingsPopover.classList.toggle('hidden');
+            });
             document.addEventListener('click', (e) => {
-                if (settingsPopover && !settingsPopover.classList.contains('hidden') && !settingsPopover.contains(e.target) && e.target !== settingsBtn) {
+                if (!settingsPopover.classList.contains('hidden') && !settingsPopover.contains(e.target) && e.target !== settingsBtn) {
                     settingsPopover.classList.add('hidden');
                 }
             });
 
-            document.getElementById('rangeOpacity')?.addEventListener('input', (e) => wrapper.style.opacity = e.target.value);
-            document.getElementById('rangeContrast')?.addEventListener('input', (e) => wrapper.style.filter = `contrast(${e.target.value})`);
-
-            document.getElementById('closeBtn')?.addEventListener('click', () => {
-                if (websocket && websocket.readyState === WebSocket.OPEN) {
-                    websocket.close(1000, "User closed overlay"); 
-                }
-                if (window.overlayAPI && window.overlayAPI.close) {
-                    window.overlayAPI.close();
-                } else {
-                    try { window.close(); } catch (e) { console.warn("window.close() failed.")}
-                }
+            document.getElementById('rangeOpacity')?.addEventListener('input', (e) => dom.wrapper.style.opacity = e.target.value);
+            document.getElementById('rangeContrast')?.addEventListener('input', (e) => dom.wrapper.style.filter = `contrast(${e.target.value})`);
+            
+            modalCloseBtn.addEventListener('click', hideModal);
+            customModal.addEventListener('click', (e) => {
+                if (e.target === customModal) hideModal();
             });
-
-            let isLocked = false;
-            if (lockBtn) {
-                lockBtn.addEventListener('click', (e) => {
-                    isLocked = !isLocked;
-                    wrapper.style.webkitAppRegion = isLocked ? 'no-drag' : 'drag';
-                    wrapper.style.resize = isLocked ? 'none' : 'both';
-                    e.currentTarget.innerHTML = isLocked ? '🔓' : '🔒';
-                });
-            }
-
-            document.getElementById('pinBtn')?.addEventListener('click', () => {
-                alert('A funcionalidade "Sobrepor todas as janelas" (Always On Top) geralmente requer permissões do sistema operacional ou um ambiente de aplicativo nativo (como Electron ou NW.js) para funcionar. Em um navegador web padrão, esta função não é diretamente suportada.');
+            
+            closeBtn.addEventListener('click', () => window.close());
+            
+            lockBtn.addEventListener('click', (e) => {
+                state.isLocked = !state.isLocked;
+                dom.wrapper.classList.toggle('locked', state.isLocked);
+                dom.header.classList.toggle('locked', state.isLocked);
+                e.currentTarget.innerHTML = state.isLocked ? '🔓' : '🔒';
             });
+            
+            const nativeFeatureMessage = (feature) => `A funcionalidade <b>"${feature}"</b> requer um ambiente de aplicativo nativo (como Electron) para funcionar e não é suportada em um navegador padrão.`;
+            pinBtn.addEventListener('click', () => showModal("Função Indisponível", nativeFeatureMessage("Sobrepor Janelas")));
+            passThroughBtn.addEventListener('click', () => showModal("Função Indisponível", nativeFeatureMessage("Passagem de Clique")));
 
-            document.getElementById('passThroughBtn')?.addEventListener('click', () => {
-                alert('A funcionalidade de "Passagem de Clique" (Click-Through) geralmente requer permissões do sistema operacional ou um ambiente de aplicativo nativo (como Electron ou NW.js) para funcionar. Em um navegador web padrão, esta função não é diretamente suportada.');
+            dom.header.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button') || state.isLocked) return;
+                state.isDragging = true;
+                state.dragStartX = e.clientX;
+                state.dragStartY = e.clientY;
+                document.addEventListener('mousemove', handleDrag);
+                document.addEventListener('mouseup', () => {
+                    state.isDragging = false;
+                    document.removeEventListener('mousemove', handleDrag);
+                }, { once: true });
             });
-
-            connectWS(); 
         });
     </script>
-    <!-- <script type="module" src="index.js"></script> --> 
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
