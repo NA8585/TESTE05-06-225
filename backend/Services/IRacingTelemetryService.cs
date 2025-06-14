@@ -39,6 +39,10 @@ namespace SuperBackendNR85IA.Services
         private float _rfLastHotPress;
         private float _lrLastHotPress;
         private float _rrLastHotPress;
+        private float _lfColdPress;
+        private float _rfColdPress;
+        private float _lrColdPress;
+        private float _rrColdPress;
         private float _lfLastTempCl;
         private float _lfLastTempCm;
         private float _lfLastTempCr;
@@ -51,6 +55,18 @@ namespace SuperBackendNR85IA.Services
         private float _rrLastTempCl;
         private float _rrLastTempCm;
         private float _rrLastTempCr;
+        private float _lfColdTempCl;
+        private float _lfColdTempCm;
+        private float _lfColdTempCr;
+        private float _rfColdTempCl;
+        private float _rfColdTempCm;
+        private float _rfColdTempCr;
+        private float _lrColdTempCl;
+        private float _lrColdTempCm;
+        private float _lrColdTempCr;
+        private float _rrColdTempCl;
+        private float _rrColdTempCm;
+        private float _rrColdTempCr;
 
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
@@ -147,6 +163,7 @@ namespace SuperBackendNR85IA.Services
         {
             if (t.OnPitRoad && !_wasOnPitRoad)
             {
+                // Entrando nos boxes: registra pressões e temperaturas quentes
                 _lfLastHotPress = t.LfPress;
                 _rfLastHotPress = t.RfPress;
                 _lrLastHotPress = t.LrPress;
@@ -165,7 +182,46 @@ namespace SuperBackendNR85IA.Services
                 _rrLastTempCm = t.RrTempCm;
                 _rrLastTempCr = t.RrTempCr;
             }
+            else if (!t.OnPitRoad && _wasOnPitRoad)
+            {
+                // Saindo dos boxes: registra pressões e temperaturas frias
+                _lfColdPress = t.LfPress;
+                _rfColdPress = t.RfPress;
+                _lrColdPress = t.LrPress;
+                _rrColdPress = t.RrPress;
+
+                _lfColdTempCl = t.LfTempCl;
+                _lfColdTempCm = t.LfTempCm;
+                _lfColdTempCr = t.LfTempCr;
+                _rfColdTempCl = t.RfTempCl;
+                _rfColdTempCm = t.RfTempCm;
+                _rfColdTempCr = t.RfTempCr;
+                _lrColdTempCl = t.LrTempCl;
+                _lrColdTempCm = t.LrTempCm;
+                _lrColdTempCr = t.LrTempCr;
+                _rrColdTempCl = t.RrTempCl;
+                _rrColdTempCm = t.RrTempCm;
+                _rrColdTempCr = t.RrTempCr;
+            }
             _wasOnPitRoad = t.OnPitRoad;
+
+            t.LfColdPress = _lfColdPress;
+            t.RfColdPress = _rfColdPress;
+            t.LrColdPress = _lrColdPress;
+            t.RrColdPress = _rrColdPress;
+
+            t.LfColdTempCl = _lfColdTempCl;
+            t.LfColdTempCm = _lfColdTempCm;
+            t.LfColdTempCr = _lfColdTempCr;
+            t.RfColdTempCl = _rfColdTempCl;
+            t.RfColdTempCm = _rfColdTempCm;
+            t.RfColdTempCr = _rfColdTempCr;
+            t.LrColdTempCl = _lrColdTempCl;
+            t.LrColdTempCm = _lrColdTempCm;
+            t.LrColdTempCr = _lrColdTempCr;
+            t.RrColdTempCl = _rrColdTempCl;
+            t.RrColdTempCm = _rrColdTempCm;
+            t.RrColdTempCr = _rrColdTempCr;
 
             t.LfLastHotPress = _lfLastHotPress;
             t.RfLastHotPress = _rfLastHotPress;
