@@ -450,26 +450,6 @@ namespace SuperBackendNR85IA.Services
             t.Yaw          = GetSdkValue<float>(d, "Yaw") ?? 0f;
             t.Pitch        = GetSdkValue<float>(d, "Pitch") ?? 0f;
             t.Roll         = GetSdkValue<float>(d, "Roll") ?? 0f;
-
-            t.Damage.LfDamage        = GetSdkValue<float>(d, "LFdamage") ?? 0f;
-            t.Damage.RfDamage        = GetSdkValue<float>(d, "RFdamage") ?? 0f;
-            t.Damage.LrDamage        = GetSdkValue<float>(d, "LRdamage") ?? 0f;
-            t.Damage.RrDamage        = GetSdkValue<float>(d, "RRdamage") ?? 0f;
-            t.Damage.FrontWingDamage = GetSdkValue<float>(d, "FrontWingDamage")?? 0f;
-            t.Damage.RearWingDamage  = GetSdkValue<float>(d, "RearWingDamage") ?? 0f;
-            t.Damage.EngineDamage    = GetSdkValue<float>(d, "EngineDamagePct") ?? 0f;
-            t.Damage.GearboxDamage   = GetSdkValue<float>(d, "GearBoxDamagePct") ?? 0f;
-            t.Damage.SuspensionDamage = (
-                (GetSdkValue<float>(d, "LFsuspDamPct") ?? 0f) +
-                (GetSdkValue<float>(d, "RFsuspDamPct") ?? 0f) +
-                (GetSdkValue<float>(d, "LRsuspDamPct") ?? 0f) +
-                (GetSdkValue<float>(d, "RRsuspDamPct") ?? 0f)
-            ) / 4f;
-            t.Damage.ChassisDamage =
-                (t.Damage.SuspensionDamage * 0.6f) +
-                (t.Damage.FrontWingDamage * 0.2f) +
-                (t.Damage.RearWingDamage * 0.2f);
-
             t.DrsStatus      = GetSdkValue<int>(d, "DrsStatus") ?? 0;
             t.CarIdxP2PCount = GetSdkArray<int>(d, "CarIdxP2P_Count").Select(v => v ?? 0).ToArray();
             t.CarIdxP2PStatus= GetSdkArray<int>(d, "CarIdxP2P_Status").Select(v => v ?? 0).ToArray();
@@ -498,6 +478,25 @@ namespace SuperBackendNR85IA.Services
             t.FuelUsePerHour = GetSdkValue<float>(d, "FuelUsePerHour") ?? 0f;
             t.FuelUsePerLap  = GetSdkValue<float>(d, "FuelUsePerLap") ?? 0f;
             t.FuelPerLap     = t.FuelUsePerLap;
+        }
+
+        private void PopulateDamageData(IRacingSdkData d, TelemetryModel t)
+        {
+            t.Damage.LfDamage        = GetSdkValue<float>(d, "LFdamage") ?? 0f;
+            t.Damage.RfDamage        = GetSdkValue<float>(d, "RFdamage") ?? 0f;
+            t.Damage.LrDamage        = GetSdkValue<float>(d, "LRdamage") ?? 0f;
+            t.Damage.RrDamage        = GetSdkValue<float>(d, "RRdamage") ?? 0f;
+            t.Damage.FrontWingDamage = GetSdkValue<float>(d, "FrontWingDamage") ?? 0f;
+            t.Damage.RearWingDamage  = GetSdkValue<float>(d, "RearWingDamage") ?? 0f;
+            t.Damage.EngineDamage    = GetSdkValue<float>(d, "EngineDamagePct") ?? 0f;
+            t.Damage.GearboxDamage   = GetSdkValue<float>(d, "GearBoxDamagePct") ?? 0f;
+            t.Damage.SuspensionDamage = (
+                (GetSdkValue<float>(d, "LFsuspDamPct") ?? 0f) +
+                (GetSdkValue<float>(d, "RFsuspDamPct") ?? 0f) +
+                (GetSdkValue<float>(d, "LRsuspDamPct") ?? 0f) +
+                (GetSdkValue<float>(d, "RRsuspDamPct") ?? 0f)
+            ) / 4f;
+            t.Damage.ChassisDamage = t.Damage.SuspensionDamage;
         }
 
         private async Task ApplyYamlData(IRacingSdkData d, TelemetryModel t)
