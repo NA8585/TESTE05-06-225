@@ -266,7 +266,7 @@ namespace SuperBackendNR85IA.Services
             string rawValue = GetStr(n, key); // GetStr logs missing key
             if (!string.IsNullOrEmpty(rawValue))
             {
-                var match = Regex.Match(rawValue, "[-+]?[0-9]*\.?[0-9]+");
+                var match = Regex.Match(rawValue, @"[-+]?[0-9]*\.?[0-9]+");
                 if (match.Success && float.TryParse(match.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float result))
                 {
                     return result;
