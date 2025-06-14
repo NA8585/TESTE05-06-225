@@ -21,6 +21,8 @@
     "Soft",
     "Soft"
   ],
+  "tireCompound": "Soft",
+  "compound": "Soft",
   "lfTempCl": 80.0,
   "lfTempCm": 85.0,
   "lfTempCr": 90.0,
