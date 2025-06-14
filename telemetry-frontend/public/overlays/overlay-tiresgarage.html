@@ -269,9 +269,9 @@
             <div class="tire-zone" id="frt-esq-lastR">0°C</div>
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="frt-esq-hot">0.0</div>
+          <div class="hotpress text-lg font-bold" id="frt-esq-hot">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="press text-lg font-bold" id="frt-esq-press">0.0</div>
+          <div class="press text-lg font-bold" id="frt-esq-press">0.0 psi</div>
           <div class="compound-indicator" id="frt-esq-compound">S</div>
         </div>
 
@@ -295,9 +295,9 @@
             <div class="tire-zone" id="frt-dir-lastR">0°C</div>
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="frt-dir-hot">0.0</div>
+          <div class="hotpress text-lg font-bold" id="frt-dir-hot">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="press text-lg font-bold" id="frt-dir-press">0.0</div>
+          <div class="press text-lg font-bold" id="frt-dir-press">0.0 psi</div>
           <div class="compound-indicator" id="frt-dir-compound">S</div>
         </div>
 
@@ -321,9 +321,9 @@
             <div class="tire-zone" id="trs-esq-lastR">0°C</div>
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="trs-esq-hot">0.0</div>
+          <div class="hotpress text-lg font-bold" id="trs-esq-hot">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="press text-lg font-bold" id="trs-esq-press">0.0</div>
+          <div class="press text-lg font-bold" id="trs-esq-press">0.0 psi</div>
           <div class="compound-indicator" id="trs-esq-compound">S</div>
         </div>
 
@@ -347,9 +347,9 @@
             <div class="tire-zone" id="trs-dir-lastR">0°C</div>
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
-          <div class="hotpress text-lg font-bold" id="trs-dir-hot">0.0</div>
+          <div class="hotpress text-lg font-bold" id="trs-dir-hot">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="press text-lg font-bold" id="trs-dir-press">0.0</div>
+          <div class="press text-lg font-bold" id="trs-dir-press">0.0 psi</div>
           <div class="compound-indicator" id="trs-dir-compound">S</div>
         </div>
       </div>
@@ -756,8 +756,8 @@
 
       // Update final pressure
       const hotVal = tireData.lastHotPressure ?? tireData.pressure ?? 0;
-      getTireElement(tireId, 'hot').textContent = hotVal.toFixed(1);
-      getTireElement(tireId, 'press').textContent = tireData.pressure.toFixed(1);
+      getTireElement(tireId, 'hot').textContent = `${hotVal.toFixed(1)} psi`;
+      getTireElement(tireId, 'press').textContent = `${tireData.pressure.toFixed(1)} psi`;
 
       // Update compound indicator and tire container border
       const compoundEl = getTireElement(tireId, 'compound');
