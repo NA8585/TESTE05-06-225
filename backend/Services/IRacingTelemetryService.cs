@@ -74,6 +74,7 @@ namespace SuperBackendNR85IA.Services
             CarTrackDataStore store)
         {
             _log = log;
+            TelemetryCalculations.SetLogger(log);
             _broadcaster = broadcaster;
             _store = store;
         }
@@ -116,8 +117,6 @@ namespace SuperBackendNR85IA.Services
                             TelemetryCalculationsOverlay.PreencherOverlayPneus(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlaySetores(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlayDelta(ref telemetryModel);
-
-                            TelemetryCalculations.SanitizeModel(telemetryModel);
 
                             await _broadcaster.BroadcastTelemetry(telemetryModel);
                         }
