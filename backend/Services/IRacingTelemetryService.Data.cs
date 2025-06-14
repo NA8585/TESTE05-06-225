@@ -314,6 +314,7 @@ namespace SuperBackendNR85IA.Services
             {
                 _log.LogWarning($"Negative SessionTime received: {rawSessionTime}");
                 rawSessionTime = 0.0;
+            }
 
             _log.LogInformation($"Raw SessionTime: {rawSessionTime}");
             t.Session.SessionTime       = rawSessionTime;
