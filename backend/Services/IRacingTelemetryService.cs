@@ -203,19 +203,43 @@ namespace SuperBackendNR85IA.Services
                 _rrColdTempCm = t.RrTempCm;
                 _rrColdTempCr = t.RrTempCr;
             }
-            else
-            {
-                // Valores iniciais caso o serviço seja iniciado no meio da pista
-                if (_lfColdPress == 0f) _lfColdPress = t.LfPress;
-                if (_rfColdPress == 0f) _rfColdPress = t.RfPress;
-                if (_lrColdPress == 0f) _lrColdPress = t.LrPress;
-                if (_rrColdPress == 0f) _rrColdPress = t.RrPress;
 
-                if (_lfLastHotPress == 0f && t.OnPitRoad) _lfLastHotPress = t.LfPress;
-                if (_rfLastHotPress == 0f && t.OnPitRoad) _rfLastHotPress = t.RfPress;
-                if (_lrLastHotPress == 0f && t.OnPitRoad) _lrLastHotPress = t.LrPress;
-                if (_rrLastHotPress == 0f && t.OnPitRoad) _rrLastHotPress = t.RrPress;
-            }
+            // Valores iniciais caso o serviço seja iniciado no meio da pista
+            if (_lfColdPress == 0f && t.LfPress > 0f) _lfColdPress = t.LfPress;
+            if (_rfColdPress == 0f && t.RfPress > 0f) _rfColdPress = t.RfPress;
+            if (_lrColdPress == 0f && t.LrPress > 0f) _lrColdPress = t.LrPress;
+            if (_rrColdPress == 0f && t.RrPress > 0f) _rrColdPress = t.RrPress;
+
+            if (_lfColdTempCl == 0f && t.LfTempCl > 0f) _lfColdTempCl = t.LfTempCl;
+            if (_lfColdTempCm == 0f && t.LfTempCm > 0f) _lfColdTempCm = t.LfTempCm;
+            if (_lfColdTempCr == 0f && t.LfTempCr > 0f) _lfColdTempCr = t.LfTempCr;
+            if (_rfColdTempCl == 0f && t.RfTempCl > 0f) _rfColdTempCl = t.RfTempCl;
+            if (_rfColdTempCm == 0f && t.RfTempCm > 0f) _rfColdTempCm = t.RfTempCm;
+            if (_rfColdTempCr == 0f && t.RfTempCr > 0f) _rfColdTempCr = t.RfTempCr;
+            if (_lrColdTempCl == 0f && t.LrTempCl > 0f) _lrColdTempCl = t.LrTempCl;
+            if (_lrColdTempCm == 0f && t.LrTempCm > 0f) _lrColdTempCm = t.LrTempCm;
+            if (_lrColdTempCr == 0f && t.LrTempCr > 0f) _lrColdTempCr = t.LrTempCr;
+            if (_rrColdTempCl == 0f && t.RrTempCl > 0f) _rrColdTempCl = t.RrTempCl;
+            if (_rrColdTempCm == 0f && t.RrTempCm > 0f) _rrColdTempCm = t.RrTempCm;
+            if (_rrColdTempCr == 0f && t.RrTempCr > 0f) _rrColdTempCr = t.RrTempCr;
+
+            if (_lfLastHotPress == 0f && t.LfPress > 0f) _lfLastHotPress = t.LfPress;
+            if (_rfLastHotPress == 0f && t.RfPress > 0f) _rfLastHotPress = t.RfPress;
+            if (_lrLastHotPress == 0f && t.LrPress > 0f) _lrLastHotPress = t.LrPress;
+            if (_rrLastHotPress == 0f && t.RrPress > 0f) _rrLastHotPress = t.RrPress;
+
+            if (_lfLastTempCl == 0f && t.LfTempCl > 0f) _lfLastTempCl = t.LfTempCl;
+            if (_lfLastTempCm == 0f && t.LfTempCm > 0f) _lfLastTempCm = t.LfTempCm;
+            if (_lfLastTempCr == 0f && t.LfTempCr > 0f) _lfLastTempCr = t.LfTempCr;
+            if (_rfLastTempCl == 0f && t.RfTempCl > 0f) _rfLastTempCl = t.RfTempCl;
+            if (_rfLastTempCm == 0f && t.RfTempCm > 0f) _rfLastTempCm = t.RfTempCm;
+            if (_rfLastTempCr == 0f && t.RfTempCr > 0f) _rfLastTempCr = t.RfTempCr;
+            if (_lrLastTempCl == 0f && t.LrTempCl > 0f) _lrLastTempCl = t.LrTempCl;
+            if (_lrLastTempCm == 0f && t.LrTempCm > 0f) _lrLastTempCm = t.LrTempCm;
+            if (_lrLastTempCr == 0f && t.LrTempCr > 0f) _lrLastTempCr = t.LrTempCr;
+            if (_rrLastTempCl == 0f && t.RrTempCl > 0f) _rrLastTempCl = t.RrTempCl;
+            if (_rrLastTempCm == 0f && t.RrTempCm > 0f) _rrLastTempCm = t.RrTempCm;
+            if (_rrLastTempCr == 0f && t.RrTempCr > 0f) _rrLastTempCr = t.RrTempCr;
             _wasOnPitRoad = t.OnPitRoad;
 
             t.LfColdPress = _lfColdPress;
