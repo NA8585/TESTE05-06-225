@@ -56,6 +56,9 @@ Each overlay corresponds to an HTML file in `telemetry-frontend/public/overlays`
 - **Radar** – circular radar indicating nearby cars with alerts.
 - **Teste Final** – diagnostic overlay combining various widgets.
 
+More details sobre os dados de pneus necessários podem ser encontrados em
+`docs/overlay-tires-checklist.md`.
+
 To open an overlay, start the Electron application and click its name in the menu. Windows can be moved, pinned or closed individually.
 
 ## Tests
