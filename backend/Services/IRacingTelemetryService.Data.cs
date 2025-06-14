@@ -143,12 +143,12 @@ namespace SuperBackendNR85IA.Services
             t.Vehicle.SteeringWheelPctTorque = GetSdkValue<float>(d, "SteeringWheelPctTorque") ?? 0f;
             t.Vehicle.SteeringWheelPctTorqueSign = GetSdkValue<float>(d, "SteeringWheelPctTorqueSign") ?? 0f;
             t.Vehicle.SteeringWheelPctTorqueSignStops = GetSdkValue<float>(d, "SteeringWheelPctTorqueSignStops") ?? 0f;
-            t.Vehicle.EnergyERSBattery        = GetSdkValue<float>(d, "EnergyERSBattery") ?? 0f;
-            t.Vehicle.EnergyERSBatteryPct     = GetSdkValue<float>(d, "EnergyERSBatteryPct") ?? 0f;
-            t.Vehicle.EnergyMGU_KLapDeployPct = GetSdkValue<float>(d, "EnergyMGU_KLapDeployPct") ?? 0f;
-            t.Vehicle.EnergyBatteryToMGU_KLap = GetSdkValue<float>(d, "EnergyBatteryToMGU_KLap") ?? 0f;
-            t.Vehicle.ManualBoost             = GetSdkValue<bool>(d, "ManualBoost") ?? false;
-            t.Vehicle.ManualNoBoost           = GetSdkValue<bool>(d, "ManualNoBoost") ?? false;
+            t.Powertrain.EnergyErsBattery        = GetSdkValue<float>(d, "EnergyERSBattery") ?? 0f;
+            t.Powertrain.EnergyErsBatteryPct     = GetSdkValue<float>(d, "EnergyERSBatteryPct") ?? 0f;
+            t.Powertrain.EnergyMguKLapDeployPct  = GetSdkValue<float>(d, "EnergyMGU_KLapDeployPct") ?? 0f;
+            t.Powertrain.EnergyBatteryToMguKLap  = GetSdkValue<float>(d, "EnergyBatteryToMGU_KLap") ?? 0f;
+            t.Powertrain.ManualBoost             = GetSdkValue<bool>(d, "ManualBoost") ?? false;
+            t.Powertrain.ManualNoBoost           = GetSdkValue<bool>(d, "ManualNoBoost") ?? false;
         }
 
         private void UpdateLapInfo(IRacingSdkData d, TelemetryModel t)
@@ -450,7 +450,6 @@ namespace SuperBackendNR85IA.Services
             t.Yaw          = GetSdkValue<float>(d, "Yaw") ?? 0f;
             t.Pitch        = GetSdkValue<float>(d, "Pitch") ?? 0f;
             t.Roll         = GetSdkValue<float>(d, "Roll") ?? 0f;
-
             t.DrsStatus      = GetSdkValue<int>(d, "DrsStatus") ?? 0;
             t.CarIdxP2PCount = GetSdkArray<int>(d, "CarIdxP2P_Count").Select(v => v ?? 0).ToArray();
             t.CarIdxP2PStatus= GetSdkArray<int>(d, "CarIdxP2P_Status").Select(v => v ?? 0).ToArray();
@@ -473,7 +472,7 @@ namespace SuperBackendNR85IA.Services
             t.WeatherDeclaredWet = GetSdkValue<bool>(d, "WeatherDeclaredWet") ?? false;
             t.SolarAltitude    = GetSdkValue<float>(d, "SolarAltitude") ?? 0f;
             t.SolarAzimuth     = GetSdkValue<float>(d, "SolarAzimuth") ?? 0f;
-            t.CarLeftRight     = GetSdkString(d, "CarLeftRight") ?? string.Empty;
+            t.CarLeftRight     = GetSdkValue<int>(d, "CarLeftRight") ?? 0;
             t.TrackStatus      = string.Join(", ", EnumTranslations.TranslateSessionFlags(t.SessionFlags));
 
             t.FuelUsePerHour = GetSdkValue<float>(d, "FuelUsePerHour") ?? 0f;

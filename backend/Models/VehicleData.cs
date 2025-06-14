@@ -39,16 +39,10 @@ namespace SuperBackendNR85IA.Models
         public float PitchRate { get; set; }
         public float RollRate { get; set; }
 
-        // Additional dynamics and energy systems
+        // Additional dynamics
         public float SteeringWheelPctDamper { get; set; }
         public float SteeringWheelPctTorque { get; set; }
         public float SteeringWheelPctTorqueSign { get; set; }
         public float SteeringWheelPctTorqueSignStops { get; set; }
-        public float EnergyERSBattery { get; set; }
-        public float EnergyERSBatteryPct { get; set; }
-        public float EnergyMGU_KLapDeployPct { get; set; }
-        public float EnergyBatteryToMGU_KLap { get; set; }
-        public bool ManualBoost { get; set; }
-        public bool ManualNoBoost { get; set; }
     }
 }

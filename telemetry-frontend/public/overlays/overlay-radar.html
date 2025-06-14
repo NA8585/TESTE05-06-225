@@ -187,7 +187,7 @@ function RadarOverlay() {
   React.useEffect(() => {
     window.updateRadar = (d) => {
       setCars(processarDadosWs(d));
-      const msg = d.carLeftRight ?? '';
+      const msg = d.carLeftRight != null ? String(d.carLeftRight) : '';
       const el = document.getElementById('left-right-msg');
       if (el) el.textContent = msg;
     };
