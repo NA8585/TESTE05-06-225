@@ -318,7 +318,13 @@ namespace SuperBackendNR85IA.Services
 
             _log.LogInformation($"Raw SessionTime: {rawSessionTime}");
             t.Session.SessionTime       = rawSessionTime;
-            t.Session.SessionTimeRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
+            float rawRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? 0f;
+            if (rawRemain < 0)
+            {
+                _log.LogWarning($"Negative SessionTimeRemain received: {rawRemain}");
+                rawRemain = 0f;
+            }
+            t.Session.SessionTimeRemain = rawRemain;
             if (t.SessionNum != _lastSessionNum)
             {
                 _lastSessionNum = t.Session.SessionNum;
