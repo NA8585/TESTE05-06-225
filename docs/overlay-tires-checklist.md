@@ -30,4 +30,11 @@ Esta checklist resume os dados de pneus que o backend deve enviar para que as ov
 - **lrLastHotTemp** (float) – Última temperatura registrada com o pneu quente
 - **rrLastHotTemp** (float) – Última temperatura registrada com o pneu quente
 
+## Composto e Stagger
+- **tireCompound** / **compound** (string) – Composto atual do pneu do jogador
+- **frontStagger** (float) – Stagger dianteiro calculado a partir das alturas de rodagem
+- **rearStagger** (float) – Stagger traseiro calculado a partir das alturas de rodagem
+
 Esses campos permitem que o frontend mostre pressões em tempo real, comparações com pressões frias e o desgaste acumulado de cada pneu.
+
+As pressões quentes (`lfHotPressure`, `rfHotPressure`, `lrHotPressure` e `rrHotPressure`) são informadas em psi.
