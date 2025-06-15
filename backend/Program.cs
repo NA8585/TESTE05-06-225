@@ -8,6 +8,7 @@ using SuperBackendNR85IA.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Porta única para HTTP + WebSocket, igual às overlays
+// Restringe o acesso apenas ao localhost
 builder.WebHost.UseUrls("http://localhost:5221");
 
 // DI ------------------------------------------------------------------------
