@@ -777,7 +777,9 @@
       }
 
       // Update final pressure
-      const hotVal = tireData.lastHotPressure ?? tireData.pressure ?? 0;
+      const hotVal = tireData.hotPressure ??
+                      tireData.lastHotPressure ??
+                      tireData.pressure ?? 0;
 
       const coldVal = tireData.coldPressure ?? tireData.pressure ?? 0;
       getTireElement(tireId, 'hot').textContent = `${hotVal.toFixed(1)} psi`;
@@ -820,6 +822,7 @@
                     coldTemp: { left:src.lfColdTempCl||0, middle:src.lfColdTempCm||0, right:src.lfColdTempCr||0 },
                     pressure: src.lfPress || 0,
                     coldPressure: src.lfColdPress || 0,
+                    hotPressure: src.lfHotPressure || 0,
                     lastHotPressure: (src.lfLastHotPress ?? src.lfPress) || 0,
                     treadRemaining: { left:(src.lfTreadRemainingParts?.[0]||src.lfWear?.[0]||0), middle:(src.lfTreadRemainingParts?.[1]||src.lfWear?.[1]||0), right:(src.lfTreadRemainingParts?.[2]||src.lfWear?.[2]||0) },
                     compound: comp
@@ -831,6 +834,7 @@
                     coldTemp: { left:src.rfColdTempCl||0, middle:src.rfColdTempCm||0, right:src.rfColdTempCr||0 },
                     pressure: src.rfPress || 0,
                     coldPressure: src.rfColdPress || 0,
+                    hotPressure: src.rfHotPressure || 0,
                     lastHotPressure: (src.rfLastHotPress ?? src.rfPress) || 0,
                     treadRemaining: { left:(src.rfTreadRemainingParts?.[0]||src.rfWear?.[0]||0), middle:(src.rfTreadRemainingParts?.[1]||src.rfWear?.[1]||0), right:(src.rfTreadRemainingParts?.[2]||src.rfWear?.[2]||0) },
                     compound: comp
@@ -842,6 +846,7 @@
                     coldTemp: { left:src.lrColdTempCl||0, middle:src.lrColdTempCm||0, right:src.lrColdTempCr||0 },
                     pressure: src.lrPress || 0,
                     coldPressure: src.lrColdPress || 0,
+                    hotPressure: src.lrHotPressure || 0,
                     lastHotPressure: (src.lrLastHotPress ?? src.lrPress) || 0,
                     treadRemaining: { left:(src.lrTreadRemainingParts?.[0]||src.lrWear?.[0]||0), middle:(src.lrTreadRemainingParts?.[1]||src.lrWear?.[1]||0), right:(src.lrTreadRemainingParts?.[2]||src.lrWear?.[2]||0) },
                     compound: comp
@@ -853,6 +858,7 @@
                     coldTemp: { left:src.rrColdTempCl||0, middle:src.rrColdTempCm||0, right:src.rrColdTempCr||0 },
                     pressure: src.rrPress || 0,
                     coldPressure: src.rrColdPress || 0,
+                    hotPressure: src.rrHotPressure || 0,
                     lastHotPressure: (src.rrLastHotPress ?? src.rrPress) || 0,
                     treadRemaining: { left:(src.rrTreadRemainingParts?.[0]||src.rrWear?.[0]||0), middle:(src.rrTreadRemainingParts?.[1]||src.rrWear?.[1]||0), right:(src.rrTreadRemainingParts?.[2]||src.rrWear?.[2]||0) },
                     compound: comp
@@ -862,6 +868,9 @@
             ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
                 const tData = tires[key];
                 if (!tData) return;
+                tData.hotPressure = tData.hotPressure ??
+                    tData.lastHotPressure ??
+                    tData.pressure ?? 0;
                 tData.lastHotPressure = tData.lastHotPressure ?? tData.pressure ?? 0;
                 if (!tData.lastTemp && tData.temp)
                     tData.lastTemp = tData.temp;

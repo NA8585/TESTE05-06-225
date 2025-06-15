@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 using IRSDKSharper; // Biblioteca IRSDKSharper para conexão com iRacing
 using SuperBackendNR85IA.Models; // TelemetryModel e classes auxiliares
 using SuperBackendNR85IA.Calculations; // Seus cálculos de telemetria personalizados
@@ -94,9 +95,7 @@ namespace SuperBackendNR85IA.Services
 
             try
             {
-                // Habilita todas as variáveis de telemetria, incluindo dados de setup
-                // necessários para pressões frias/quentes e desgaste de pneus
-                _sdk.Start();
+                StartSdkWithFlags();
                 _log.LogInformation("IRSDKSharper iniciado e aguardando conexão com o iRacing.");
             }
             catch (Exception ex)
@@ -305,6 +304,10 @@ namespace SuperBackendNR85IA.Services
             t.RfLastHotPress = _rfLastHotPress;
             t.LrLastHotPress = _lrLastHotPress;
             t.RrLastHotPress = _rrLastHotPress;
+            t.LfHotPressure  = _lfLastHotPress;
+            t.RfHotPressure  = _rfLastHotPress;
+            t.LrHotPressure  = _lrLastHotPress;
+            t.RrHotPressure  = _rrLastHotPress;
 
             t.LfLastTempCl = _lfLastTempCl;
             t.LfLastTempCm = _lfLastTempCm;
@@ -332,6 +335,29 @@ namespace SuperBackendNR85IA.Services
                     $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
                     $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
             }
+        }
+
+        private void StartSdkWithFlags()
+        {
+            try
+            {
+                var flagsType = Type.GetType("IRSDKSharper.DefinitionFlags, IRSDKSharper");
+                if (flagsType != null)
+                {
+                    var allValue = Enum.Parse(flagsType, "All");
+                    var startMethod = _sdk.GetType().GetMethod("Start", new[] { flagsType });
+                    if (startMethod != null)
+                    {
+                        startMethod.Invoke(_sdk, new[] { allValue });
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogWarning(ex, "Falha ao usar DefinitionFlags. Iniciando com Start() padrão.");
+            }
+            _sdk.Start();
         }
     }
 }

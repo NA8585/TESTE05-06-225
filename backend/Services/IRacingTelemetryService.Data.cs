@@ -408,6 +408,12 @@ namespace SuperBackendNR85IA.Services
             float? lrColdKpa = GetSdkValue<float>(d, "LRcoldPressure");
             float? rrColdKpa = GetSdkValue<float>(d, "RRcoldPressure");
 
+            // Current hot pressures reported by the SDK (kPa)
+            float? lfHotKpa = GetSdkValue<float>(d, "LFhotPressure");
+            float? rfHotKpa = GetSdkValue<float>(d, "RFhotPressure");
+            float? lrHotKpa = GetSdkValue<float>(d, "LRhotPressure");
+            float? rrHotKpa = GetSdkValue<float>(d, "RRhotPressure");
+
             // Current tire pressures from telemetry (kPa)
             float? lfKpa = GetSdkValue<float>(d, "LFpress");
             float? rfKpa = GetSdkValue<float>(d, "RFpress");
@@ -419,18 +425,34 @@ namespace SuperBackendNR85IA.Services
                 t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
                 t.Tyres.LfPress = t.Tyres.LfColdPress;
             }
+            if (lfHotKpa.HasValue)
+            {
+                t.Tyres.LfHotPressure = KPaToPsi(lfHotKpa.Value);
+            }
 
             if (rfColdKpa.HasValue)
             {
                 t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
             }
+            if (rfHotKpa.HasValue)
+            {
+                t.Tyres.RfHotPressure = KPaToPsi(rfHotKpa.Value);
+            }
             if (lrColdKpa.HasValue)
             {
                 t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
             }
+            if (lrHotKpa.HasValue)
+            {
+                t.Tyres.LrHotPressure = KPaToPsi(lrHotKpa.Value);
+            }
             if (rrColdKpa.HasValue)
             {
                 t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
+            }
+            if (rrHotKpa.HasValue)
+            {
+                t.Tyres.RrHotPressure = KPaToPsi(rrHotKpa.Value);
             }
 
             // Use live pressure when available, otherwise fall back to cold
