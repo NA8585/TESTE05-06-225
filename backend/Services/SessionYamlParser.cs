@@ -227,7 +227,7 @@ namespace SuperBackendNR85IA.Services
                 return s.Value ?? string.Empty;
             }
 
-            _logger.LogWarning("Expected key '{Key}' was not found.", key);
+            _logger.LogDebug("Expected key '{Key}' was not found.", key);
             return string.Empty;
         }
 
@@ -235,14 +235,16 @@ namespace SuperBackendNR85IA.Services
         {
             if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s)
             {
+                if (string.Equals(s.Value, "unlimited", StringComparison.OrdinalIgnoreCase))
+                    return 0;
                 if (int.TryParse(s.Value, out var r))
                     return r;
 
-                _logger.LogWarning("Unable to parse integer from '{Value}' for key '{Key}'.", s.Value, key);
+                _logger.LogDebug("Unable to parse integer from '{Value}' for key '{Key}'.", s.Value, key);
                 return 0;
             }
 
-            _logger.LogWarning("Expected key '{Key}' was not found.", key);
+            _logger.LogDebug("Expected key '{Key}' was not found.", key);
             return 0;
         }
 
@@ -253,11 +255,11 @@ namespace SuperBackendNR85IA.Services
                 if (float.TryParse(s.Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var r))
                     return r;
 
-                _logger.LogWarning("Unable to parse float from '{Value}' for key '{Key}'.", s.Value, key);
+                _logger.LogDebug("Unable to parse float from '{Value}' for key '{Key}'.", s.Value, key);
                 return 0f;
             }
 
-            _logger.LogWarning("Expected key '{Key}' was not found.", key);
+            _logger.LogDebug("Expected key '{Key}' was not found.", key);
             return 0f;
         }
 
@@ -272,7 +274,7 @@ namespace SuperBackendNR85IA.Services
                     return result;
                 }
 
-                _logger.LogWarning("Unable to parse float from '{Value}' for key '{Key}'.", rawValue, key);
+                _logger.LogDebug("Unable to parse float from '{Value}' for key '{Key}'.", rawValue, key);
             }
 
             return 0f;
@@ -302,14 +304,14 @@ namespace SuperBackendNR85IA.Services
                     }
                     else
                     {
-                        _logger.LogWarning("Unable to parse float array element '{Value}' for key '{Key}'.", (node as YamlScalarNode)?.Value, key);
+                        _logger.LogDebug("Unable to parse float array element '{Value}' for key '{Key}'.", (node as YamlScalarNode)?.Value, key);
                         floatList.Add(0f);
                     }
                 }
                 return floatList.ToArray();
             }
 
-            _logger.LogWarning("Expected key '{Key}' was not found or not a sequence.", key);
+            _logger.LogDebug("Expected key '{Key}' was not found or not a sequence.", key);
             return Array.Empty<float>();
         }
     }
