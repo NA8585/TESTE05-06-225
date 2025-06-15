@@ -14,7 +14,8 @@ namespace SuperBackendNR85IA.Models
         // ---- Session ----
         public int SessionNum { get => Session.SessionNum; set => Session.SessionNum = value; }
         public double SessionTime { get => Session.SessionTime; set => Session.SessionTime = value; }
-        public float SessionTimeRemain { get => Session.SessionTimeRemain; set => Session.SessionTimeRemain = value; }
+        public double SessionTimeRemain { get => Session.SessionTimeRemain; set => Session.SessionTimeRemain = value; }
+        public bool SessionTimeRemainValid { get => Session.SessionTimeRemainValid; set => Session.SessionTimeRemainValid = value; }
         public int SessionState { get => Session.SessionState; set => Session.SessionState = value; }
         public int PaceMode { get => Session.PaceMode; set => Session.PaceMode = value; }
         public int SessionFlags { get => Session.SessionFlags; set => Session.SessionFlags = value; }

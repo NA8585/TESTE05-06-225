@@ -6,7 +6,7 @@ Este documento resume os campos que o backend deve enviar para que a overlay **R
 - **playerCarIdx** (int) – Índice do carro do jogador
 - **sessionNum** (int) – Número da sessão atual
 - **sessionTime** (float) – Tempo total da sessão
-- **sessionTimeRemain** (float) – Tempo restante da sessão
+- **sessionTimeRemain** (double) – Tempo restante da sessão
 - **lap** (int) – Volta atual do jogador
 - **totalLaps** (int) – Total de voltas da sessão (pode ser -1 se ilimitado)
 - **trackDisplayName** (string) – Nome da pista
