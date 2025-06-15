@@ -401,17 +401,17 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.RrTempCm = GetSdkValue<float>(d, "RRtempCM") ?? 0f;
             t.Tyres.RrTempCr = GetSdkValue<float>(d, "RRtempCR") ?? 0f;
 
-            // Cold pressures from the car setup
+            // Cold pressures from the car setup (kPa)
             float? lfColdKpa = GetSdkValue<float>(d, "LFcoldPressure");
             float? rfColdKpa = GetSdkValue<float>(d, "RFcoldPressure");
             float? lrColdKpa = GetSdkValue<float>(d, "LRcoldPressure");
             float? rrColdKpa = GetSdkValue<float>(d, "RRcoldPressure");
 
-            // Current tire pressures if available
-            float? lfPress = GetSdkValue<float>(d, "LFpress");
-            float? rfPress = GetSdkValue<float>(d, "RFpress");
-            float? lrPress = GetSdkValue<float>(d, "LRpress");
-            float? rrPress = GetSdkValue<float>(d, "RRpress");
+            // Current tire pressures from telemetry (kPa)
+            float? lfKpa = GetSdkValue<float>(d, "LFpress");
+            float? rfKpa = GetSdkValue<float>(d, "RFpress");
+            float? lrKpa = GetSdkValue<float>(d, "LRpress");
+            float? rrKpa = GetSdkValue<float>(d, "RRpress");
 
             if (lfColdKpa.HasValue)
                 t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
@@ -422,10 +422,19 @@ namespace SuperBackendNR85IA.Services
             if (rrColdKpa.HasValue)
                 t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
 
-            t.Tyres.LfPress = lfPress ?? t.Tyres.LfPress;
-            t.Tyres.RfPress = rfPress ?? t.Tyres.RfPress;
-            t.Tyres.LrPress = lrPress ?? t.Tyres.LrPress;
-            t.Tyres.RrPress = rrPress ?? t.Tyres.RrPress;
+            // Use live pressure when available, otherwise fall back to cold
+            t.Tyres.LfPress = lfKpa.HasValue
+                ? KPaToPsi(lfKpa.Value)
+                : (lfColdKpa.HasValue ? t.Tyres.LfColdPress : t.Tyres.LfPress);
+            t.Tyres.RfPress = rfKpa.HasValue
+                ? KPaToPsi(rfKpa.Value)
+                : (rfColdKpa.HasValue ? t.Tyres.RfColdPress : t.Tyres.RfPress);
+            t.Tyres.LrPress = lrKpa.HasValue
+                ? KPaToPsi(lrKpa.Value)
+                : (lrColdKpa.HasValue ? t.Tyres.LrColdPress : t.Tyres.LrPress);
+            t.Tyres.RrPress = rrKpa.HasValue
+                ? KPaToPsi(rrKpa.Value)
+                : (rrColdKpa.HasValue ? t.Tyres.RrColdPress : t.Tyres.RrPress);
             if (!lfColdKpa.HasValue)
             {
                 if (_log.IsEnabled(LogLevel.Debug))
