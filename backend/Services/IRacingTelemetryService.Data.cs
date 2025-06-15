@@ -429,6 +429,12 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.LfHotPressure = KPaToPsi(lfHotKpa.Value);
             }
+            else if (lfKpa.HasValue)
+            {
+                // Fallback to the live pressure when hot pressure is not
+                // provided by the SDK so the UI still reflects the current value
+                t.Tyres.LfHotPressure = KPaToPsi(lfKpa.Value);
+            }
 
             if (rfColdKpa.HasValue)
             {
@@ -438,6 +444,10 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.RfHotPressure = KPaToPsi(rfHotKpa.Value);
             }
+            else if (rfKpa.HasValue)
+            {
+                t.Tyres.RfHotPressure = KPaToPsi(rfKpa.Value);
+            }
             if (lrColdKpa.HasValue)
             {
                 t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
@@ -446,6 +456,10 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.LrHotPressure = KPaToPsi(lrHotKpa.Value);
             }
+            else if (lrKpa.HasValue)
+            {
+                t.Tyres.LrHotPressure = KPaToPsi(lrKpa.Value);
+            }
             if (rrColdKpa.HasValue)
             {
                 t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
@@ -453,6 +467,10 @@ namespace SuperBackendNR85IA.Services
             if (rrHotKpa.HasValue)
             {
                 t.Tyres.RrHotPressure = KPaToPsi(rrHotKpa.Value);
+            }
+            else if (rrKpa.HasValue)
+            {
+                t.Tyres.RrHotPressure = KPaToPsi(rrKpa.Value);
             }
 
             // Use live pressure when available, otherwise fall back to cold
