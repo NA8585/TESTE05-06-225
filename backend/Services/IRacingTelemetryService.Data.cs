@@ -399,21 +399,34 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.RrTempCm = GetSdkValue<float>(d, "RRtempCM") ?? 0f;
             t.Tyres.RrTempCr = GetSdkValue<float>(d, "RRtempCR") ?? 0f;
 
-            t.Tyres.LfPress = GetSdkValue<float>(d, "LFpressure") ?? 0f;
-            t.Tyres.RfPress = GetSdkValue<float>(d, "RFpressure") ?? 0f;
-            t.Tyres.LrPress = GetSdkValue<float>(d, "LRpressure") ?? 0f;
-            t.Tyres.RrPress = GetSdkValue<float>(d, "RRpressure") ?? 0f;
-
             float? lfColdKpa = GetSdkValue<float>(d, "LFcoldPressure");
             float? rfColdKpa = GetSdkValue<float>(d, "RFcoldPressure");
             float? lrColdKpa = GetSdkValue<float>(d, "LRcoldPressure");
             float? rrColdKpa = GetSdkValue<float>(d, "RRcoldPressure");
-            if (lfColdKpa.HasValue) t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
-            if (rfColdKpa.HasValue) t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
-            if (lrColdKpa.HasValue) t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
-            if (rrColdKpa.HasValue) t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
+
+            if (lfColdKpa.HasValue)
+            {
+                t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
+                t.Tyres.LfPress = t.Tyres.LfColdPress;
+            }
+            if (rfColdKpa.HasValue)
+            {
+                t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
+                t.Tyres.RfPress = t.Tyres.RfColdPress;
+            }
+            if (lrColdKpa.HasValue)
+            {
+                t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
+                t.Tyres.LrPress = t.Tyres.LrColdPress;
+            }
+            if (rrColdKpa.HasValue)
+            {
+                t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
+                t.Tyres.RrPress = t.Tyres.RrColdPress;
+            }
             if (!lfColdKpa.HasValue)
                 _log.LogDebug("Cold tire pressure data not available for this car (LFcoldPressure missing).");
+
 
             t.Tyres.LfWear = new float?[] {
                 GetSdkValue<float>(d, "LFWearL"),
@@ -602,14 +615,55 @@ namespace SuperBackendNR85IA.Services
                                     return 0f;
                                 return val.Contains("kPa") ? KPaToPsi(v) : v;
                             }
+                            float ParseWear(YamlMappingNode n, string field)
+                            {
+                                string val = GetStr(n, field);
+                                if (string.IsNullOrEmpty(val)) return 0f;
+                                val = val.Replace("%", string.Empty).Trim();
+                                if (!float.TryParse(val, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v))
+                                    return 0f;
+                                return v;
+                            }
                             if (tiresNode.Children.TryGetValue(new YamlScalarNode("LeftFront"), out var lfNode) && lfNode is YamlMappingNode lfMap)
+                            {
                                 t.Tyres.LfLastHotPress = ParsePressure(lfMap, "LastHotPressure");
+                                t.Tyres.LfWear = new float[]
+                                {
+                                    ParseWear(lfMap, "TreadRemainingL"),
+                                    ParseWear(lfMap, "TreadRemainingM"),
+                                    ParseWear(lfMap, "TreadRemainingR")
+                                };
+                            }
                             if (tiresNode.Children.TryGetValue(new YamlScalarNode("RightFront"), out var rfNode) && rfNode is YamlMappingNode rfMap)
+                            {
                                 t.Tyres.RfLastHotPress = ParsePressure(rfMap, "LastHotPressure");
+                                t.Tyres.RfWear = new float[]
+                                {
+                                    ParseWear(rfMap, "TreadRemainingL"),
+                                    ParseWear(rfMap, "TreadRemainingM"),
+                                    ParseWear(rfMap, "TreadRemainingR")
+                                };
+                            }
                             if (tiresNode.Children.TryGetValue(new YamlScalarNode("LeftRear"), out var lrNode) && lrNode is YamlMappingNode lrMap)
+                            {
                                 t.Tyres.LrLastHotPress = ParsePressure(lrMap, "LastHotPressure");
+                                t.Tyres.LrWear = new float[]
+                                {
+                                    ParseWear(lrMap, "TreadRemainingL"),
+                                    ParseWear(lrMap, "TreadRemainingM"),
+                                    ParseWear(lrMap, "TreadRemainingR")
+                                };
+                            }
                             if (tiresNode.Children.TryGetValue(new YamlScalarNode("RightRear"), out var rrNode) && rrNode is YamlMappingNode rrMap)
+                            {
                                 t.Tyres.RrLastHotPress = ParsePressure(rrMap, "LastHotPressure");
+                                t.Tyres.RrWear = new float[]
+                                {
+                                    ParseWear(rrMap, "TreadRemainingL"),
+                                    ParseWear(rrMap, "TreadRemainingM"),
+                                    ParseWear(rrMap, "TreadRemainingR")
+                                };
+                            }
                         }
                     }
                 }
