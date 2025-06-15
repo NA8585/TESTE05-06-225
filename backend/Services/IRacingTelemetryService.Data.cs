@@ -401,52 +401,41 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.RrTempCm = GetSdkValue<float>(d, "RRtempCM") ?? 0f;
             t.Tyres.RrTempCr = GetSdkValue<float>(d, "RRtempCR") ?? 0f;
 
-            // Cold pressures from the car setup
+            // Cold pressures from the car setup (kPa)
+
             float? lfColdKpa = GetSdkValue<float>(d, "LFcoldPressure");
             float? rfColdKpa = GetSdkValue<float>(d, "RFcoldPressure");
             float? lrColdKpa = GetSdkValue<float>(d, "LRcoldPressure");
             float? rrColdKpa = GetSdkValue<float>(d, "RRcoldPressure");
 
-            float? lfHotKpa = GetSdkValue<float>(d, "LFhotPressure");
-            float? rfHotKpa = GetSdkValue<float>(d, "RFhotPressure");
-            float? lrHotKpa = GetSdkValue<float>(d, "LRhotPressure");
-            float? rrHotKpa = GetSdkValue<float>(d, "RRhotPressure");
+            // Current tire pressures from telemetry (kPa)
+            float? lfKpa = GetSdkValue<float>(d, "LFpress");
+            float? rfKpa = GetSdkValue<float>(d, "RFpress");
+            float? lrKpa = GetSdkValue<float>(d, "LRpress");
+            float? rrKpa = GetSdkValue<float>(d, "RRpress");
 
             if (lfColdKpa.HasValue)
                 t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
-                t.Tyres.LfPress = t.Tyres.LfColdPress;
-            }
-            if (lfHotKpa.HasValue)
-            {
-                t.Tyres.LfHotPressure = KPaToPsi(lfHotKpa.Value);
-            }
-      
             if (rfColdKpa.HasValue)
                 t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
-                t.Tyres.RfPress = t.Tyres.RfColdPress;
-            }
-            if (rfHotKpa.HasValue)
-            {
-                t.Tyres.RfHotPressure = KPaToPsi(rfHotKpa.Value);
-            }
-
             if (lrColdKpa.HasValue)
                 t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
-                t.Tyres.LrPress = t.Tyres.LrColdPress;
-            }
-            if (lrHotKpa.HasValue)
-            {
-                t.Tyres.LrHotPressure = KPaToPsi(lrHotKpa.Value);
-            }
-
             if (rrColdKpa.HasValue)
                 t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
-                t.Tyres.RrPress = t.Tyres.RrColdPress;
-            }
-            if (rrHotKpa.HasValue)
-            {
-                t.Tyres.RrHotPressure = KPaToPsi(rrHotKpa.Value);
-            }
+
+            // Use live pressure when available, otherwise fall back to cold
+            t.Tyres.LfPress = lfKpa.HasValue
+                ? KPaToPsi(lfKpa.Value)
+                : (lfColdKpa.HasValue ? t.Tyres.LfColdPress : t.Tyres.LfPress);
+            t.Tyres.RfPress = rfKpa.HasValue
+                ? KPaToPsi(rfKpa.Value)
+                : (rfColdKpa.HasValue ? t.Tyres.RfColdPress : t.Tyres.RfPress);
+            t.Tyres.LrPress = lrKpa.HasValue
+                ? KPaToPsi(lrKpa.Value)
+                : (lrColdKpa.HasValue ? t.Tyres.LrColdPress : t.Tyres.LrPress);
+            t.Tyres.RrPress = rrKpa.HasValue
+                ? KPaToPsi(rrKpa.Value)
+                : (rrColdKpa.HasValue ? t.Tyres.RrColdPress : t.Tyres.RrPress);
 
             if (!lfColdKpa.HasValue)
             {
