@@ -28,6 +28,18 @@ namespace SuperBackendNR85IA.Models
         public float LrColdPress { get; set; }
         public float RrColdPress { get; set; }
 
+        // Pressões configuradas no setup (YAML)
+        public float LfSetupPressure { get; set; }
+        public float RfSetupPressure { get; set; }
+        public float LrSetupPressure { get; set; }
+        public float RrSetupPressure { get; set; }
+
+        // Pressões quentes lidas diretamente do SDK
+        public float LfHotPressure { get; set; }
+        public float RfHotPressure { get; set; }
+        public float LrHotPressure { get; set; }
+        public float RrHotPressure { get; set; }
+
         public float[] LfWear { get; set; } = Array.Empty<float>();
         public float[] RfWear { get; set; } = Array.Empty<float>();
         public float[] LrWear { get; set; } = Array.Empty<float>();
