@@ -8,10 +8,9 @@ using SuperBackendNR85IA.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Porta única para HTTP + WebSocket, igual às overlays
-// Permite definir a URL de binding via variável de ambiente BACKEND_BIND_URL
-var bindUrl = Environment.GetEnvironmentVariable("BACKEND_BIND_URL")
-               ?? "http://0.0.0.0:5221"; // aceita conexões de outras máquinas
-builder.WebHost.UseUrls(bindUrl);
+
+// Restringe o acesso apenas ao localhost
+builder.WebHost.UseUrls("http://localhost:5221");
 
 // DI ------------------------------------------------------------------------
 builder.Services.AddSingleton<TelemetryBroadcaster>();
