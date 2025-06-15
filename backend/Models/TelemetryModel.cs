@@ -97,6 +97,16 @@ namespace SuperBackendNR85IA.Models
         public float RfColdPress { get => Tyres.RfColdPress; set => Tyres.RfColdPress = value; }
         public float LrColdPress { get => Tyres.LrColdPress; set => Tyres.LrColdPress = value; }
         public float RrColdPress { get => Tyres.RrColdPress; set => Tyres.RrColdPress = value; }
+
+        public float LfSetupPressure { get => Tyres.LfSetupPressure; set => Tyres.LfSetupPressure = value; }
+        public float RfSetupPressure { get => Tyres.RfSetupPressure; set => Tyres.RfSetupPressure = value; }
+        public float LrSetupPressure { get => Tyres.LrSetupPressure; set => Tyres.LrSetupPressure = value; }
+        public float RrSetupPressure { get => Tyres.RrSetupPressure; set => Tyres.RrSetupPressure = value; }
+
+        public float LfHotPressure { get => Tyres.LfHotPressure; set => Tyres.LfHotPressure = value; }
+        public float RfHotPressure { get => Tyres.RfHotPressure; set => Tyres.RfHotPressure = value; }
+        public float LrHotPressure { get => Tyres.LrHotPressure; set => Tyres.LrHotPressure = value; }
+        public float RrHotPressure { get => Tyres.RrHotPressure; set => Tyres.RrHotPressure = value; }
         public float[] LfWear { get => Tyres.LfWear; set => Tyres.LfWear = value; }
         public float[] RfWear { get => Tyres.RfWear; set => Tyres.RfWear = value; }
         public float[] LrWear { get => Tyres.LrWear; set => Tyres.LrWear = value; }
