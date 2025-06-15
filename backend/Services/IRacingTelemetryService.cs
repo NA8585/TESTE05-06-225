@@ -36,6 +36,7 @@ namespace SuperBackendNR85IA.Services
         private string _trackName = string.Empty;
         private bool _awaitingStoredData = false;
         private bool _wasOnPitRoad = false;
+        private bool _initialized = false;
         private int _lastPitCount = -1;
         private float _lfLastHotPress;
         private float _rfLastHotPress;
@@ -189,7 +190,15 @@ namespace SuperBackendNR85IA.Services
 
         private void UpdateLastHotPress(TelemetryModel t)
         {
-            if (t.OnPitRoad && !_wasOnPitRoad)
+            if (!_initialized)
+            {
+                // Ignore the first update to avoid recording pit entry
+                // values when the service starts while the car is stopped
+                // in the pit lane.
+                _wasOnPitRoad = t.OnPitRoad;
+                _initialized = true;
+            }
+            else if (t.OnPitRoad && !_wasOnPitRoad)
             {
                 // Entrando nos boxes: registra pressões e temperaturas quentes
                 _lfLastHotPress = t.LfPress;
