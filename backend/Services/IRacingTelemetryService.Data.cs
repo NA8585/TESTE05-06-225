@@ -413,6 +413,7 @@ namespace SuperBackendNR85IA.Services
             float? rrHotKpa = GetSdkValue<float>(d, "RRhotPressure");
 
             if (lfColdKpa.HasValue)
+            {
                 t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
                 t.Tyres.LfPress = t.Tyres.LfColdPress;
             }
@@ -420,8 +421,9 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.LfHotPressure = KPaToPsi(lfHotKpa.Value);
             }
-      
+
             if (rfColdKpa.HasValue)
+            {
                 t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
                 t.Tyres.RfPress = t.Tyres.RfColdPress;
             }
@@ -431,6 +433,7 @@ namespace SuperBackendNR85IA.Services
             }
 
             if (lrColdKpa.HasValue)
+            {
                 t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
                 t.Tyres.LrPress = t.Tyres.LrColdPress;
             }
@@ -440,6 +443,7 @@ namespace SuperBackendNR85IA.Services
             }
 
             if (rrColdKpa.HasValue)
+            {
                 t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
                 t.Tyres.RrPress = t.Tyres.RrColdPress;
             }
