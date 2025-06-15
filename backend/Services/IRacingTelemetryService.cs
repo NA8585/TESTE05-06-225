@@ -131,6 +131,7 @@ namespace SuperBackendNR85IA.Services
                             TelemetryCalculationsOverlay.PreencherOverlayPneus(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlaySetores(ref telemetryModel);
                             TelemetryCalculationsOverlay.PreencherOverlayDelta(ref telemetryModel);
+                            TelemetryCalculations.SanitizeModel(telemetryModel);
 
                             await _broadcaster.BroadcastTelemetry(telemetryModel);
                         }
@@ -174,6 +175,7 @@ namespace SuperBackendNR85IA.Services
             UpdateLastHotPress(t);
             await ApplyYamlData(d, t);
             RunCustomCalculations(d, t);
+            TelemetryCalculations.SanitizeModel(t);
             await PersistCarTrackData(t);
 
             return t;
