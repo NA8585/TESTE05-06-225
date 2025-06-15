@@ -427,14 +427,15 @@ namespace SuperBackendNR85IA.Services
             }
             bool onPitRoad = t.OnPitRoad;
 
-            if (onPitRoad && lfHotKpa.HasValue)
+            // Always prefer the hot pressures provided by the SDK. Only fall
+            // back to the last recorded values when no current data is
+            // available (e.g. service started mid-run).
+            if (lfHotKpa.HasValue)
             {
                 t.Tyres.LfHotPressure = KPaToPsi(lfHotKpa.Value);
             }
             else if (_lfLastHotPress > 0f)
             {
-                // When the SDK doesn't provide a hot value, preserve the last
-                // recorded hot pressure instead of using the live (cold) pressure
                 t.Tyres.LfHotPressure = _lfLastHotPress;
             }
 
@@ -442,7 +443,7 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
             }
-            if (onPitRoad && rfHotKpa.HasValue)
+            if (rfHotKpa.HasValue)
             {
                 t.Tyres.RfHotPressure = KPaToPsi(rfHotKpa.Value);
             }
@@ -454,7 +455,7 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
             }
-            if (onPitRoad && lrHotKpa.HasValue)
+            if (lrHotKpa.HasValue)
             {
                 t.Tyres.LrHotPressure = KPaToPsi(lrHotKpa.Value);
             }
@@ -466,7 +467,7 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
             }
-            if (onPitRoad && rrHotKpa.HasValue)
+            if (rrHotKpa.HasValue)
             {
                 t.Tyres.RrHotPressure = KPaToPsi(rrHotKpa.Value);
             }
