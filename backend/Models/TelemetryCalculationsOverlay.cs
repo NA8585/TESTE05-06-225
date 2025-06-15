@@ -90,6 +90,12 @@ namespace SuperBackendNR85IA.Calculations
                 model.TreadWearDiffRl = model.StartTreadRl - model.TreadRemainingRl;
             if (model.StartTreadRr > 0f)
                 model.TreadWearDiffRr = model.StartTreadRr - model.TreadRemainingRr;
+
+            // Ensure per-wheel tread values are available for the UI
+            model.Tyres.TreadLF ??= model.TreadRemainingFl;
+            model.Tyres.TreadRF ??= model.TreadRemainingFr;
+            model.Tyres.TreadLR ??= model.TreadRemainingRl;
+            model.Tyres.TreadRR ??= model.TreadRemainingRr;
         }
 
         public static void PreencherOverlaySetores(ref TelemetryModel model)

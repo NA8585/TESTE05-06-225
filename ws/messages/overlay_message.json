@@ -65,6 +65,10 @@
   "rfTreadRemainingParts": [0.94, 0.93, 0.94],
   "lrTreadRemainingParts": [0.96, 0.95, 0.96],
   "rrTreadRemainingParts": [0.96, 0.95, 0.96],
+  "treadLF": 0.94,
+  "treadRF": 0.93,
+  "treadLR": 0.95,
+  "treadRR": 0.95,
   "carIdxPosition": [
     1,
     2
