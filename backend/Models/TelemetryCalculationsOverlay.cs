@@ -46,28 +46,6 @@ namespace SuperBackendNR85IA.Calculations
             model.Tyres.LrTreadRemainingParts ??= model.Tyres.LrWear;
             model.Tyres.RrTreadRemainingParts ??= model.Tyres.RrWear;
 
-            model.Tyres.LfPress = model.Tyres.LfPress;
-            model.Tyres.RfPress = model.Tyres.RfPress;
-            model.Tyres.LrPress = model.Tyres.LrPress;
-            model.Tyres.RrPress = model.Tyres.RrPress;
-
-            model.Tyres.LfColdPress = model.Tyres.LfColdPress;
-            model.Tyres.RfColdPress = model.Tyres.RfColdPress;
-            model.Tyres.LrColdPress = model.Tyres.LrColdPress;
-            model.Tyres.RrColdPress = model.Tyres.RrColdPress;
-
-            model.Tyres.LfColdTempCl = model.Tyres.LfColdTempCl;
-            model.Tyres.LfColdTempCm = model.Tyres.LfColdTempCm;
-            model.Tyres.LfColdTempCr = model.Tyres.LfColdTempCr;
-            model.Tyres.RfColdTempCl = model.Tyres.RfColdTempCl;
-            model.Tyres.RfColdTempCm = model.Tyres.RfColdTempCm;
-            model.Tyres.RfColdTempCr = model.Tyres.RfColdTempCr;
-            model.Tyres.LrColdTempCl = model.Tyres.LrColdTempCl;
-            model.Tyres.LrColdTempCm = model.Tyres.LrColdTempCm;
-            model.Tyres.LrColdTempCr = model.Tyres.LrColdTempCr;
-            model.Tyres.RrColdTempCl = model.Tyres.RrColdTempCl;
-            model.Tyres.RrColdTempCm = model.Tyres.RrColdTempCm;
-            model.Tyres.RrColdTempCr = model.Tyres.RrColdTempCr;
 
             model.Tyres.FrontStagger = (model.RfRideHeight - model.LfRideHeight) * 1000f;
             model.Tyres.RearStagger  = (model.RrRideHeight - model.LrRideHeight) * 1000f;

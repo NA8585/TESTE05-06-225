@@ -291,12 +291,12 @@ namespace SuperBackendNR85IA.Services
                 t.CarIdxLastLapTime = lastLapArr;
                 t.CarIdxBestLapTime = bestLapArr;
                 t.CarIdxF2Time      = f2TimeArr;
-                t.CarIdxGear        = gearArr;
-                t.CarIdxRPM         = rpmArr;
-                t.CarIdxPaceFlags   = paceFlagsArr;
-                t.CarIdxPaceLine    = paceLineArr;
-                t.CarIdxPaceRow     = paceRowArr;
-                t.CarIdxTrackSurfaceMaterial = surfMatArr;
+                t.Radar.CarIdxGear        = gearArr;
+                t.Radar.CarIdxRPM         = rpmArr;
+                t.Radar.CarIdxPaceFlags   = paceFlagsArr;
+                t.Radar.CarIdxPaceLine    = paceLineArr;
+                t.Radar.CarIdxPaceRow     = paceRowArr;
+                t.Radar.CarIdxTrackSurfaceMaterial = surfMatArr;
             }
             else
             {
@@ -310,12 +310,12 @@ namespace SuperBackendNR85IA.Services
                 t.CarIdxLastLapTime= Array.Empty<float>();
                 t.CarIdxBestLapTime= Array.Empty<float>();
                 t.CarIdxF2Time     = Array.Empty<float>();
-                t.CarIdxGear       = Array.Empty<int>();
-                t.CarIdxRPM        = Array.Empty<float>();
-                t.CarIdxPaceFlags  = Array.Empty<int>();
-                t.CarIdxPaceLine   = Array.Empty<int>();
-                t.CarIdxPaceRow    = Array.Empty<int>();
-                t.CarIdxTrackSurfaceMaterial = Array.Empty<int>();
+                t.Radar.CarIdxGear       = Array.Empty<int>();
+                t.Radar.CarIdxRPM        = Array.Empty<float>();
+                t.Radar.CarIdxPaceFlags  = Array.Empty<int>();
+                t.Radar.CarIdxPaceLine   = Array.Empty<int>();
+                t.Radar.CarIdxPaceRow    = Array.Empty<int>();
+                t.Radar.CarIdxTrackSurfaceMaterial = Array.Empty<int>();
             }
         }
 
