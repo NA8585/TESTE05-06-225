@@ -464,16 +464,18 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
             t.Tyres.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
 
-            if (_log.IsEnabled(LogLevel.Debug))
-            {
-                _log.LogDebug(
-                    $"PopulateTyres raw - Press LF:{t.Tyres.LfPress} RF:{t.Tyres.RfPress} " +
-                    $"LR:{t.Tyres.LrPress} RR:{t.Tyres.RrPress}, " +
-                    $"Wear LF:[{string.Join(",", t.Tyres.LfWear)}] " +
-                    $"RF:[{string.Join(",", t.Tyres.RfWear)}] " +
-                    $"LR:[{string.Join(",", t.Tyres.LrWear)}] " +
-                    $"RR:[{string.Join(",", t.Tyres.RrWear)}]");
-            }
+            t.Tyres.TreadLF = GetSdkValue<float>(d, "TireLF_TreadRemaining");
+            t.Tyres.TreadRF = GetSdkValue<float>(d, "TireRF_TreadRemaining");
+            t.Tyres.TreadLR = GetSdkValue<float>(d, "TireLR_TreadRemaining");
+            t.Tyres.TreadRR = GetSdkValue<float>(d, "TireRR_TreadRemaining");
+
+            _log.LogDebug(
+                $"PopulateTyres raw - Press LF:{t.Tyres.LfPress} RF:{t.Tyres.RfPress} " +
+                $"LR:{t.Tyres.LrPress} RR:{t.Tyres.RrPress}, " +
+                $"Wear LF:[{string.Join(",", t.Tyres.LfWear)}] " +
+                $"RF:[{string.Join(",", t.Tyres.RfWear)}] " +
+                $"LR:[{string.Join(",", t.Tyres.LrWear)}] " +
+                $"RR:[{string.Join(",", t.Tyres.RrWear)}]");
 
             t.BrakeTemp        = GetSdkArray<float>(d, "BrakeTemp").Select(v => v ?? 0f).ToArray();
             t.LfBrakeLinePress = GetSdkValue<float>(d, "LFbrakeLinePress") ?? 0f;
