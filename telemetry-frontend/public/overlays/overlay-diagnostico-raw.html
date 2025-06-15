@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico Raw</title>
+  <style>
+    html,body { margin:0; padding:0; height:100%; background:#111; color:#e2e8f0; font-family: monospace; font-size: 12px; }
+    pre { margin:0; padding:0.5rem; white-space: pre-wrap; word-break: break-all; overflow: auto; height:100%; }
+  </style>
+</head>
+<body>
+<pre id="output">Conectando...</pre>
+<script type="module">
+import { initOverlayWebSocket } from '../overlay-common.js';
+
+const output = document.getElementById('output');
+function handleData(data) {
+  output.textContent = JSON.stringify(data, null, 2);
+}
+initOverlayWebSocket(handleData);
+</script>
+</body>
+</html>
