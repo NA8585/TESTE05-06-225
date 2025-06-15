@@ -415,12 +415,23 @@ namespace SuperBackendNR85IA.Services
             float? rrKpa = GetSdkValue<float>(d, "RRpress");
 
             if (lfColdKpa.HasValue)
+            {
                 t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
+                t.Tyres.LfPress = t.Tyres.LfColdPress;
+            }
+            if (lfHotKpa.HasValue)
+            {
+                t.Tyres.LfHotPressure = KPaToPsi(lfHotKpa.Value);
+            }
+
             if (rfColdKpa.HasValue)
+            {
                 t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
             if (lrColdKpa.HasValue)
+            {
                 t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
             if (rrColdKpa.HasValue)
+            {
                 t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
 
             // Use live pressure when available, otherwise fall back to cold
