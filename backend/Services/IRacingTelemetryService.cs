@@ -96,7 +96,7 @@ namespace SuperBackendNR85IA.Services
             {
                 // Habilita todas as variáveis de telemetria, incluindo dados de setup
                 // necessários para pressões frias/quentes e desgaste de pneus
-                _sdk.Start(DefinitionFlag.All);
+                _sdk.Start();
                 _log.LogInformation("IRSDKSharper iniciado e aguardando conexão com o iRacing.");
             }
             catch (Exception ex)
