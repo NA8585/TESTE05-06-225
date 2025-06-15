@@ -429,11 +429,11 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.LfHotPressure = KPaToPsi(lfHotKpa.Value);
             }
-            else if (lfKpa.HasValue)
+            else if (_lfLastHotPress > 0f)
             {
-                // Fallback to the live pressure when hot pressure is not
-                // provided by the SDK so the UI still reflects the current value
-                t.Tyres.LfHotPressure = KPaToPsi(lfKpa.Value);
+                // When the SDK doesn't provide a hot value, preserve the last
+                // recorded hot pressure instead of using the live (cold) pressure
+                t.Tyres.LfHotPressure = _lfLastHotPress;
             }
 
             if (rfColdKpa.HasValue)
@@ -444,9 +444,9 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.RfHotPressure = KPaToPsi(rfHotKpa.Value);
             }
-            else if (rfKpa.HasValue)
+            else if (_rfLastHotPress > 0f)
             {
-                t.Tyres.RfHotPressure = KPaToPsi(rfKpa.Value);
+                t.Tyres.RfHotPressure = _rfLastHotPress;
             }
             if (lrColdKpa.HasValue)
             {
@@ -456,9 +456,9 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.LrHotPressure = KPaToPsi(lrHotKpa.Value);
             }
-            else if (lrKpa.HasValue)
+            else if (_lrLastHotPress > 0f)
             {
-                t.Tyres.LrHotPressure = KPaToPsi(lrKpa.Value);
+                t.Tyres.LrHotPressure = _lrLastHotPress;
             }
             if (rrColdKpa.HasValue)
             {
@@ -468,9 +468,9 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.RrHotPressure = KPaToPsi(rrHotKpa.Value);
             }
-            else if (rrKpa.HasValue)
+            else if (_rrLastHotPress > 0f)
             {
-                t.Tyres.RrHotPressure = KPaToPsi(rrKpa.Value);
+                t.Tyres.RrHotPressure = _rrLastHotPress;
             }
 
             // Use live pressure when available, otherwise fall back to cold
