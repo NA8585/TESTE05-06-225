@@ -38,3 +38,15 @@ Esta checklist resume os dados de pneus que o backend deve enviar para que as ov
 Esses campos permitem que o frontend mostre pressões em tempo real, comparações com pressões frias e o desgaste acumulado de cada pneu.
 
 As pressões quentes (`lfHotPressure`, `rfHotPressure`, `lrHotPressure` e `rrHotPressure`) são informadas em psi.
+
+## Conversão de Pressão (kPa → psi)
+
+Para converter as pressões quentes dos pneus obtidas em kPa para psi, utilize a fórmula:
+
+```
+psi = kPa × 0.1450377
+```
+
+Esta fórmula aplica-se especificamente às pressões quentes dos pneus.
+
+Esse fator de conversão (0.1450377) equivale à relação entre 1 kPa e 1 psi.
