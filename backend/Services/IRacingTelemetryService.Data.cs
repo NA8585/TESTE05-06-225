@@ -402,6 +402,7 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.RrTempCr = GetSdkValue<float>(d, "RRtempCR") ?? 0f;
 
             // Cold pressures from the car setup (kPa)
+
             float? lfColdKpa = GetSdkValue<float>(d, "LFcoldPressure");
             float? rfColdKpa = GetSdkValue<float>(d, "RFcoldPressure");
             float? lrColdKpa = GetSdkValue<float>(d, "LRcoldPressure");
@@ -435,6 +436,7 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.RrPress = rrKpa.HasValue
                 ? KPaToPsi(rrKpa.Value)
                 : (rrColdKpa.HasValue ? t.Tyres.RrColdPress : t.Tyres.RrPress);
+
             if (!lfColdKpa.HasValue)
             {
                 if (_log.IsEnabled(LogLevel.Debug))
@@ -620,6 +622,10 @@ namespace SuperBackendNR85IA.Services
                             tiresNode = tn2;
                         if (tiresNode != null)
                         {
+                            if (tiresNode.Children.TryGetValue(new YamlScalarNode("Compound"), out var compNode) && compNode is YamlScalarNode compVal)
+                                t.Tyres.Compound = compVal.Value ?? string.Empty;
+                            else if (tiresNode.Children.TryGetValue(new YamlScalarNode("CompoundName"), out var compNode2) && compNode2 is YamlScalarNode compVal2)
+                                t.Tyres.Compound = compVal2.Value ?? string.Empty;
                             string GetStr(YamlMappingNode n, string key)
                             {
                                 if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s)
@@ -647,6 +653,10 @@ namespace SuperBackendNR85IA.Services
                             if (tiresNode.Children.TryGetValue(new YamlScalarNode("LeftFront"), out var lfNode) && lfNode is YamlMappingNode lfMap)
                             {
                                 t.Tyres.LfLastHotPress = ParsePressure(lfMap, "LastHotPressure");
+                                var pres = ParsePressure(lfMap, "Pressure");
+                                if (pres > 0f) t.Tyres.LfSetupPressure = pres;
+                                var cold = ParsePressure(lfMap, "ColdPressure");
+                                if (cold > 0f) t.Tyres.LfColdPress = cold;
                                 t.Tyres.LfWear = new float[]
                                 {
                                     ParseWear(lfMap, "TreadRemainingL"),
@@ -657,6 +667,10 @@ namespace SuperBackendNR85IA.Services
                             if (tiresNode.Children.TryGetValue(new YamlScalarNode("RightFront"), out var rfNode) && rfNode is YamlMappingNode rfMap)
                             {
                                 t.Tyres.RfLastHotPress = ParsePressure(rfMap, "LastHotPressure");
+                                var pres = ParsePressure(rfMap, "Pressure");
+                                if (pres > 0f) t.Tyres.RfSetupPressure = pres;
+                                var cold = ParsePressure(rfMap, "ColdPressure");
+                                if (cold > 0f) t.Tyres.RfColdPress = cold;
                                 t.Tyres.RfWear = new float[]
                                 {
                                     ParseWear(rfMap, "TreadRemainingL"),
@@ -667,6 +681,10 @@ namespace SuperBackendNR85IA.Services
                             if (tiresNode.Children.TryGetValue(new YamlScalarNode("LeftRear"), out var lrNode) && lrNode is YamlMappingNode lrMap)
                             {
                                 t.Tyres.LrLastHotPress = ParsePressure(lrMap, "LastHotPressure");
+                                var pres = ParsePressure(lrMap, "Pressure");
+                                if (pres > 0f) t.Tyres.LrSetupPressure = pres;
+                                var cold = ParsePressure(lrMap, "ColdPressure");
+                                if (cold > 0f) t.Tyres.LrColdPress = cold;
                                 t.Tyres.LrWear = new float[]
                                 {
                                     ParseWear(lrMap, "TreadRemainingL"),
@@ -677,6 +695,10 @@ namespace SuperBackendNR85IA.Services
                             if (tiresNode.Children.TryGetValue(new YamlScalarNode("RightRear"), out var rrNode) && rrNode is YamlMappingNode rrMap)
                             {
                                 t.Tyres.RrLastHotPress = ParsePressure(rrMap, "LastHotPressure");
+                                var pres = ParsePressure(rrMap, "Pressure");
+                                if (pres > 0f) t.Tyres.RrSetupPressure = pres;
+                                var cold = ParsePressure(rrMap, "ColdPressure");
+                                if (cold > 0f) t.Tyres.RrColdPress = cold;
                                 t.Tyres.RrWear = new float[]
                                 {
                                     ParseWear(rrMap, "TreadRemainingL"),
