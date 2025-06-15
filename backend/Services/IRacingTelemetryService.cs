@@ -67,6 +67,8 @@ namespace SuperBackendNR85IA.Services
         private float _rrColdTempCl;
         private float _rrColdTempCm;
         private float _rrColdTempCr;
+        private bool _loggedAvailableVars = false;
+        private readonly HashSet<string> _missingVarWarned = new();
 
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
@@ -108,6 +110,13 @@ namespace SuperBackendNR85IA.Services
                     {
                         await Task.Delay(1000, ct);
                         continue;
+                    }
+
+                    if (!_loggedAvailableVars && _sdk.Data != null)
+                    {
+                        var available = _sdk.Data.TelemetryDataProperties.Keys;
+                        _log.LogInformation("Variáveis disponíveis no SDK: " + string.Join(", ", available));
+                        _loggedAvailableVars = true;
                     }
 
                     if (_sdk.Data != null && _sdk.Data.TickCount != _lastTick)
