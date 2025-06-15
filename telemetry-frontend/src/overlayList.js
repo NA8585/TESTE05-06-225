@@ -11,5 +11,6 @@ export default [
   { name: 'Tire Wear', file: 'overlay-tirewear.html' },
   { name: 'Base', file: 'overlaybase.html' },
   { name: 'Teste Final', file: 'overlay-testefinal.html' },
-  { name: 'Diagnóstico Raw', file: 'overlay-diagnostico-raw.html' }
+  { name: 'Diagnóstico Raw', file: 'overlay-diagnostico-raw.html' },
+  { name: 'Tires Raw', file: 'overlay-tiresraw.html' }
 ];

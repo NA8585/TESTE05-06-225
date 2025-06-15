@@ -55,6 +55,7 @@ Each overlay corresponds to an HTML file in `telemetry-frontend/public/overlays`
 - **Base** – basic classification template overlay.
 - **Radar** – circular radar indicating nearby cars with alerts.
 - **Teste Final** – diagnostic overlay combining various widgets.
+- **Tires Raw** – displays every tire-related value received from iRacing.
 
 More details sobre os dados de pneus necessários podem ser encontrados em
 `docs/overlay-tires-checklist.md`.
