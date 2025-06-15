@@ -13,6 +13,7 @@ namespace SuperBackendNR85IA.Services
     public class SessionYamlParser
     {
         private readonly ILogger<SessionYamlParser> _logger;
+        private readonly HashSet<string> _loggedMissingKeys = new();
 
         public SessionYamlParser(ILogger<SessionYamlParser> logger)
         {
@@ -21,6 +22,8 @@ namespace SuperBackendNR85IA.Services
 
         public (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?, List<DriverInfo>) ParseSessionInfo(string yaml, int playerCarIdx, int currentSessionNum)
         {
+            _loggedMissingKeys.Clear();
+
             if (string.IsNullOrWhiteSpace(yaml))
                 return (null, null, null, null, new List<DriverInfo>());
 
@@ -165,8 +168,8 @@ namespace SuperBackendNR85IA.Services
                                           CarIdx = GetInt(p, "CarIdx"),
                                           FastestTime = GetFloat(p, "FastestTime"),
                                           LastTime = GetFloat(p, "LastTime"),
-                                          OnPitRoad = GetInt(p, "OnPitRoad") == 1,
-                                          InGarage = GetInt(p, "InGarage") == 1,
+                                          OnPitRoad = GetBool(p, "OnPitRoad"),
+                                          InGarage = GetBool(p, "InGarage"),
                                           PitStopCount = GetInt(p, "PitStopCount")
                                       }).ToList();
                               }
@@ -227,7 +230,7 @@ namespace SuperBackendNR85IA.Services
                 return s.Value ?? string.Empty;
             }
 
-            _logger.LogDebug("Expected key '{Key}' was not found.", key);
+            LogMissingKey(key);
             return string.Empty;
         }
 
@@ -244,7 +247,7 @@ namespace SuperBackendNR85IA.Services
                 return 0;
             }
 
-            _logger.LogDebug("Expected key '{Key}' was not found.", key);
+            LogMissingKey(key);
             return 0;
         }
 
@@ -259,7 +262,7 @@ namespace SuperBackendNR85IA.Services
                 return 0f;
             }
 
-            _logger.LogDebug("Expected key '{Key}' was not found.", key);
+            LogMissingKey(key);
             return 0f;
         }
 
@@ -278,6 +281,23 @@ namespace SuperBackendNR85IA.Services
             }
 
             return 0f;
+        }
+
+        private bool GetBool(YamlMappingNode n, string key)
+        {
+            if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s)
+            {
+                if (bool.TryParse(s.Value, out var b))
+                    return b;
+                if (int.TryParse(s.Value, out var i))
+                    return i != 0;
+
+                _logger.LogDebug("Unable to parse boolean from '{Value}' for key '{Key}'.", s.Value, key);
+                return false;
+            }
+
+            LogMissingKey(key);
+            return false;
         }
 
         private string GetTireCompound(YamlMappingNode driverNode)
@@ -311,8 +331,16 @@ namespace SuperBackendNR85IA.Services
                 return floatList.ToArray();
             }
 
-            _logger.LogDebug("Expected key '{Key}' was not found or not a sequence.", key);
+            LogMissingKey(key, "Expected key '{Key}' was not found or not a sequence.");
             return Array.Empty<float>();
+        }
+
+        private void LogMissingKey(string key, string? message = null)
+        {
+            if (_loggedMissingKeys.Add(key))
+            {
+                _logger.LogDebug(message ?? "Expected key '{Key}' was not found.", key);
+            }
         }
     }
 }
