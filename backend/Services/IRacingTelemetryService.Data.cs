@@ -329,7 +329,8 @@ namespace SuperBackendNR85IA.Services
                 rawSessionTime = 0.0;
             }
 
-            _log.LogInformation($"Raw SessionTime: {rawSessionTime}");
+            if (_log.IsEnabled(LogLevel.Debug))
+                _log.LogDebug($"Raw SessionTime: {rawSessionTime}");
 
             double totalSessionTime = GetSdkValue<double>(d, "SessionTimeTotal") ?? 0.0;
 
@@ -352,7 +353,8 @@ namespace SuperBackendNR85IA.Services
                     recomputed = totalSessionTime - rawSessionTime;
                     if (recomputed < 0) recomputed = 0.0;
                 }
-                _log.LogDebug($"SessionTimeRemain inválido ({rawRemain}), recalculado.");
+                if (_log.IsEnabled(LogLevel.Debug))
+                    _log.LogDebug($"SessionTimeRemain inválido ({rawRemain}), recalculado.");
                 rawRemain = recomputed;
             }
 
@@ -425,7 +427,10 @@ namespace SuperBackendNR85IA.Services
                 t.Tyres.RrPress = t.Tyres.RrColdPress;
             }
             if (!lfColdKpa.HasValue)
-                _log.LogDebug("Cold tire pressure data not available for this car (LFcoldPressure missing).");
+            {
+                if (_log.IsEnabled(LogLevel.Debug))
+                    _log.LogDebug("Cold tire pressure data not available for this car (LFcoldPressure missing).");
+            }
 
 
             t.Tyres.LfWear = new float?[] {
@@ -459,13 +464,16 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
             t.Tyres.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
 
-            _log.LogDebug(
-                $"PopulateTyres raw - Press LF:{t.Tyres.LfPress} RF:{t.Tyres.RfPress} " +
-                $"LR:{t.Tyres.LrPress} RR:{t.Tyres.RrPress}, " +
-                $"Wear LF:[{string.Join(",", t.Tyres.LfWear)}] " +
-                $"RF:[{string.Join(",", t.Tyres.RfWear)}] " +
-                $"LR:[{string.Join(",", t.Tyres.LrWear)}] " +
-                $"RR:[{string.Join(",", t.Tyres.RrWear)}]");
+            if (_log.IsEnabled(LogLevel.Debug))
+            {
+                _log.LogDebug(
+                    $"PopulateTyres raw - Press LF:{t.Tyres.LfPress} RF:{t.Tyres.RfPress} " +
+                    $"LR:{t.Tyres.LrPress} RR:{t.Tyres.RrPress}, " +
+                    $"Wear LF:[{string.Join(",", t.Tyres.LfWear)}] " +
+                    $"RF:[{string.Join(",", t.Tyres.RfWear)}] " +
+                    $"LR:[{string.Join(",", t.Tyres.LrWear)}] " +
+                    $"RR:[{string.Join(",", t.Tyres.RrWear)}]");
+            }
 
             t.BrakeTemp        = GetSdkArray<float>(d, "BrakeTemp").Select(v => v ?? 0f).ToArray();
             t.LfBrakeLinePress = GetSdkValue<float>(d, "LFbrakeLinePress") ?? 0f;
@@ -553,7 +561,8 @@ namespace SuperBackendNR85IA.Services
             t.SessionInfoYaml = _sdk.Data?.SessionInfoYaml ?? string.Empty;
             if (!string.IsNullOrEmpty(t.SessionInfoYaml) && t.SessionInfoYaml != _lastYaml)
             {
-                _log.LogDebug($"Atualizando cache do YAML. PlayerCarIdx: {t.PlayerCarIdx}, SessionNum: {t.SessionNum}");
+                if (_log.IsEnabled(LogLevel.Debug))
+                    _log.LogDebug($"Atualizando cache do YAML. PlayerCarIdx: {t.PlayerCarIdx}, SessionNum: {t.SessionNum}");
                 _cachedYamlData = _yamlParser.ParseSessionInfo(
                     t.SessionInfoYaml,
                     t.PlayerCarIdx,
