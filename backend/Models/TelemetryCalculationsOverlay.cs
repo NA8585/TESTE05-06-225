@@ -1,5 +1,6 @@
 // Extensões de cálculo e preenchimento para overlays
 using System;
+using System.Linq;
 using SuperBackendNR85IA.Models;
 
 namespace SuperBackendNR85IA.Calculations
@@ -40,6 +41,15 @@ namespace SuperBackendNR85IA.Calculations
             model.Tyres.RfWear ??= new float[3];
             model.Tyres.LrWear ??= new float[3];
             model.Tyres.RrWear ??= new float[3];
+
+            model.Tyres.LfWearAvg = model.Tyres.LfWear.Length > 0 ?
+                System.Linq.Enumerable.Average(model.Tyres.LfWear) : 0f;
+            model.Tyres.RfWearAvg = model.Tyres.RfWear.Length > 0 ?
+                System.Linq.Enumerable.Average(model.Tyres.RfWear) : 0f;
+            model.Tyres.LrWearAvg = model.Tyres.LrWear.Length > 0 ?
+                System.Linq.Enumerable.Average(model.Tyres.LrWear) : 0f;
+            model.Tyres.RrWearAvg = model.Tyres.RrWear.Length > 0 ?
+                System.Linq.Enumerable.Average(model.Tyres.RrWear) : 0f;
 
             model.Tyres.LfTreadRemainingParts ??= model.Tyres.LfWear;
             model.Tyres.RfTreadRemainingParts ??= model.Tyres.RfWear;

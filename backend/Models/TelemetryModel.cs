@@ -111,6 +111,10 @@ namespace SuperBackendNR85IA.Models
         public float[] RfWear { get => Tyres.RfWear; set => Tyres.RfWear = value; }
         public float[] LrWear { get => Tyres.LrWear; set => Tyres.LrWear = value; }
         public float[] RrWear { get => Tyres.RrWear; set => Tyres.RrWear = value; }
+        public float LfWearAvg { get => Tyres.LfWearAvg; set => Tyres.LfWearAvg = value; }
+        public float RfWearAvg { get => Tyres.RfWearAvg; set => Tyres.RfWearAvg = value; }
+        public float LrWearAvg { get => Tyres.LrWearAvg; set => Tyres.LrWearAvg = value; }
+        public float RrWearAvg { get => Tyres.RrWearAvg; set => Tyres.RrWearAvg = value; }
         public float[] LfTreadRemainingParts { get => Tyres.LfTreadRemainingParts; set => Tyres.LfTreadRemainingParts = value; }
         public float[] RfTreadRemainingParts { get => Tyres.RfTreadRemainingParts; set => Tyres.RfTreadRemainingParts = value; }
         public float[] LrTreadRemainingParts { get => Tyres.LrTreadRemainingParts; set => Tyres.LrTreadRemainingParts = value; }
