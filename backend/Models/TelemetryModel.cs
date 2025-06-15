@@ -138,6 +138,10 @@ namespace SuperBackendNR85IA.Models
         public float TreadRemainingFr { get => Tyres.TreadRemainingFr; set => Tyres.TreadRemainingFr = value; }
         public float TreadRemainingRl { get => Tyres.TreadRemainingRl; set => Tyres.TreadRemainingRl = value; }
         public float TreadRemainingRr { get => Tyres.TreadRemainingRr; set => Tyres.TreadRemainingRr = value; }
+        public float? TreadLF { get => Tyres.TreadLF; set => Tyres.TreadLF = value; }
+        public float? TreadRF { get => Tyres.TreadRF; set => Tyres.TreadRF = value; }
+        public float? TreadLR { get => Tyres.TreadLR; set => Tyres.TreadLR = value; }
+        public float? TreadRR { get => Tyres.TreadRR; set => Tyres.TreadRR = value; }
 
         // ---- Damage ----
         public float LfDamage { get => Damage.LfDamage; set => Damage.LfDamage = value; }

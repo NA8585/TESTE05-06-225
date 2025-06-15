@@ -459,6 +459,11 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
             t.Tyres.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
 
+            t.Tyres.TreadLF = GetSdkValue<float>(d, "TireLF_TreadRemaining");
+            t.Tyres.TreadRF = GetSdkValue<float>(d, "TireRF_TreadRemaining");
+            t.Tyres.TreadLR = GetSdkValue<float>(d, "TireLR_TreadRemaining");
+            t.Tyres.TreadRR = GetSdkValue<float>(d, "TireRR_TreadRemaining");
+
             _log.LogDebug(
                 $"PopulateTyres raw - Press LF:{t.Tyres.LfPress} RF:{t.Tyres.RfPress} " +
                 $"LR:{t.Tyres.LrPress} RR:{t.Tyres.RrPress}, " +

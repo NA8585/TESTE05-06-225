@@ -52,10 +52,13 @@ function TireWearOverlay() {
     window.updateTireWear = data => {
       const lap = data.lap || 0;
       const getWear = (prefix) => {
+        const treadKey = `tread${prefix.toUpperCase()}`;
+        const treadVal = data.tyres?.[treadKey] ?? data[treadKey];
+        if (typeof treadVal === 'number') return treadVal;
         const est = data.tireEst?.[prefix];
         if (typeof est === 'number') return est;
         const arr = data[`${prefix}Wear`];
-        return Array.isArray(arr) ? (arr[0]+arr[1]+arr[2])/3 : 1; // TODO: calcular se backend nao enviar
+        return Array.isArray(arr) ? (arr[0]+arr[1]+arr[2])/3 : 1; // fallback
       };
       const getTemp = (prefix) => data[`${prefix}TempCm`] ?? 0;
       const getPress = (prefix) => data[`${prefix}Press`] ?? 0;
