@@ -276,10 +276,10 @@ namespace SuperBackendNR85IA.Services
             if (_rrColdTempCm == 0f && t.RrTempCm > 0f) { _rrColdTempCm = t.RrTempCm; initialUpdate = true; }
             if (_rrColdTempCr == 0f && t.RrTempCr > 0f) { _rrColdTempCr = t.RrTempCr; initialUpdate = true; }
 
-            if (_lfLastHotPress == 0f && t.LfPress > 0f) { _lfLastHotPress = t.LfPress; initialUpdate = true; }
-            if (_rfLastHotPress == 0f && t.RfPress > 0f) { _rfLastHotPress = t.RfPress; initialUpdate = true; }
-            if (_lrLastHotPress == 0f && t.LrPress > 0f) { _lrLastHotPress = t.LrPress; initialUpdate = true; }
-            if (_rrLastHotPress == 0f && t.RrPress > 0f) { _rrLastHotPress = t.RrPress; initialUpdate = true; }
+            // Do not capture hot pressures during normal running. These values
+            // should only reflect the last pressures recorded when entering the
+            // pits. Avoid copying the current live (cold) pressures while the
+            // car is on track.
 
             if (_lfStartTread == 0f && t.TreadRemainingFl > 0f) { _lfStartTread = t.TreadRemainingFl; initialUpdate = true; }
             if (_rfStartTread == 0f && t.TreadRemainingFr > 0f) { _rfStartTread = t.TreadRemainingFr; initialUpdate = true; }
