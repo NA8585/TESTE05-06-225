@@ -82,5 +82,11 @@ namespace SuperBackendNR85IA.Models
         public float TreadRemainingFr { get; set; }
         public float TreadRemainingRl { get; set; }
         public float TreadRemainingRr { get; set; }
+
+        // Current ride heights for stagger calculations (meters)
+        public float LfRideHeight { get; set; }
+        public float RfRideHeight { get; set; }
+        public float LrRideHeight { get; set; }
+        public float RrRideHeight { get; set; }
     }
 }

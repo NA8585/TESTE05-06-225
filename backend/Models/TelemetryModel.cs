@@ -229,10 +229,10 @@ namespace SuperBackendNR85IA.Models
         public float RfSuspVel { get; set; }
         public float LrSuspVel { get; set; }
         public float RrSuspVel { get; set; }
-        public float LfRideHeight { get; set; }
-        public float RfRideHeight { get; set; }
-        public float LrRideHeight { get; set; }
-        public float RrRideHeight { get; set; }
+        public float LfRideHeight { get => Tyres.LfRideHeight; set => Tyres.LfRideHeight = value; }
+        public float RfRideHeight { get => Tyres.RfRideHeight; set => Tyres.RfRideHeight = value; }
+        public float LrRideHeight { get => Tyres.LrRideHeight; set => Tyres.LrRideHeight = value; }
+        public float RrRideHeight { get => Tyres.RrRideHeight; set => Tyres.RrRideHeight = value; }
         public float LatAccel { get; set; }
         public float LonAccel { get; set; }
         public float VertAccel { get; set; }
