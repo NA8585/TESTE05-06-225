@@ -81,6 +81,15 @@ namespace SuperBackendNR85IA.Calculations
 
             model.Tyres.FrontStagger = (model.RfRideHeight - model.LfRideHeight) * 1000f;
             model.Tyres.RearStagger  = (model.RrRideHeight - model.LrRideHeight) * 1000f;
+
+            if (model.StartTreadFl > 0f)
+                model.TreadWearDiffFl = model.StartTreadFl - model.TreadRemainingFl;
+            if (model.StartTreadFr > 0f)
+                model.TreadWearDiffFr = model.StartTreadFr - model.TreadRemainingFr;
+            if (model.StartTreadRl > 0f)
+                model.TreadWearDiffRl = model.StartTreadRl - model.TreadRemainingRl;
+            if (model.StartTreadRr > 0f)
+                model.TreadWearDiffRr = model.StartTreadRr - model.TreadRemainingRr;
         }
 
         public static void PreencherOverlaySetores(ref TelemetryModel model)

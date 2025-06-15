@@ -69,6 +69,10 @@ namespace SuperBackendNR85IA.Services
         private float _rrColdTempCl;
         private float _rrColdTempCm;
         private float _rrColdTempCr;
+        private float _lfStartTread;
+        private float _rfStartTread;
+        private float _lrStartTread;
+        private float _rrStartTread;
         private bool _loggedAvailableVars = false;
         private readonly HashSet<string> _missingVarWarned = new();
 
@@ -230,10 +234,17 @@ namespace SuperBackendNR85IA.Services
                 _rrColdTempCl = t.RrTempCl;
                 _rrColdTempCm = t.RrTempCm;
                 _rrColdTempCr = t.RrTempCr;
+
+                _lfStartTread = t.TreadRemainingFl;
+                _rfStartTread = t.TreadRemainingFr;
+                _lrStartTread = t.TreadRemainingRl;
+                _rrStartTread = t.TreadRemainingRr;
+
                 _log.LogInformation(
                     $"Pit exit - cold pressures LF:{_lfColdPress} RF:{_rfColdPress} LR:{_lrColdPress} RR:{_rrColdPress}, " +
                     $"temps LF:{_lfColdTempCl}/{_lfColdTempCm}/{_lfColdTempCr} RF:{_rfColdTempCl}/{_rfColdTempCm}/{_rfColdTempCr} " +
-                    $"LR:{_lrColdTempCl}/{_lrColdTempCm}/{_lrColdTempCr} RR:{_rrColdTempCl}/{_rrColdTempCm}/{_rrColdTempCr}");
+                    $"LR:{_lrColdTempCl}/{_lrColdTempCm}/{_lrColdTempCr} RR:{_rrColdTempCl}/{_rrColdTempCm}/{_rrColdTempCr}, " +
+                    $"tread FL:{_lfStartTread} FR:{_rfStartTread} RL:{_lrStartTread} RR:{_rrStartTread}");
             }
 
             // Valores iniciais caso o serviço seja iniciado no meio da pista
@@ -260,6 +271,11 @@ namespace SuperBackendNR85IA.Services
             if (_rfLastHotPress == 0f && t.RfPress > 0f) { _rfLastHotPress = t.RfPress; initialUpdate = true; }
             if (_lrLastHotPress == 0f && t.LrPress > 0f) { _lrLastHotPress = t.LrPress; initialUpdate = true; }
             if (_rrLastHotPress == 0f && t.RrPress > 0f) { _rrLastHotPress = t.RrPress; initialUpdate = true; }
+
+            if (_lfStartTread == 0f && t.TreadRemainingFl > 0f) { _lfStartTread = t.TreadRemainingFl; initialUpdate = true; }
+            if (_rfStartTread == 0f && t.TreadRemainingFr > 0f) { _rfStartTread = t.TreadRemainingFr; initialUpdate = true; }
+            if (_lrStartTread == 0f && t.TreadRemainingRl > 0f) { _lrStartTread = t.TreadRemainingRl; initialUpdate = true; }
+            if (_rrStartTread == 0f && t.TreadRemainingRr > 0f) { _rrStartTread = t.TreadRemainingRr; initialUpdate = true; }
 
             if (_lfLastTempCl == 0f && t.LfTempCl > 0f) { _lfLastTempCl = t.LfTempCl; initialUpdate = true; }
             if (_lfLastTempCm == 0f && t.LfTempCm > 0f) { _lfLastTempCm = t.LfTempCm; initialUpdate = true; }
@@ -304,6 +320,10 @@ namespace SuperBackendNR85IA.Services
             t.RfLastHotPress = _rfLastHotPress;
             t.LrLastHotPress = _lrLastHotPress;
             t.RrLastHotPress = _rrLastHotPress;
+            t.LfStartTread = _lfStartTread;
+            t.RfStartTread = _rfStartTread;
+            t.LrStartTread = _lrStartTread;
+            t.RrStartTread = _rrStartTread;
 
             // Preserve real-time hot pressures read from the SDK. Only fall
             // back to the last recorded values if no current data is
