@@ -304,10 +304,18 @@ namespace SuperBackendNR85IA.Services
             t.RfLastHotPress = _rfLastHotPress;
             t.LrLastHotPress = _lrLastHotPress;
             t.RrLastHotPress = _rrLastHotPress;
-            t.LfHotPressure  = _lfLastHotPress;
-            t.RfHotPressure  = _rfLastHotPress;
-            t.LrHotPressure  = _lrLastHotPress;
-            t.RrHotPressure  = _rrLastHotPress;
+
+            // Preserve real-time hot pressures read from the SDK. Only fall
+            // back to the last recorded values if no current data is
+            // available (e.g. immediately after leaving the pits).
+            if (t.LfHotPressure <= 0f && _lfLastHotPress > 0f)
+                t.LfHotPressure = _lfLastHotPress;
+            if (t.RfHotPressure <= 0f && _rfLastHotPress > 0f)
+                t.RfHotPressure = _rfLastHotPress;
+            if (t.LrHotPressure <= 0f && _lrLastHotPress > 0f)
+                t.LrHotPressure = _lrLastHotPress;
+            if (t.RrHotPressure <= 0f && _rrLastHotPress > 0f)
+                t.RrHotPressure = _rrLastHotPress;
 
             t.LfLastTempCl = _lfLastTempCl;
             t.LfLastTempCm = _lfLastTempCm;
