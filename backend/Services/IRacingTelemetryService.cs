@@ -74,6 +74,14 @@ namespace SuperBackendNR85IA.Services
         private float _rfStartTread;
         private float _lrStartTread;
         private float _rrStartTread;
+        private readonly float[] _lfLastWear = new float[3];
+        private readonly float[] _rfLastWear = new float[3];
+        private readonly float[] _lrLastWear = new float[3];
+        private readonly float[] _rrLastWear = new float[3];
+        private float _lfLastTread;
+        private float _rfLastTread;
+        private float _lrLastTread;
+        private float _rrLastTread;
         private bool _loggedAvailableVars = false;
         private readonly HashSet<string> _missingVarWarned = new();
 
@@ -206,6 +214,15 @@ namespace SuperBackendNR85IA.Services
                 _lrLastHotPress = t.LrPress;
                 _rrLastHotPress = t.RrPress;
 
+                Array.Copy(t.LfWear, _lfLastWear, _lfLastWear.Length);
+                Array.Copy(t.RfWear, _rfLastWear, _rfLastWear.Length);
+                Array.Copy(t.LrWear, _lrLastWear, _lrLastWear.Length);
+                Array.Copy(t.RrWear, _rrLastWear, _rrLastWear.Length);
+                _lfLastTread = t.TreadRemainingFl;
+                _rfLastTread = t.TreadRemainingFr;
+                _lrLastTread = t.TreadRemainingRl;
+                _rrLastTread = t.TreadRemainingRr;
+
                 _lfLastTempCl = t.LfTempCl;
                 _lfLastTempCm = t.LfTempCm;
                 _lfLastTempCr = t.LfTempCr;
@@ -276,6 +293,15 @@ namespace SuperBackendNR85IA.Services
             if (_rrColdTempCm == 0f && t.RrTempCm > 0f) { _rrColdTempCm = t.RrTempCm; initialUpdate = true; }
             if (_rrColdTempCr == 0f && t.RrTempCr > 0f) { _rrColdTempCr = t.RrTempCr; initialUpdate = true; }
 
+            if (_lfLastWear[0] == 0f && t.LfWear.Length == 3 && t.LfWear.Sum() > 0f)
+            { Array.Copy(t.LfWear, _lfLastWear, 3); initialUpdate = true; }
+            if (_rfLastWear[0] == 0f && t.RfWear.Length == 3 && t.RfWear.Sum() > 0f)
+            { Array.Copy(t.RfWear, _rfLastWear, 3); initialUpdate = true; }
+            if (_lrLastWear[0] == 0f && t.LrWear.Length == 3 && t.LrWear.Sum() > 0f)
+            { Array.Copy(t.LrWear, _lrLastWear, 3); initialUpdate = true; }
+            if (_rrLastWear[0] == 0f && t.RrWear.Length == 3 && t.RrWear.Sum() > 0f)
+            { Array.Copy(t.RrWear, _rrLastWear, 3); initialUpdate = true; }
+
             // Do not capture hot pressures during normal running. These values
             // should only reflect the last pressures recorded when entering the
             // pits. Avoid copying the current live (cold) pressures while the
@@ -333,6 +359,14 @@ namespace SuperBackendNR85IA.Services
             t.StartTreadFr = _rfStartTread;
             t.StartTreadRl = _lrStartTread;
             t.StartTreadRr = _rrStartTread;
+            t.LfWear = _lfLastWear.ToArray();
+            t.RfWear = _rfLastWear.ToArray();
+            t.LrWear = _lrLastWear.ToArray();
+            t.RrWear = _rrLastWear.ToArray();
+            t.TreadRemainingFl = _lfLastTread;
+            t.TreadRemainingFr = _rfLastTread;
+            t.TreadRemainingRl = _lrLastTread;
+            t.TreadRemainingRr = _rrLastTread;
 
             // Preserve real-time hot pressures read from the SDK. Only fall
             // back to the last recorded values if no current data is

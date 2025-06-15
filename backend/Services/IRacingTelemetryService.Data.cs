@@ -425,7 +425,9 @@ namespace SuperBackendNR85IA.Services
                 t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
                 t.Tyres.LfPress = t.Tyres.LfColdPress;
             }
-            if (lfHotKpa.HasValue)
+            bool onPitRoad = t.OnPitRoad;
+
+            if (onPitRoad && lfHotKpa.HasValue)
             {
                 t.Tyres.LfHotPressure = KPaToPsi(lfHotKpa.Value);
             }
@@ -440,7 +442,7 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
             }
-            if (rfHotKpa.HasValue)
+            if (onPitRoad && rfHotKpa.HasValue)
             {
                 t.Tyres.RfHotPressure = KPaToPsi(rfHotKpa.Value);
             }
@@ -452,7 +454,7 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
             }
-            if (lrHotKpa.HasValue)
+            if (onPitRoad && lrHotKpa.HasValue)
             {
                 t.Tyres.LrHotPressure = KPaToPsi(lrHotKpa.Value);
             }
@@ -464,7 +466,7 @@ namespace SuperBackendNR85IA.Services
             {
                 t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
             }
-            if (rrHotKpa.HasValue)
+            if (onPitRoad && rrHotKpa.HasValue)
             {
                 t.Tyres.RrHotPressure = KPaToPsi(rrHotKpa.Value);
             }
@@ -494,36 +496,66 @@ namespace SuperBackendNR85IA.Services
             }
 
 
-            t.Tyres.LfWear = new float?[] {
-                GetSdkValue<float>(d, "LFWearL"),
-                GetSdkValue<float>(d, "LFWearM"),
-                GetSdkValue<float>(d, "LFWearR")
-            }.Select(v => v ?? 0f).ToArray();
-            t.Tyres.RfWear = new float?[] {
-                GetSdkValue<float>(d, "RFWearL"),
-                GetSdkValue<float>(d, "RFWearM"),
-                GetSdkValue<float>(d, "RFWearR")
-            }.Select(v => v ?? 0f).ToArray();
-            t.Tyres.LrWear = new float?[] {
-                GetSdkValue<float>(d, "LRWearL"),
-                GetSdkValue<float>(d, "LRWearM"),
-                GetSdkValue<float>(d, "LRWearR")
-            }.Select(v => v ?? 0f).ToArray();
-            t.Tyres.RrWear = new float?[] {
-                GetSdkValue<float>(d, "RRWearL"),
-                GetSdkValue<float>(d, "RRWearM"),
-                GetSdkValue<float>(d, "RRWearR")
-            }.Select(v => v ?? 0f).ToArray();
+            if (onPitRoad)
+            {
+                t.Tyres.LfWear = new float?[] {
+                    GetSdkValue<float>(d, "LFWearL"),
+                    GetSdkValue<float>(d, "LFWearM"),
+                    GetSdkValue<float>(d, "LFWearR")
+                }.Select(v => v ?? 0f).ToArray();
+                t.Tyres.RfWear = new float?[] {
+                    GetSdkValue<float>(d, "RFWearL"),
+                    GetSdkValue<float>(d, "RFWearM"),
+                    GetSdkValue<float>(d, "RFWearR")
+                }.Select(v => v ?? 0f).ToArray();
+                t.Tyres.LrWear = new float?[] {
+                    GetSdkValue<float>(d, "LRWearL"),
+                    GetSdkValue<float>(d, "LRWearM"),
+                    GetSdkValue<float>(d, "LRWearR")
+                }.Select(v => v ?? 0f).ToArray();
+                t.Tyres.RrWear = new float?[] {
+                    GetSdkValue<float>(d, "RRWearL"),
+                    GetSdkValue<float>(d, "RRWearM"),
+                    GetSdkValue<float>(d, "RRWearR")
+                }.Select(v => v ?? 0f).ToArray();
+
+                Array.Copy(t.Tyres.LfWear, _lfLastWear, 3);
+                Array.Copy(t.Tyres.RfWear, _rfLastWear, 3);
+                Array.Copy(t.Tyres.LrWear, _lrLastWear, 3);
+                Array.Copy(t.Tyres.RrWear, _rrLastWear, 3);
+            }
+            else
+            {
+                t.Tyres.LfWear = _lfLastWear.ToArray();
+                t.Tyres.RfWear = _rfLastWear.ToArray();
+                t.Tyres.LrWear = _lrLastWear.ToArray();
+                t.Tyres.RrWear = _rrLastWear.ToArray();
+            }
 
             t.Tyres.LfTreadRemainingParts = t.Tyres.LfWear;
             t.Tyres.RfTreadRemainingParts = t.Tyres.RfWear;
             t.Tyres.LrTreadRemainingParts = t.Tyres.LrWear;
             t.Tyres.RrTreadRemainingParts = t.Tyres.RrWear;
 
-            t.Tyres.TreadRemainingFl = GetSdkValue<float>(d, "LFWearM") ?? 0f;
-            t.Tyres.TreadRemainingFr = GetSdkValue<float>(d, "RFWearM") ?? 0f;
-            t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
-            t.Tyres.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
+            if (onPitRoad)
+            {
+                t.Tyres.TreadRemainingFl = GetSdkValue<float>(d, "LFWearM") ?? 0f;
+                t.Tyres.TreadRemainingFr = GetSdkValue<float>(d, "RFWearM") ?? 0f;
+                t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
+                t.Tyres.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
+
+                _lfLastTread = t.Tyres.TreadRemainingFl;
+                _rfLastTread = t.Tyres.TreadRemainingFr;
+                _lrLastTread = t.Tyres.TreadRemainingRl;
+                _rrLastTread = t.Tyres.TreadRemainingRr;
+            }
+            else
+            {
+                t.Tyres.TreadRemainingFl = _lfLastTread;
+                t.Tyres.TreadRemainingFr = _rfLastTread;
+                t.Tyres.TreadRemainingRl = _lrLastTread;
+                t.Tyres.TreadRemainingRr = _rrLastTread;
+            }
 
             t.Tyres.TreadLF = GetSdkValue<float>(d, "TireLF_TreadRemaining");
             t.Tyres.TreadRF = GetSdkValue<float>(d, "TireRF_TreadRemaining");
