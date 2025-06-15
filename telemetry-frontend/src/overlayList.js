@@ -10,5 +10,6 @@ export default [
   { name: 'Calculadora', file: 'overlay-calculadora.html' },
   { name: 'Tire Wear', file: 'overlay-tirewear.html' },
   { name: 'Base', file: 'overlaybase.html' },
-  { name: 'Teste Final', file: 'overlay-testefinal.html' }
+  { name: 'Teste Final', file: 'overlay-testefinal.html' },
+  { name: 'Diagnóstico Raw', file: 'overlay-diagnostico-raw.html' }
 ];
