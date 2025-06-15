@@ -14,8 +14,12 @@ namespace SuperBackendNR85IA.Services
         {
             try
             {
-                if (!data.TelemetryDataProperties.TryGetValue(varName, out var datum)) return null;
-                if (datum.Count == 0) return null;
+                if (!data.TelemetryDataProperties.TryGetValue(varName, out var datum) || datum.Count == 0)
+                {
+                    if (_missingVarWarned.Add(varName))
+                        _log.LogWarning($"Campo {varName} não está disponível no SDK.");
+                    return null;
+                }
 
                 object? value = null;
                 if (typeof(T) == typeof(float)) value = data.GetFloat(datum);
@@ -41,8 +45,12 @@ namespace SuperBackendNR85IA.Services
         {
             try
             {
-                if (!data.TelemetryDataProperties.TryGetValue(varName, out var datum)) return null;
-                if (datum.Count == 0) return null;
+                if (!data.TelemetryDataProperties.TryGetValue(varName, out var datum) || datum.Count == 0)
+                {
+                    if (_missingVarWarned.Add(varName))
+                        _log.LogWarning($"Campo {varName} não está disponível no SDK.");
+                    return null;
+                }
                 var value = data.GetValue(datum);
                 if (value is char[] charArray) return new string(charArray).TrimEnd('\0');
                 return value?.ToString()?.TrimEnd('\0');
@@ -60,6 +68,8 @@ namespace SuperBackendNR85IA.Services
             {
                 if (!data.TelemetryDataProperties.TryGetValue(varName, out var datum) || datum.Count == 0)
                 {
+                    if (_missingVarWarned.Add(varName))
+                        _log.LogWarning($"Campo {varName} não está disponível no SDK.");
                     return Array.Empty<T?>();
                 }
 
