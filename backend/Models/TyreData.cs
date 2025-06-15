@@ -45,6 +45,12 @@ namespace SuperBackendNR85IA.Models
         public float[] LrWear { get; set; } = Array.Empty<float>();
         public float[] RrWear { get; set; } = Array.Empty<float>();
 
+        // Valores médios de desgaste calculados a partir dos arrays acima
+        public float LfWearAvg { get; set; }
+        public float RfWearAvg { get; set; }
+        public float LrWearAvg { get; set; }
+        public float RrWearAvg { get; set; }
+
         public float[] LfTreadRemainingParts { get; set; } = Array.Empty<float>();
         public float[] RfTreadRemainingParts { get; set; } = Array.Empty<float>();
         public float[] LrTreadRemainingParts { get; set; } = Array.Empty<float>();
