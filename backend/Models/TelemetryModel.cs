@@ -214,6 +214,12 @@ namespace SuperBackendNR85IA.Models
         public float[] CarIdxCarClassEstLapTimes { get; set; } = Array.Empty<float>();
         public string[] CarIdxTireCompounds { get; set; } = Array.Empty<string>();
         public string TireCompound { get; set; } = string.Empty;
+        // Alias enviado ao frontend para compatibilidade
+        public string PlayerCarTireCompound
+        {
+            get => TireCompound;
+            set => TireCompound = value;
+        }
         public string Compound { get => Tyres.Compound; set => Tyres.Compound = value; }
         public int[] CarIdxGear { get => Radar.CarIdxGear; set => Radar.CarIdxGear = value; }
         public float[] CarIdxRPM { get => Radar.CarIdxRPM; set => Radar.CarIdxRPM = value; }
