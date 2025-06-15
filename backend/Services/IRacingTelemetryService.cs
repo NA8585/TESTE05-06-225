@@ -320,10 +320,10 @@ namespace SuperBackendNR85IA.Services
             t.RfLastHotPress = _rfLastHotPress;
             t.LrLastHotPress = _lrLastHotPress;
             t.RrLastHotPress = _rrLastHotPress;
-            t.LfStartTread = _lfStartTread;
-            t.RfStartTread = _rfStartTread;
-            t.LrStartTread = _lrStartTread;
-            t.RrStartTread = _rrStartTread;
+            t.StartTreadFl = _lfStartTread;
+            t.StartTreadFr = _rfStartTread;
+            t.StartTreadRl = _lrStartTread;
+            t.StartTreadRr = _rrStartTread;
 
             // Preserve real-time hot pressures read from the SDK. Only fall
             // back to the last recorded values if no current data is
