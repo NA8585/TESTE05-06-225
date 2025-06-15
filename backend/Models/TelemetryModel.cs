@@ -157,6 +157,27 @@ namespace SuperBackendNR85IA.Models
         public float StartTreadFr { get => Tyres.StartTreadFr; set => Tyres.StartTreadFr = value; }
         public float StartTreadRl { get => Tyres.StartTreadRl; set => Tyres.StartTreadRl = value; }
         public float StartTreadRr { get => Tyres.StartTreadRr; set => Tyres.StartTreadRr = value; }
+        // Backwards compatibility with older property names
+        public float LfStartTread
+        {
+            get => StartTreadFl;
+            set => StartTreadFl = value;
+        }
+        public float RfStartTread
+        {
+            get => StartTreadFr;
+            set => StartTreadFr = value;
+        }
+        public float LrStartTread
+        {
+            get => StartTreadRl;
+            set => StartTreadRl = value;
+        }
+        public float RrStartTread
+        {
+            get => StartTreadRr;
+            set => StartTreadRr = value;
+        }
         public float TreadWearDiffFl { get => Tyres.TreadWearDiffFl; set => Tyres.TreadWearDiffFl = value; }
         public float TreadWearDiffFr { get => Tyres.TreadWearDiffFr; set => Tyres.TreadWearDiffFr = value; }
         public float TreadWearDiffRl { get => Tyres.TreadWearDiffRl; set => Tyres.TreadWearDiffRl = value; }
