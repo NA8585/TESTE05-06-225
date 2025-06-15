@@ -286,7 +286,7 @@ namespace SuperBackendNR85IA.Models
         public int PlayerCarClassID { get; set; }
         public int PlayerCarTeamIncidentCount { get; set; }
         public int PlayerCarMyIncidentCount { get; set; }
-        public string TrackNumTurns { get; set; }
+        public string TrackNumTurns { get; set; } = string.Empty;
         public string TrackDisplayName { get; set; } = string.Empty;
         public string TrackConfigName { get; set; } = string.Empty;
         public float TrackLength { get; set; }

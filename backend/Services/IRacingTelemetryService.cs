@@ -22,7 +22,7 @@ namespace SuperBackendNR85IA.Services
         private readonly SessionYamlParser _yamlParser;
 
         private string _lastYaml = string.Empty;
-        private (DriverInfo? Drv, WeekendInfo? Wkd, SessionInfo? Ses, SectorInfo Sec, List<DriverInfo> Drivers) _cachedYamlData;
+        private (DriverInfo? Drv, WeekendInfo? Wkd, SessionInfo? Ses, SectorInfo? Sec, List<DriverInfo> Drivers) _cachedYamlData;
         private int _lastTick = -1;
         private int _lastLap = -1;
         private float _fuelAtLapStart = 0f;
@@ -96,7 +96,7 @@ namespace SuperBackendNR85IA.Services
             {
                 // Habilita todas as variáveis de telemetria, incluindo dados de setup
                 // necessários para pressões frias e desgaste de pneus
-                _sdk.Start(IRSDKSharper.DefinitionFlags.All);
+                _sdk.Start();
                 _log.LogInformation("IRSDKSharper iniciado e aguardando conexão com o iRacing.");
             }
             catch (Exception ex)
