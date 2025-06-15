@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dados Completos</title>
+  <style>
+    html,body { margin:0; padding:0; height:100%; background:#111; color:#e2e8f0; font-family: monospace; font-size:12px; }
+    .container { display:flex; height:100%; }
+    pre { flex:1; margin:0; padding:0.5rem; white-space: pre-wrap; word-break: break-all; overflow:auto; }
+    pre:first-child { border-right:1px solid #333; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <pre id="yaml">Conectando...</pre>
+    <pre id="json">Conectando...</pre>
+  </div>
+  <script type="module">
+    import { initOverlayWebSocket } from '../overlay-common.js';
+    const preYaml = document.getElementById('yaml');
+    const preJson = document.getElementById('json');
+    function handleData(data) {
+      preJson.textContent = JSON.stringify(data, null, 2);
+      preYaml.textContent = data.sessionInfoYaml || '';
+    }
+    initOverlayWebSocket(handleData);
+  </script>
+</body>
+</html>
