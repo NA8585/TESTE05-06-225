@@ -35,6 +35,7 @@ namespace SuperBackendNR85IA.Services
         private string _trackName = string.Empty;
         private bool _awaitingStoredData = false;
         private bool _wasOnPitRoad = false;
+        private int _lastPitCount = -1;
         private float _lfLastHotPress;
         private float _rfLastHotPress;
         private float _lrLastHotPress;

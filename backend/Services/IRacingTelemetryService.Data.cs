@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using YamlDotNet.RepresentationModel;
 using IRSDKSharper;
 using SuperBackendNR85IA.Models;
 using SuperBackendNR85IA.Calculations;
@@ -111,6 +112,8 @@ namespace SuperBackendNR85IA.Services
                 return Array.Empty<T?>();
             }
         }
+
+        private float KPaToPsi(float kpa) => kpa * 0.1450377f;
 
         private void PopulateVehicleData(IRacingSdkData d, TelemetryModel t)
         {
@@ -397,6 +400,17 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.LrPress = GetSdkValue<float>(d, "LRpressure") ?? 0f;
             t.Tyres.RrPress = GetSdkValue<float>(d, "RRpressure") ?? 0f;
 
+            float? lfColdKpa = GetSdkValue<float>(d, "LFcoldPressure");
+            float? rfColdKpa = GetSdkValue<float>(d, "RFcoldPressure");
+            float? lrColdKpa = GetSdkValue<float>(d, "LRcoldPressure");
+            float? rrColdKpa = GetSdkValue<float>(d, "RRcoldPressure");
+            if (lfColdKpa.HasValue) t.Tyres.LfColdPress = KPaToPsi(lfColdKpa.Value);
+            if (rfColdKpa.HasValue) t.Tyres.RfColdPress = KPaToPsi(rfColdKpa.Value);
+            if (lrColdKpa.HasValue) t.Tyres.LrColdPress = KPaToPsi(lrColdKpa.Value);
+            if (rrColdKpa.HasValue) t.Tyres.RrColdPress = KPaToPsi(rrColdKpa.Value);
+            if (!lfColdKpa.HasValue)
+                _log.LogDebug("Cold tire pressure data not available for this car (LFcoldPressure missing).");
+
             t.Tyres.LfWear = new float?[] {
                 GetSdkValue<float>(d, "LFWearL"),
                 GetSdkValue<float>(d, "LFWearM"),
@@ -549,6 +563,58 @@ namespace SuperBackendNR85IA.Services
                 t.PlayerCarClassID   = drv.CarClassID;
                 t.TireCompound       = drv.TireCompound;
                 t.Tyres.Compound     = drv.TireCompound;
+            }
+
+            if (t.Vehicle.PlayerCarPitStopCount > _lastPitCount && !string.IsNullOrEmpty(t.SessionInfoYaml))
+            {
+                _lastPitCount = t.Vehicle.PlayerCarPitStopCount;
+                try
+                {
+                    using var reader = new StringReader(t.SessionInfoYaml);
+                    var yamlStream = new YamlStream();
+                    yamlStream.Load(reader);
+                    var root = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+                    if (root.Children.TryGetValue(new YamlScalarNode("CarSetup"), out var csNode) && csNode is YamlMappingNode csMap)
+                    {
+                        YamlMappingNode? tiresNode = null;
+                        if (csMap.Children.TryGetValue(new YamlScalarNode("TiresAero"), out var taNode) && taNode is YamlMappingNode tn)
+                            tiresNode = tn;
+                        else if (csMap.Children.TryGetValue(new YamlScalarNode("Tires"), out var tNode) && tNode is YamlMappingNode tn2)
+                            tiresNode = tn2;
+                        if (tiresNode != null)
+                        {
+                            string GetStr(YamlMappingNode n, string key)
+                            {
+                                if (n.Children.TryGetValue(new YamlScalarNode(key), out var v) && v is YamlScalarNode s)
+                                    return s.Value ?? string.Empty;
+                                return string.Empty;
+                            }
+                            float ParsePressure(YamlMappingNode n, string field)
+                            {
+                                string val = GetStr(n, field);
+                                if (string.IsNullOrEmpty(val)) return 0f;
+                                string num = val.Replace("kPa", string.Empty).Replace("psi", string.Empty).Trim();
+                                if (!float.TryParse(num, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v))
+                                    return 0f;
+                                return val.Contains("kPa") ? KPaToPsi(v) : v;
+                            }
+                            if (tiresNode.Children.TryGetValue(new YamlScalarNode("LeftFront"), out var lfNode) && lfNode is YamlMappingNode lfMap)
+                                t.Tyres.LfLastHotPress = ParsePressure(lfMap, "LastHotPressure");
+                            if (tiresNode.Children.TryGetValue(new YamlScalarNode("RightFront"), out var rfNode) && rfNode is YamlMappingNode rfMap)
+                                t.Tyres.RfLastHotPress = ParsePressure(rfMap, "LastHotPressure");
+                            if (tiresNode.Children.TryGetValue(new YamlScalarNode("LeftRear"), out var lrNode) && lrNode is YamlMappingNode lrMap)
+                                t.Tyres.LrLastHotPress = ParsePressure(lrMap, "LastHotPressure");
+                            if (tiresNode.Children.TryGetValue(new YamlScalarNode("RightRear"), out var rrNode) && rrNode is YamlMappingNode rrMap)
+                                t.Tyres.RrLastHotPress = ParsePressure(rrMap, "LastHotPressure");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.LogWarning(ex, "Failed to parse LastHotPressure from session YAML.");
+                }
+                if (t.Tyres.LfLastHotPress == 0f && t.Tyres.RfLastHotPress == 0f && t.Tyres.LrLastHotPress == 0f)
+                    _log.LogInformation("Last hot tire pressures not available (no data in YAML after pit).");
             }
             t.PlayerCarTeamIncidentCount = GetSdkValue<int>(d, "PlayerCarTeamIncidentCount") ?? 0;
             t.PlayerCarMyIncidentCount   = GetSdkValue<int>(d, "PlayerCarMyIncidentCount") ?? 0;
