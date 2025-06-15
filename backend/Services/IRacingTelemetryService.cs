@@ -165,13 +165,16 @@ namespace SuperBackendNR85IA.Services
             ComputeRelativeDistances(d, t);
             PopulateSessionInfo(d, t);
             PopulateTyres(d, t);
-            _log.LogDebug(
-                $"Tyre snapshot - Pressures LF:{t.LfPress} RF:{t.RfPress} LR:{t.LrPress} RR:{t.RrPress}, " +
-                $"HotPress LF:{_lfLastHotPress} RF:{_rfLastHotPress} LR:{_lrLastHotPress} RR:{_rrLastHotPress}, " +
-                $"ColdPress LF:{_lfColdPress} RF:{_rfColdPress} LR:{_lrColdPress} RR:{_rrColdPress}, " +
-                $"Temps LF:{t.LfTempCl}/{t.LfTempCm}/{t.LfTempCr} RF:{t.RfTempCl}/{t.RfTempCm}/{t.RfTempCr} " +
-                $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
-                $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
+            if (_log.IsEnabled(LogLevel.Debug))
+            {
+                _log.LogDebug(
+                    $"Tyre snapshot - Pressures LF:{t.LfPress} RF:{t.RfPress} LR:{t.LrPress} RR:{t.RrPress}, " +
+                    $"HotPress LF:{_lfLastHotPress} RF:{_rfLastHotPress} LR:{_lrLastHotPress} RR:{_rrLastHotPress}, " +
+                    $"ColdPress LF:{_lfColdPress} RF:{_rfColdPress} LR:{_lrColdPress} RR:{_rrColdPress}, " +
+                    $"Temps LF:{t.LfTempCl}/{t.LfTempCm}/{t.LfTempCr} RF:{t.RfTempCl}/{t.RfTempCm}/{t.RfTempCr} " +
+                    $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
+                    $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
+            }
             UpdateLastHotPress(t);
             await ApplyYamlData(d, t);
             RunCustomCalculations(d, t);
@@ -319,13 +322,16 @@ namespace SuperBackendNR85IA.Services
             t.FrontStagger = (t.RfRideHeight - t.LfRideHeight) * 1000f;
             t.RearStagger  = (t.RrRideHeight - t.LrRideHeight) * 1000f;
 
-            _log.LogDebug(
-                $"UpdateLastHotPress - Pressures LF:{t.LfPress} RF:{t.RfPress} LR:{t.LrPress} RR:{t.RrPress}, " +
-                $"HotPress LF:{t.LfLastHotPress} RF:{t.RfLastHotPress} LR:{t.LrLastHotPress} RR:{t.RrLastHotPress}, " +
-                $"ColdPress LF:{t.LfColdPress} RF:{t.RfColdPress} LR:{t.LrColdPress} RR:{t.RrColdPress}, " +
-                $"Temps LF:{t.LfTempCl}/{t.LfTempCm}/{t.LfTempCr} RF:{t.RfTempCl}/{t.RfTempCm}/{t.RfTempCr} " +
-                $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
-                $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
+            if (_log.IsEnabled(LogLevel.Debug))
+            {
+                _log.LogDebug(
+                    $"UpdateLastHotPress - Pressures LF:{t.LfPress} RF:{t.RfPress} LR:{t.LrPress} RR:{t.RrPress}, " +
+                    $"HotPress LF:{t.LfLastHotPress} RF:{t.RfLastHotPress} LR:{t.LrLastHotPress} RR:{t.RrLastHotPress}, " +
+                    $"ColdPress LF:{t.LfColdPress} RF:{t.RfColdPress} LR:{t.LrColdPress} RR:{t.RrColdPress}, " +
+                    $"Temps LF:{t.LfTempCl}/{t.LfTempCm}/{t.LfTempCr} RF:{t.RfTempCl}/{t.RfTempCm}/{t.RfTempCr} " +
+                    $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
+                    $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
+            }
         }
     }
 }
