@@ -11,6 +11,7 @@ namespace SuperBackendNR85IA.Models
         [JsonPropertyName("sessionInfo")] public SessionInfoPayload? SessionInfo { get; set; }
         [JsonPropertyName("weekendInfo")] public WeekendInfoPayload? WeekendInfo { get; set; }
         [JsonPropertyName("results")] public List<ResultPayload>? Results { get; set; }
+        [JsonPropertyName("proximityCars")] public List<ProximityCar>? ProximityCars { get; set; }
     }
 
     // --- Sub-classes para cada parte do payload ---
