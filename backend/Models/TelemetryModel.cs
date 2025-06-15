@@ -153,6 +153,14 @@ namespace SuperBackendNR85IA.Models
         public float TreadRemainingFr { get => Tyres.TreadRemainingFr; set => Tyres.TreadRemainingFr = value; }
         public float TreadRemainingRl { get => Tyres.TreadRemainingRl; set => Tyres.TreadRemainingRl = value; }
         public float TreadRemainingRr { get => Tyres.TreadRemainingRr; set => Tyres.TreadRemainingRr = value; }
+        public float StartTreadFl { get => Tyres.StartTreadFl; set => Tyres.StartTreadFl = value; }
+        public float StartTreadFr { get => Tyres.StartTreadFr; set => Tyres.StartTreadFr = value; }
+        public float StartTreadRl { get => Tyres.StartTreadRl; set => Tyres.StartTreadRl = value; }
+        public float StartTreadRr { get => Tyres.StartTreadRr; set => Tyres.StartTreadRr = value; }
+        public float TreadWearDiffFl { get => Tyres.TreadWearDiffFl; set => Tyres.TreadWearDiffFl = value; }
+        public float TreadWearDiffFr { get => Tyres.TreadWearDiffFr; set => Tyres.TreadWearDiffFr = value; }
+        public float TreadWearDiffRl { get => Tyres.TreadWearDiffRl; set => Tyres.TreadWearDiffRl = value; }
+        public float TreadWearDiffRr { get => Tyres.TreadWearDiffRr; set => Tyres.TreadWearDiffRr = value; }
         public float? TreadLF { get => Tyres.TreadLF; set => Tyres.TreadLF = value; }
         public float? TreadRF { get => Tyres.TreadRF; set => Tyres.TreadRF = value; }
         public float? TreadLR { get => Tyres.TreadLR; set => Tyres.TreadLR = value; }

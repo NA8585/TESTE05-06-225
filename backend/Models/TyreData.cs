@@ -101,6 +101,16 @@ namespace SuperBackendNR85IA.Models
         public float TreadRemainingRl { get; set; }
         public float TreadRemainingRr { get; set; }
 
+        public float StartTreadFl { get; set; }
+        public float StartTreadFr { get; set; }
+        public float StartTreadRl { get; set; }
+        public float StartTreadRr { get; set; }
+
+        public float TreadWearDiffFl { get; set; }
+        public float TreadWearDiffFr { get; set; }
+        public float TreadWearDiffRl { get; set; }
+        public float TreadWearDiffRr { get; set; }
+
         public float? TreadLF { get; set; }
         public float? TreadRF { get; set; }
         public float? TreadLR { get; set; }
