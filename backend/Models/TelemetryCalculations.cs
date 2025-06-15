@@ -381,4 +381,20 @@ namespace SuperBackendNR85IA.Calculations
             }
         }
     }
+
+    public static class TyreHelpers
+    {
+        public enum TempStatus { Cold, Ideal, Warning, Hot }
+
+        public static TempStatus Classify(float temp)
+        {
+            if (temp < 60) return TempStatus.Cold;
+            if (temp <= 85) return TempStatus.Ideal;
+            if (temp <= 105) return TempStatus.Warning;
+            return TempStatus.Hot;
+        }
+
+        public static TempStatus[] ClassifyTriplet(float inT, float midT, float outT)
+            => new[] { Classify(inT), Classify(midT), Classify(outT) };
+    }
 }

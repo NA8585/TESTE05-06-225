@@ -25,6 +25,7 @@ namespace SuperBackendNR85IA.Services
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
+            _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         }
 
         public async Task AddClient(WebSocket webSocket, CancellationToken cancellationToken)

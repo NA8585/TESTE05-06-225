@@ -320,6 +320,17 @@ namespace SuperBackendNR85IA.Models
         public string SessionInfoYaml { get; set; } = string.Empty;
         public List<ResultPosition> Results { get; set; } = new();
 
+        public TyreStatus LfTempStatus { get; set; } = new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold);
+        public TyreStatus RfTempStatus { get; set; } = new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold);
+        public TyreStatus LrTempStatus { get; set; } = new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold);
+        public TyreStatus RrTempStatus { get; set; } = new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold);
+
+        public TyreStatusSet TyreStatus { get; set; } = new(
+            new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold),
+            new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold),
+            new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold),
+            new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold));
+
         public static string FormatTime(double seconds)
         {
             if (double.IsNaN(seconds) || double.IsInfinity(seconds) || seconds < 0 || seconds > 60 * 60 * 24 * 365)
@@ -334,4 +345,17 @@ namespace SuperBackendNR85IA.Models
         public string Text { get; set; } = string.Empty;
         public string Class { get; set; } = string.Empty;
     }
+
+    public record TyreStatus(
+        TyreHelpers.TempStatus In,
+        TyreHelpers.TempStatus Mid,
+        TyreHelpers.TempStatus Out
+    );
+
+    public record TyreStatusSet(
+        TyreStatus Lf,
+        TyreStatus Rf,
+        TyreStatus Lr,
+        TyreStatus Rr
+    );
 }
