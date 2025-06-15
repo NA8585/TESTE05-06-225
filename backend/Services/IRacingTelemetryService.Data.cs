@@ -331,29 +331,33 @@ namespace SuperBackendNR85IA.Services
 
             _log.LogInformation($"Raw SessionTime: {rawSessionTime}");
 
-            float totalSessionTime = GetSdkValue<float>(d, "SessionTimeTotal") ?? 0f;
+            double totalSessionTime = GetSdkValue<double>(d, "SessionTimeTotal") ?? 0.0;
 
             t.Session.SessionTime = rawSessionTime;
 
-            float rawRemain = GetSdkValue<float>(d, "SessionTimeRemain") ?? -1f;
-            if (rawRemain >= 0)
+            const double MAX_VALID_REMAIN = 48 * 3600.0;
+            double rawRemain = GetSdkValue<double>(d, "SessionTimeRemain") ?? -1.0;
+            bool remainSuspect =
+                rawRemain < 0.0 ||
+                double.IsNaN(rawRemain) ||
+                double.IsInfinity(rawRemain) ||
+                rawRemain > MAX_VALID_REMAIN ||
+                (totalSessionTime > 0 && rawRemain > totalSessionTime * 1.2);
+
+            if (remainSuspect)
             {
-                t.Session.SessionTimeRemain = rawRemain;
-            }
-            else if (totalSessionTime > 0)
-            {
-                float recomputed = (float)(totalSessionTime - rawSessionTime);
-                if (recomputed < 0)
+                double recomputed = 0.0;
+                if (totalSessionTime > 0)
                 {
-                    _log.LogWarning($"Negative recomputed SessionTimeRemain: {recomputed}");
-                    recomputed = 0f;
+                    recomputed = totalSessionTime - rawSessionTime;
+                    if (recomputed < 0) recomputed = 0.0;
                 }
-                t.Session.SessionTimeRemain = recomputed;
+                _log.LogDebug($"SessionTimeRemain inválido ({rawRemain}), recalculado.");
+                rawRemain = recomputed;
             }
-            else
-            {
-                t.Session.SessionTimeRemain = 0f;
-            }
+
+            t.Session.SessionTimeRemain = rawRemain;
+            t.Session.SessionTimeRemainValid = !remainSuspect;
 
             if (t.SessionNum != _lastSessionNum)
             {
@@ -370,7 +374,7 @@ namespace SuperBackendNR85IA.Services
             t.Session.PlayerCarIdx      = GetSdkValue<int>(d, "PlayerCarIdx") ?? -1;
             t.Session.TotalLaps         = GetSdkValue<int>(d, "CurrentSessionTotalLaps") ?? -1;
             t.Session.LapsRemainingRace = GetSdkValue<int>(d, "LapsRemainingRace") ?? 0;
-            t.Session.SessionTimeTotal  = totalSessionTime;
+            t.Session.SessionTimeTotal  = (float)totalSessionTime;
             t.Session.SessionLapsTotal  = GetSdkValue<int>(d, "SessionLapsTotal") ?? 0;
             t.Session.SessionLapsRemain = GetSdkValue<int>(d, "SessionLapsRemain") ?? 0;
             t.Session.RaceLaps         = GetSdkValue<int>(d, "RaceLaps") ?? 0;
