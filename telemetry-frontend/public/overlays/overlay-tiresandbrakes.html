@@ -215,7 +215,11 @@
           <div class="text-xs text-blue-300">BRAKE</div>
           <div class="brake text-lg font-bold">0.0</div>
           <div class="text-xs text-blue-300">TIRE TEMP</div>
-          <div class="temp text-lg font-bold">0.0°C</div>
+          <div class="temp flex justify-center gap-1">
+            <span class="in px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+            <span class="mid px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+            <span class="out px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+          </div>
           <div class="text-xs text-blue-300">TIRE PRES</div>
           <div class="press text-lg font-bold">0.0</div>
           <div class="assist-status text-xs">TC:OFF</div>
@@ -225,7 +229,11 @@
           <div class="text-xs text-blue-300">BRAKE</div>
           <div class="brake text-lg font-bold">0.0</div>
           <div class="text-xs text-blue-300">TIRE TEMP</div>
-          <div class="temp text-lg font-bold">0.0°C</div>
+          <div class="temp flex justify-center gap-1">
+            <span class="in px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+            <span class="mid px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+            <span class="out px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+          </div>
           <div class="text-xs text-blue-300">TIRE PRES</div>
           <div class="press text-lg font-bold">0.0</div>
           <div class="assist-status text-xs">TC:OFF</div>
@@ -235,7 +243,11 @@
           <div class="text-xs text-blue-300">BRAKE</div>
           <div class="brake text-lg font-bold">0.0</div>
           <div class="text-xs text-blue-300">TIRE TEMP</div>
-          <div class="temp text-lg font-bold">0.0°C</div>
+          <div class="temp flex justify-center gap-1">
+            <span class="in px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+            <span class="mid px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+            <span class="out px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+          </div>
           <div class="text-xs text-blue-300">TIRE PRES</div>
           <div class="press text-lg font-bold">0.0</div>
           <div class="assist-status text-xs">TC:OFF</div>
@@ -245,7 +257,11 @@
           <div class="text-xs text-blue-300">BRAKE</div>
           <div class="brake text-lg font-bold">0.0</div>
           <div class="text-xs text-blue-300">TIRE TEMP</div>
-          <div class="temp text-lg font-bold">0.0°C</div>
+          <div class="temp flex justify-center gap-1">
+            <span class="in px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+            <span class="mid px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+            <span class="out px-1 rounded text-xs font-semibold bg-slate-600">-</span>
+          </div>
           <div class="text-xs text-blue-300">TIRE PRES</div>
           <div class="press text-lg font-bold">0.0</div>
           <div class="assist-status text-xs">TC:OFF</div>
@@ -567,6 +583,15 @@
       if (val >= max) return 'text-status-hot';
       return 'text-status-ideal';
     }
+    function getStatusBgClass(status) {
+      switch ((status||'').toLowerCase()) {
+        case 'cold':    return 'bg-blue-500';
+        case 'ideal':   return 'bg-green-500';
+        case 'warning': return 'bg-yellow-400';
+        case 'hot':     return 'bg-red-500';
+        default:        return 'bg-slate-600';
+      }
+    }
     function getCompoundClass(compound) {
       const s = (compound||'').toLowerCase();
       if (s.includes('soft'))   return 'border-soft';
@@ -604,6 +629,15 @@
                 ? (d.carIdxTireCompounds[d.playerCarIdx] || 'U') : 'U';
             d.tireCompound = [comp,comp,comp,comp];
         }
+        if (!Array.isArray(d.tireStatuses)) {
+            const ts = d.tyreStatus || {};
+            d.tireStatuses = [
+                [ts.lf?.in, ts.lf?.mid, ts.lf?.out],
+                [ts.rf?.in, ts.rf?.mid, ts.rf?.out],
+                [ts.lr?.in, ts.lr?.mid, ts.lr?.out],
+                [ts.rr?.in, ts.rr?.mid, ts.rr?.out]
+            ];
+        }
 
         tireMap.forEach(({id, idx}) => {
             const el = document.getElementById(id);
@@ -623,11 +657,15 @@
                         brakeEl.classList.add(getStatusClass(v, 250, 550, 700));
                     }
                     // Temperatura
-                    if (Array.isArray(d.tireTemps) && tempEl) {
-                        const v = d.tireTemps[idx] ?? 0;
-                        tempEl.textContent = v.toFixed(1) + '°C';
-                        tempEl.classList.remove('text-status-cold','text-status-ideal','text-status-warning','text-status-hot');
-                        tempEl.classList.add(getStatusClass(v, 85, 100, 110));
+                    if (Array.isArray(d.tireStatuses) && tempEl) {
+                        const arr = d.tireStatuses[idx] || [];
+                        const spans = tempEl.querySelectorAll('span');
+                        spans.forEach((sp, i) => {
+                            const st = arr[i] || '';
+                            sp.textContent = st ? st.charAt(0) : '-';
+                            sp.className = sp.className.replace(/bg-[^\s]+/g, '').trim();
+                            sp.classList.add(getStatusBgClass(st));
+                        });
                     }
                     // Pressão
                     if (Array.isArray(d.tirePressures) && pressEl) {

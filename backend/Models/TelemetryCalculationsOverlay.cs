@@ -46,6 +46,28 @@ namespace SuperBackendNR85IA.Calculations
             model.Tyres.LrTreadRemainingParts ??= model.Tyres.LrWear;
             model.Tyres.RrTreadRemainingParts ??= model.Tyres.RrWear;
 
+            model.LfTempStatus = new TyreStatus(
+                TyreHelpers.Classify(model.LfTempCl),
+                TyreHelpers.Classify(model.LfTempCm),
+                TyreHelpers.Classify(model.LfTempCr));
+            model.RfTempStatus = new TyreStatus(
+                TyreHelpers.Classify(model.RfTempCl),
+                TyreHelpers.Classify(model.RfTempCm),
+                TyreHelpers.Classify(model.RfTempCr));
+            model.LrTempStatus = new TyreStatus(
+                TyreHelpers.Classify(model.LrTempCl),
+                TyreHelpers.Classify(model.LrTempCm),
+                TyreHelpers.Classify(model.LrTempCr));
+            model.RrTempStatus = new TyreStatus(
+                TyreHelpers.Classify(model.RrTempCl),
+                TyreHelpers.Classify(model.RrTempCm),
+                TyreHelpers.Classify(model.RrTempCr));
+
+            model.TyreStatus = new TyreStatusSet(
+                model.LfTempStatus,
+                model.RfTempStatus,
+                model.LrTempStatus,
+                model.RrTempStatus);
 
             model.Tyres.FrontStagger = (model.RfRideHeight - model.LfRideHeight) * 1000f;
             model.Tyres.RearStagger  = (model.RrRideHeight - model.LrRideHeight) * 1000f;
