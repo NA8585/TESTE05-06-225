@@ -121,5 +121,33 @@ namespace SuperBackendNR85IA.Models
         public float RfRideHeight { get; set; }
         public float LrRideHeight { get; set; }
         public float RrRideHeight { get; set; }
+
+        private static float PsiToKpa(float psi) => psi <= 0f ? 0f : psi / 0.1450377f;
+
+        // --- Helper properties for kPa values ---
+        public float LfPressKpa => PsiToKpa(LfPress);
+        public float RfPressKpa => PsiToKpa(RfPress);
+        public float LrPressKpa => PsiToKpa(LrPress);
+        public float RrPressKpa => PsiToKpa(RrPress);
+
+        public float LfColdPressKpa => PsiToKpa(LfColdPress);
+        public float RfColdPressKpa => PsiToKpa(RfColdPress);
+        public float LrColdPressKpa => PsiToKpa(LrColdPress);
+        public float RrColdPressKpa => PsiToKpa(RrColdPress);
+
+        public float LfHotPressureKpa => PsiToKpa(LfHotPressure);
+        public float RfHotPressureKpa => PsiToKpa(RfHotPressure);
+        public float LrHotPressureKpa => PsiToKpa(LrHotPressure);
+        public float RrHotPressureKpa => PsiToKpa(RrHotPressure);
+
+        public float LfSetupPressureKpa => PsiToKpa(LfSetupPressure);
+        public float RfSetupPressureKpa => PsiToKpa(RfSetupPressure);
+        public float LrSetupPressureKpa => PsiToKpa(LrSetupPressure);
+        public float RrSetupPressureKpa => PsiToKpa(RrSetupPressure);
+
+        public float LfLastHotPressKpa => PsiToKpa(LfLastHotPress);
+        public float RfLastHotPressKpa => PsiToKpa(RfLastHotPress);
+        public float LrLastHotPressKpa => PsiToKpa(LrLastHotPress);
+        public float RrLastHotPressKpa => PsiToKpa(RrLastHotPress);
     }
 }
