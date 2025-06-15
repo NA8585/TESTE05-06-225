@@ -200,12 +200,12 @@ namespace SuperBackendNR85IA.Models
         public string[] CarIdxTireCompounds { get; set; } = Array.Empty<string>();
         public string TireCompound { get; set; } = string.Empty;
         public string Compound { get => Tyres.Compound; set => Tyres.Compound = value; }
-        public int[] CarIdxGear { get; set; } = Array.Empty<int>();
-        public float[] CarIdxRPM { get; set; } = Array.Empty<float>();
-        public int[] CarIdxPaceFlags { get; set; } = Array.Empty<int>();
-        public int[] CarIdxPaceLine { get; set; } = Array.Empty<int>();
-        public int[] CarIdxPaceRow { get; set; } = Array.Empty<int>();
-        public int[] CarIdxTrackSurfaceMaterial { get; set; } = Array.Empty<int>();
+        public int[] CarIdxGear { get => Radar.CarIdxGear; set => Radar.CarIdxGear = value; }
+        public float[] CarIdxRPM { get => Radar.CarIdxRPM; set => Radar.CarIdxRPM = value; }
+        public int[] CarIdxPaceFlags { get => Radar.CarIdxPaceFlags; set => Radar.CarIdxPaceFlags = value; }
+        public int[] CarIdxPaceLine { get => Radar.CarIdxPaceLine; set => Radar.CarIdxPaceLine = value; }
+        public int[] CarIdxPaceRow { get => Radar.CarIdxPaceRow; set => Radar.CarIdxPaceRow = value; }
+        public int[] CarIdxTrackSurfaceMaterial { get => Radar.CarIdxTrackSurfaceMaterial; set => Radar.CarIdxTrackSurfaceMaterial = value; }
         public bool IsMultiClassSession { get; set; }
         public string CarAheadName { get; set; } = string.Empty;
         public string CarBehindName { get; set; } = string.Empty;
