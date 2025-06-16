@@ -16,6 +16,7 @@ namespace SuperBackendNR85IA.Models
         [JsonPropertyName("tyres")] public TyrePayload? Tyres { get; set; }
         [JsonPropertyName("sectorsDelta")] public SectorsDeltaPayload? SectorsDelta { get; set; }
         [JsonPropertyName("weather")] public WeatherPayload? Weather { get; set; }
+        [JsonPropertyName("sessionInfoYaml")] public string SessionInfoYaml { get; set; } = string.Empty;
     }
 
 
