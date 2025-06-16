@@ -14,6 +14,7 @@ namespace SuperBackendNR85IA.Models
         [JsonPropertyName("proximityCars")] public List<ProximityCar>? ProximityCars { get; set; }
         [JsonPropertyName("tyres")] public TyrePayload? Tyres { get; set; }
         [JsonPropertyName("sectorsDelta")] public SectorsDeltaPayload? SectorsDelta { get; set; }
+        [JsonPropertyName("weather")] public WeatherPayload? Weather { get; set; }
     }
 
 

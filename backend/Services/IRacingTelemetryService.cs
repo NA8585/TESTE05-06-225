@@ -530,6 +530,23 @@ namespace SuperBackendNR85IA.Services
                     LapLastLapTime = t.LapLastLapTime,
                     LapCurrentLapTime = t.LapCurrentLapTime
                 }
+                ,Weather = new WeatherPayload
+                {
+                    AirTemp = t.AirTemp,
+                    TrackTemp = t.TrackSurfaceTemp,
+                    TrackTempCrew = t.TrackTempCrew,
+                    Humidity = t.RelativeHumidity,
+                    PressureMb = t.AirPressure,
+                    Precipitation = t.Precipitation,
+                    FogLevel = t.FogLevel,
+                    SolarAltitude = t.SolarAltitude,
+                    SolarAzimuth = t.SolarAzimuth,
+                    WindVel = t.TrackWindVel,
+                    WindDir = t.WindDir,
+                    WeatherDeclaredWet = t.WeatherDeclaredWet,
+                    TrackGripStatus = t.TrackGripStatus,
+                    Forecast = t.ForecastType
+                }
             };
         }
 
