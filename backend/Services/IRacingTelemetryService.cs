@@ -514,6 +514,22 @@ namespace SuperBackendNR85IA.Services
                     TreadLR = t.Tyres.TreadLR,
                     TreadRR = t.Tyres.TreadRR,
                     Compound = t.Tyres.Compound
+                },
+                Damage = new DamagePayload
+                {
+                    LfDamage = t.Damage.LfDamage,
+                    RfDamage = t.Damage.RfDamage,
+                    LrDamage = t.Damage.LrDamage,
+                    RrDamage = t.Damage.RrDamage,
+                    FrontWingDamage = t.Damage.FrontWingDamage,
+                    RearWingDamage = t.Damage.RearWingDamage,
+                    EngineDamage = t.Damage.EngineDamage,
+                    GearboxDamage = t.Damage.GearboxDamage,
+                    SuspensionDamage = t.Damage.SuspensionDamage,
+                    ChassisDamage = t.Damage.ChassisDamage,
+                    PlayerCarWeightPenalty = t.Damage.PlayerCarWeightPenalty,
+                    PlayerCarPowerAdjust = t.Damage.PlayerCarPowerAdjust,
+                    PlayerCarTowTime = t.Damage.PlayerCarTowTime
                 }
             };
         }
