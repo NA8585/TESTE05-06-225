@@ -797,6 +797,11 @@ namespace SuperBackendNR85IA.Services
                 {
                     _log.LogWarning(ex, "Failed to parse LastHotPressure from session YAML.");
                 }
+                // Persist parsed hot pressures so they are available on subsequent ticks
+                if (t.Tyres.LfLastHotPress > 0f) _lfLastHotPress = t.Tyres.LfLastHotPress;
+                if (t.Tyres.RfLastHotPress > 0f) _rfLastHotPress = t.Tyres.RfLastHotPress;
+                if (t.Tyres.LrLastHotPress > 0f) _lrLastHotPress = t.Tyres.LrLastHotPress;
+                if (t.Tyres.RrLastHotPress > 0f) _rrLastHotPress = t.Tyres.RrLastHotPress;
                 if (t.Tyres.LfLastHotPress == 0f && t.Tyres.RfLastHotPress == 0f && t.Tyres.LrLastHotPress == 0f)
                     _log.LogInformation("Last hot tire pressures not available (no data in YAML after pit).");
             }
