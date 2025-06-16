@@ -6,8 +6,11 @@ namespace SuperBackendNR85IA.Models
         public int CarIdx { get; set; }
         public float FastestTime { get; set; }
         public float LastTime { get; set; }
+        public float Time { get; set; }
+        public float Interval { get; set; }
         public bool OnPitRoad { get; set; }
         public bool InGarage { get; set; }
         public int PitStopCount { get; set; }
+        public int NewIRating { get; set; }
     }
 }
