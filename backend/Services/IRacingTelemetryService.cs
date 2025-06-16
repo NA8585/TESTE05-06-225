@@ -514,6 +514,21 @@ namespace SuperBackendNR85IA.Services
                     TreadLR = t.Tyres.TreadLR,
                     TreadRR = t.Tyres.TreadRR,
                     Compound = t.Tyres.Compound
+                },
+                SectorsDelta = new SectorsDeltaPayload
+                {
+                    SectorCount = t.SectorCount,
+                    LapAllSectorTimes = t.LapAllSectorTimes,
+                    SessionBestSectorTimes = t.SessionBestSectorTimes,
+                    LapDeltaToSessionBestSectorTimes = t.LapDeltaToSessionBestSectorTimes,
+                    SectorIsBest = t.SectorIsBest,
+                    LapDeltaToSessionBestLap = t.LapDeltaToSessionBestLap,
+                    LapDeltaToSessionOptimalLap = t.LapDeltaToSessionOptimalLap,
+                    LapDeltaToDriverBestLap = t.LapDeltaToDriverBestLap,
+                    EstLapTime = t.EstLapTime,
+                    LapBestLapTime = t.LapBestLapTime,
+                    LapLastLapTime = t.LapLastLapTime,
+                    LapCurrentLapTime = t.LapCurrentLapTime
                 }
             };
         }
