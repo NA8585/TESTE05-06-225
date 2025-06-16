@@ -67,7 +67,8 @@ namespace SuperBackendNR85IA.Services
                 CarClassShortName = GetStr(node, "CarClassShortName"),
                 CarClassRelSpeed  = GetFloat(node, "CarClassRelSpeed"),
                 CarClassEstLapTime = GetFloat(node, "CarClassEstLapTime"),
-                TireCompound      = GetTireCompound(node)
+                TireCompound      = GetTireCompound(node),
+                TeamIncidentCount = GetInt(node, "TeamIncidentCount")
             };
         }
 
@@ -97,7 +98,8 @@ namespace SuperBackendNR85IA.Services
                     CarClassShortName = GetStr(child, "CarClassShortName"),
                     CarClassRelSpeed  = GetFloat(child, "CarClassRelSpeed"),
                     CarClassEstLapTime = GetFloat(child, "CarClassEstLapTime"),
-                    TireCompound      = GetTireCompound(child)
+                    TireCompound      = GetTireCompound(child),
+                    TeamIncidentCount = GetInt(child, "TeamIncidentCount")
                 });
             }
 
@@ -166,11 +168,14 @@ namespace SuperBackendNR85IA.Services
                                       {
                                           Position = GetInt(p, "Position"),
                                           CarIdx = GetInt(p, "CarIdx"),
+                                          Time = GetFloat(p, "Time"),
+                                          Interval = GetFloat(p, "Interval"),
                                           FastestTime = GetFloat(p, "FastestTime"),
                                           LastTime = GetFloat(p, "LastTime"),
                                           OnPitRoad = GetBool(p, "OnPitRoad"),
                                           InGarage = GetBool(p, "InGarage"),
-                                          PitStopCount = GetInt(p, "PitStopCount")
+                                          PitStopCount = GetInt(p, "PitStopCount"),
+                                          NewIRating = GetInt(p, "NewIRating")
                                       }).ToList();
                               }
                               return sd;
