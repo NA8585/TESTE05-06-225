@@ -18,5 +18,6 @@ namespace SuperBackendNR85IA.Models
         public float  CarClassRelSpeed  { get; set; }
         public float  CarClassEstLapTime { get; set; }
         public string TireCompound { get; set; } = string.Empty;
+        public int    TeamIncidentCount { get; set; }
     }
 }
