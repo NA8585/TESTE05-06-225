@@ -593,7 +593,8 @@ namespace SuperBackendNR85IA.Services
                     WeatherDeclaredWet = t.WeatherDeclaredWet,
                     TrackGripStatus = t.TrackGripStatus,
                     Forecast = t.ForecastType
-                }
+                },
+                SessionInfoYaml = t.SessionInfoYaml
             };
         }
 
