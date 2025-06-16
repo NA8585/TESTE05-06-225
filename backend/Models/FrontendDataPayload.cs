@@ -14,20 +14,6 @@ namespace SuperBackendNR85IA.Models
         [JsonPropertyName("proximityCars")] public List<ProximityCar>? ProximityCars { get; set; }
     }
 
-    // --- Sub-classes para cada parte do payload ---
-    public class TelemetryPayload
-    {
-        [JsonPropertyName("playerCarIdx")] public int PlayerCarIdx { get; set; }
-        [JsonPropertyName("sessionTime")] public float SessionTime { get; set; }
-        [JsonPropertyName("sessionTimeRemain")] public float SessionTimeRemain { get; set; }
-        [JsonPropertyName("lapCompleted")] public int LapCompleted { get; set; }
-        [JsonPropertyName("sessionLapsRemain")] public int SessionLapsRemain { get; set; }
-        [JsonPropertyName("trackTemp")] public float TrackTemp { get; set; }
-        [JsonPropertyName("trackTempCrew")] public float TrackTempCrew { get; set; }
-        [JsonPropertyName("dcBrakeBias")] public float DcBrakeBias { get; set; }
-        [JsonPropertyName("trackWetnessPCA")] public float TrackWetnessPCA { get; set; }
-        [JsonPropertyName("playerCarMyIncidentCount")] public int PlayerCarMyIncidentCount { get; set; }
-    }
 
     public class DriverPayload
     {
