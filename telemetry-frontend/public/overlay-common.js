@@ -5,8 +5,9 @@ function overlayHost() {
   return host && host.length > 0 ? host : 'localhost';
 }
 
-function initOverlayWebSocket(onData) {
-  const url = window.OVERLAY_WS_URL || `ws://${overlayHost()}:5221/ws`;
+function initOverlayWebSocket(onData, params = {}) {
+  const query = Object.keys(params).length > 0 ? '?' + new URLSearchParams(params).toString() : '';
+  const url = (window.OVERLAY_WS_URL || `ws://${overlayHost()}:5221/ws`) + query;
   console.log('[Overlay] connecting to', url);
   function connect() {
     socket = new WebSocket(url);
