@@ -620,6 +620,8 @@
         const ctx = canvas.getContext('2d');
         let throttle = 0, brake = 0, steer = 0;
         let latestData = null;
+        let hasNewData = false;
+
 
         function drawTimeline(t, b, s) {
             timeline.throttle.push(t); if (timeline.throttle.length > timeline.max) timeline.throttle.shift();
@@ -726,10 +728,15 @@
             initOverlayWebSocket(data => {
                 if (typeof data.throttle !== 'undefined') {
                     latestData = data;
+                    hasNewData = true;
                 }
             });
             function animationLoop() {
-                if (latestData) updateOverlayData(latestData);
+                if (hasNewData && latestData) {
+                    updateOverlayData(latestData);
+                    hasNewData = false;
+                }
+
                 window.requestAnimationFrame(animationLoop);
             }
             animationLoop();
