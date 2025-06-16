@@ -463,6 +463,52 @@ namespace SuperBackendNR85IA.Services
                 NewIRating = r.NewIRating
             }).ToList();
 
+            RadarRelativePayload? radarRelative = null;
+            if (t.CarIdxPosition.Length > 0)
+            {
+                int count = t.CarIdxPosition.Length;
+                radarRelative = new RadarRelativePayload
+                {
+                    PlayerCarIdx = t.PlayerCarIdx,
+                    TrackLength = t.TrackLength,
+                    RadarCars = Enumerable.Range(0, count)
+                        .Select(idx =>
+                        {
+                            float posX = 0f, posY = 0f;
+                            if (idx < t.CarIdxLapDistPct.Length)
+                            {
+                                double ang = t.CarIdxLapDistPct[idx] * 2.0 * Math.PI;
+                                posX = (float)Math.Cos(ang);
+                                posY = (float)Math.Sin(ang);
+                            }
+
+                            bool onPit = idx < t.CarIdxOnPitRoad.Length && t.CarIdxOnPitRoad[idx];
+
+                            return new RadarCarPayload
+                            {
+                                CarIdx = idx,
+                                PosX = posX,
+                                PosY = posY,
+                                Gap = idx < t.CarIdxF2Time.Length ? t.CarIdxF2Time[idx] : 0f,
+                                DeltaLap = (idx < t.CarIdxLap.Length ? t.CarIdxLap[idx] : 0) - t.Lap,
+                                OnPitRoad = onPit,
+                                TrackSurface = idx < t.CarIdxTrackSurface.Length ? t.CarIdxTrackSurface[idx] : 0,
+                                CarClassId = idx < t.CarIdxCarClassIds.Length ? t.CarIdxCarClassIds[idx] : 0,
+                                CarClassShortName = idx < t.CarIdxCarClassShortNames.Length ? t.CarIdxCarClassShortNames[idx] : string.Empty,
+                                UserName = idx < t.CarIdxUserNames.Length ? t.CarIdxUserNames[idx] : string.Empty,
+                                CarNumber = idx < t.CarIdxCarNumbers.Length ? t.CarIdxCarNumbers[idx] : string.Empty,
+                                License = idx < t.CarIdxLicStrings.Length ? t.CarIdxLicStrings[idx] : string.Empty,
+                                IRating = idx < t.CarIdxIRatings.Length ? t.CarIdxIRatings[idx] : 0,
+                                TireCompound = idx < t.CarIdxTireCompounds.Length ? t.CarIdxTireCompounds[idx] : string.Empty,
+                                IsFastestLap = idx < t.CarIdxBestLapTime.Length && Math.Abs(t.CarIdxBestLapTime[idx] - t.LapBestLapTime) < 1e-4f,
+                                IsSameClass = idx < t.CarIdxCarClassIds.Length && t.CarIdxCarClassIds[idx] == t.PlayerCarClassID,
+                                IsPlayer = idx == t.PlayerCarIdx
+                            };
+                        })
+                        .ToArray()
+                };
+            }
+
             return new FrontendDataPayload
             {
                 Telemetry = t,
@@ -471,6 +517,7 @@ namespace SuperBackendNR85IA.Services
                 WeekendInfo = weekendInfo,
                 Results = results ?? new List<ResultPayload>(),
                 ProximityCars = null,
+                RadarRelative = radarRelative,
                 Tyres = new TyrePayload
                 {
                     LfPress = t.Tyres.LfPress,
