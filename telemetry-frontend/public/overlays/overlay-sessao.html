@@ -406,10 +406,7 @@
 
         </div> </div> </div> <script>
     const q = s => document.querySelector(s);
-    // Use custom WS URL if provided, otherwise match the page's host
-    const wsUrl = window.OVERLAY_WS_URL ||
-        ((location.protocol === 'https:' ? 'wss' : 'ws') + '://' +
-         (location.hostname || 'localhost') + ':5221/ws');
+    const wsUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://localhost:5221/ws';
     let ws;
     let lastFullData = null;
     const OVERLAY_NAME = 'session-overlay-detailed-v2-com-setores'; // Nome único atualizado

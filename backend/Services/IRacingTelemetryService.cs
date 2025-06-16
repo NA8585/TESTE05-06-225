@@ -38,7 +38,6 @@ namespace SuperBackendNR85IA.Services
         private bool _wasOnPitRoad = false;
         private bool _initialized = false;
         private int _lastPitCount = -1;
-        private string _lastCompoundLogged = string.Empty;
         private float _lfLastHotPress;
         private float _rfLastHotPress;
         private float _lrLastHotPress;
@@ -192,20 +191,6 @@ namespace SuperBackendNR85IA.Services
             UpdateLastHotPress(t);
             await ApplyYamlData(d, t);
             RunCustomCalculations(d, t);
-            if (!string.IsNullOrEmpty(t.Tyres.Compound))
-            {
-                t.CompoundConfirmed = true;
-                if (_lastCompoundLogged != t.Tyres.Compound)
-                {
-                    _lastCompoundLogged = t.Tyres.Compound;
-                    _log.LogInformation($"Tire compound detected: {t.Tyres.Compound}");
-                }
-            }
-            else
-            {
-                t.CompoundConfirmed = false;
-            }
-
             TelemetryCalculations.SanitizeModel(t);
             await PersistCarTrackData(t);
 
@@ -463,52 +448,6 @@ namespace SuperBackendNR85IA.Services
                 NewIRating = r.NewIRating
             }).ToList();
 
-            RadarRelativePayload? radarRelative = null;
-            if (t.CarIdxPosition.Length > 0)
-            {
-                int count = t.CarIdxPosition.Length;
-                radarRelative = new RadarRelativePayload
-                {
-                    PlayerCarIdx = t.PlayerCarIdx,
-                    TrackLength = t.TrackLength,
-                    RadarCars = Enumerable.Range(0, count)
-                        .Select(idx =>
-                        {
-                            float posX = 0f, posY = 0f;
-                            if (idx < t.CarIdxLapDistPct.Length)
-                            {
-                                double ang = t.CarIdxLapDistPct[idx] * 2.0 * Math.PI;
-                                posX = (float)Math.Cos(ang);
-                                posY = (float)Math.Sin(ang);
-                            }
-
-                            bool onPit = idx < t.CarIdxOnPitRoad.Length && t.CarIdxOnPitRoad[idx];
-
-                            return new RadarCarPayload
-                            {
-                                CarIdx = idx,
-                                PosX = posX,
-                                PosY = posY,
-                                Gap = idx < t.CarIdxF2Time.Length ? t.CarIdxF2Time[idx] : 0f,
-                                DeltaLap = (idx < t.CarIdxLap.Length ? t.CarIdxLap[idx] : 0) - t.Lap,
-                                OnPitRoad = onPit,
-                                TrackSurface = idx < t.CarIdxTrackSurface.Length ? t.CarIdxTrackSurface[idx] : 0,
-                                CarClassId = idx < t.CarIdxCarClassIds.Length ? t.CarIdxCarClassIds[idx] : 0,
-                                CarClassShortName = idx < t.CarIdxCarClassShortNames.Length ? t.CarIdxCarClassShortNames[idx] : string.Empty,
-                                UserName = idx < t.CarIdxUserNames.Length ? t.CarIdxUserNames[idx] : string.Empty,
-                                CarNumber = idx < t.CarIdxCarNumbers.Length ? t.CarIdxCarNumbers[idx] : string.Empty,
-                                License = idx < t.CarIdxLicStrings.Length ? t.CarIdxLicStrings[idx] : string.Empty,
-                                IRating = idx < t.CarIdxIRatings.Length ? t.CarIdxIRatings[idx] : 0,
-                                TireCompound = idx < t.CarIdxTireCompounds.Length ? t.CarIdxTireCompounds[idx] : string.Empty,
-                                IsFastestLap = idx < t.CarIdxBestLapTime.Length && Math.Abs(t.CarIdxBestLapTime[idx] - t.LapBestLapTime) < 1e-4f,
-                                IsSameClass = idx < t.CarIdxCarClassIds.Length && t.CarIdxCarClassIds[idx] == t.PlayerCarClassID,
-                                IsPlayer = idx == t.PlayerCarIdx
-                            };
-                        })
-                        .ToArray()
-                };
-            }
-
             return new FrontendDataPayload
             {
                 Telemetry = t,
@@ -516,85 +455,7 @@ namespace SuperBackendNR85IA.Services
                 SessionInfo = sessionInfo,
                 WeekendInfo = weekendInfo,
                 Results = results ?? new List<ResultPayload>(),
-                ProximityCars = null,
-                RadarRelative = radarRelative,
-                Tyres = new TyrePayload
-                {
-                    LfPress = t.Tyres.LfPress,
-                    RfPress = t.Tyres.RfPress,
-                    LrPress = t.Tyres.LrPress,
-                    RrPress = t.Tyres.RrPress,
-                    LfColdPress = t.Tyres.LfColdPress,
-                    RfColdPress = t.Tyres.RfColdPress,
-                    LrColdPress = t.Tyres.LrColdPress,
-                    RrColdPress = t.Tyres.RrColdPress,
-                    LfSetupPressure = t.Tyres.LfSetupPressure,
-                    RfSetupPressure = t.Tyres.RfSetupPressure,
-                    LrSetupPressure = t.Tyres.LrSetupPressure,
-                    RrSetupPressure = t.Tyres.RrSetupPressure,
-                    LfHotPressure = t.Tyres.LfHotPressure,
-                    RfHotPressure = t.Tyres.RfHotPressure,
-                    LrHotPressure = t.Tyres.LrHotPressure,
-                    RrHotPressure = t.Tyres.RrHotPressure,
-                    LfTempCl = t.Tyres.LfTempCl,
-                    LfTempCm = t.Tyres.LfTempCm,
-                    LfTempCr = t.Tyres.LfTempCr,
-                    RfTempCl = t.Tyres.RfTempCl,
-                    RfTempCm = t.Tyres.RfTempCm,
-                    RfTempCr = t.Tyres.RfTempCr,
-                    LrTempCl = t.Tyres.LrTempCl,
-                    LrTempCm = t.Tyres.LrTempCm,
-                    LrTempCr = t.Tyres.LrTempCr,
-                    RrTempCl = t.Tyres.RrTempCl,
-                    RrTempCm = t.Tyres.RrTempCm,
-                    RrTempCr = t.Tyres.RrTempCr,
-                    LfWearAvg = t.Tyres.LfWearAvg,
-                    RfWearAvg = t.Tyres.RfWearAvg,
-                    LrWearAvg = t.Tyres.LrWearAvg,
-                    RrWearAvg = t.Tyres.RrWearAvg,
-                    LfWear = t.Tyres.LfWear,
-                    RfWear = t.Tyres.RfWear,
-                    LrWear = t.Tyres.LrWear,
-                    RrWear = t.Tyres.RrWear,
-                    TreadLF = t.Tyres.TreadLF,
-                    TreadRF = t.Tyres.TreadRF,
-                    TreadLR = t.Tyres.TreadLR,
-                    TreadRR = t.Tyres.TreadRR,
-                    Compound = t.Tyres.Compound
-                },
-                SectorsDelta = new SectorsDeltaPayload
-                {
-                    SectorCount = t.SectorCount,
-                    LapAllSectorTimes = t.LapAllSectorTimes,
-                    SessionBestSectorTimes = t.SessionBestSectorTimes,
-                    LapDeltaToSessionBestSectorTimes = t.LapDeltaToSessionBestSectorTimes,
-                    SectorIsBest = t.SectorIsBest,
-                    LapDeltaToSessionBestLap = t.LapDeltaToSessionBestLap,
-                    LapDeltaToSessionOptimalLap = t.LapDeltaToSessionOptimalLap,
-                    LapDeltaToDriverBestLap = t.LapDeltaToDriverBestLap,
-                    EstLapTime = t.EstLapTime,
-                    LapBestLapTime = t.LapBestLapTime,
-                    LapLastLapTime = t.LapLastLapTime,
-                    LapCurrentLapTime = t.LapCurrentLapTime
-                }
-                ,Weather = new WeatherPayload
-                {
-                    AirTemp = t.AirTemp,
-                    TrackTemp = t.TrackSurfaceTemp,
-                    TrackTempCrew = t.TrackTempCrew,
-                    Humidity = t.RelativeHumidity,
-                    PressureMb = t.AirPressure,
-                    Precipitation = t.Precipitation,
-                    FogLevel = t.FogLevel,
-                    SolarAltitude = t.SolarAltitude,
-                    SolarAzimuth = t.SolarAzimuth,
-                    WindVel = t.TrackWindVel,
-                    WindDir = t.WindDir,
-                    WeatherDeclaredWet = t.WeatherDeclaredWet,
-                    TrackGripStatus = t.TrackGripStatus,
-                    Forecast = t.ForecastType
-                },
-                SessionInfoYaml = t.SessionInfoYaml
+                ProximityCars = null
             };
         }
 
