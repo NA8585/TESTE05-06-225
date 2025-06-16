@@ -619,6 +619,7 @@
         const canvas = document.getElementById('inputTimelineCanvas');
         const ctx = canvas.getContext('2d');
         let throttle = 0, brake = 0, steer = 0;
+        let latestData = null;
 
         function drawTimeline(t, b, s) {
             timeline.throttle.push(t); if (timeline.throttle.length > timeline.max) timeline.throttle.shift();
@@ -724,9 +725,14 @@
             isElectron = enableBrowserEditMode('wrapper', overlayHeader);
             initOverlayWebSocket(data => {
                 if (typeof data.throttle !== 'undefined') {
-                    updateOverlayData(data);
+                    latestData = data;
                 }
             });
+            function animationLoop() {
+                if (latestData) updateOverlayData(latestData);
+                window.requestAnimationFrame(animationLoop);
+            }
+            animationLoop();
         });
 
     </script>
