@@ -514,6 +514,43 @@ namespace SuperBackendNR85IA.Services
                     TreadLR = t.Tyres.TreadLR,
                     TreadRR = t.Tyres.TreadRR,
                     Compound = t.Tyres.Compound
+                },
+                CarStatus = new CarStatusPayload
+                {
+                    Speed = t.Vehicle.Speed,
+                    Rpm = t.Vehicle.Rpm,
+                    Gear = t.Vehicle.Gear,
+                    Throttle = t.Vehicle.Throttle,
+                    ThrottleRaw = t.Vehicle.ThrottleRaw,
+                    Brake = t.Vehicle.Brake,
+                    BrakeRaw = t.Vehicle.BrakeRaw,
+                    Clutch = t.Vehicle.Clutch,
+                    HandBrake = t.Vehicle.HandBrake,
+                    HandBrakeRaw = t.Vehicle.HandBrakeRaw,
+                    SteeringWheelAngle = t.Vehicle.SteeringWheelAngle,
+                    SteeringWheelAngleMax = t.Vehicle.SteeringWheelAngleMax,
+                    SteeringWheelTorque = t.Vehicle.SteeringWheelTorque,
+                    SteeringWheelPeakForceNm = t.Vehicle.SteeringWheelPeakForceNm,
+                    SteeringWheelPctDamper = t.Vehicle.SteeringWheelPctDamper,
+                    SteeringWheelPctTorque = t.Vehicle.SteeringWheelPctTorque,
+                    BrakeABSactive = t.Vehicle.BrakeABSactive,
+                    BrakeABSCutPct = t.Vehicle.BrakeABSCutPct,
+                    FuelLevel = t.Vehicle.FuelLevel,
+                    FuelLevelPct = t.Vehicle.FuelLevelPct,
+                    FuelUsePerLap = t.FuelUsePerLap,
+                    FuelUsePerLapCalc = t.FuelUsePerLapCalc,
+                    ConsumoMedio = t.ConsumoMedio,
+                    VoltasRestantesMedio = t.VoltasRestantesMedio,
+                    WaterTemp = t.Vehicle.WaterTemp,
+                    OilTemp = t.Vehicle.OilTemp,
+                    OilPress = t.Vehicle.OilPress,
+                    FuelPress = t.Vehicle.FuelPress,
+                    ManifoldPress = t.Vehicle.ManifoldPress,
+                    EngineWarnings = t.Vehicle.EngineWarnings,
+                    OnPitRoad = t.Vehicle.OnPitRoad,
+                    YawRate = t.Vehicle.YawRate,
+                    PitchRate = t.Vehicle.PitchRate,
+                    RollRate = t.Vehicle.RollRate
                 }
             };
         }
