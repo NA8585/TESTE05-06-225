@@ -145,7 +145,8 @@ namespace SuperBackendNR85IA.Services
                             TelemetryCalculationsOverlay.PreencherOverlayDelta(ref telemetryModel);
                             TelemetryCalculations.SanitizeModel(telemetryModel);
 
-                            await _broadcaster.BroadcastTelemetry(telemetryModel);
+                            var payload = BuildFrontendPayload(telemetryModel);
+                            await _broadcaster.BroadcastTelemetry(payload);
                         }
                         _lastTick = _sdk.Data.TickCount;
                     }
@@ -406,6 +407,56 @@ namespace SuperBackendNR85IA.Services
                     $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
                     $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
             }
+        }
+
+        private FrontendDataPayload BuildFrontendPayload(TelemetryModel t)
+        {
+            var drivers = t.YamlDrivers?.Select(d => new DriverPayload
+            {
+                CarIdx = d.CarIdx,
+                UserName = d.UserName,
+                IRating = d.IRating,
+                LicLevel = d.LicLevel,
+                LicSubLevel = d.LicSubLevel,
+                CarClassID = d.CarClassID,
+                CarClassShortName = d.CarClassShortName,
+                CarPath = d.CarPath,
+                TeamIncidentCount = d.TeamIncidentCount
+            }).ToList();
+
+            var sessionInfo = t.YamlSessionInfo == null ? null : new SessionInfoPayload
+            {
+                SessionType = t.YamlSessionInfo.SessionType ?? string.Empty,
+                IncidentLimit = t.YamlSessionInfo.IncidentLimit,
+                CurrentSessionTotalLaps = t.YamlSessionInfo.CurrentSessionTotalLaps
+            };
+
+            var weekendInfo = t.YamlWeekendInfo == null ? null : new WeekendInfoPayload
+            {
+                TrackDisplayName = t.YamlWeekendInfo.TrackDisplayName ?? string.Empty,
+                TrackAirTemp = t.YamlWeekendInfo.TrackAirTemp
+            };
+
+            var results = t.Results?.Select(r => new ResultPayload
+            {
+                CarIdx = r.CarIdx,
+                Position = r.Position,
+                Time = r.Time,
+                Interval = r.Interval,
+                FastestTime = r.FastestTime,
+                LastTime = r.LastTime,
+                NewIRating = r.NewIRating
+            }).ToList();
+
+            return new FrontendDataPayload
+            {
+                Telemetry = t,
+                Drivers = drivers ?? new List<DriverPayload>(),
+                SessionInfo = sessionInfo,
+                WeekendInfo = weekendInfo,
+                Results = results ?? new List<ResultPayload>(),
+                ProximityCars = null
+            };
         }
 
         private void StartSdkWithFlags()

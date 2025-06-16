@@ -6,7 +6,7 @@ namespace SuperBackendNR85IA.Models
     // Classe principal enviada ao frontend
     public class FrontendDataPayload
     {
-        [JsonPropertyName("telemetry")] public TelemetryPayload? Telemetry { get; set; }
+        [JsonPropertyName("telemetry")] public TelemetryModel? Telemetry { get; set; }
         [JsonPropertyName("drivers")] public List<DriverPayload>? Drivers { get; set; }
         [JsonPropertyName("sessionInfo")] public SessionInfoPayload? SessionInfo { get; set; }
         [JsonPropertyName("weekendInfo")] public WeekendInfoPayload? WeekendInfo { get; set; }
