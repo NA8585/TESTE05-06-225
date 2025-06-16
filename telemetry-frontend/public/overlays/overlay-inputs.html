@@ -622,6 +622,7 @@
         let latestData = null;
         let hasNewData = false;
 
+
         function drawTimeline(t, b, s) {
             timeline.throttle.push(t); if (timeline.throttle.length > timeline.max) timeline.throttle.shift();
             timeline.brake.push(b);    if (timeline.brake.length > timeline.max) timeline.brake.shift();
@@ -735,6 +736,7 @@
                     updateOverlayData(latestData);
                     hasNewData = false;
                 }
+
                 window.requestAnimationFrame(animationLoop);
             }
             animationLoop();
