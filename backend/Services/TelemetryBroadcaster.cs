@@ -89,7 +89,7 @@ namespace SuperBackendNR85IA.Services
             webSocket.Dispose();
         }
 
-        public async Task BroadcastTelemetry(TelemetryModel telemetryData)
+        public async Task BroadcastTelemetry<T>(T telemetryData)
         {
             if (telemetryData == null || !_clients.Any())
                 return;
