@@ -254,6 +254,7 @@ namespace SuperBackendNR85IA.Models
             set => TireCompound = value;
         }
         public string Compound { get => Tyres.Compound; set => Tyres.Compound = value; }
+        public bool CompoundConfirmed { get; set; }
         public int[] CarIdxGear { get => Radar.CarIdxGear; set => Radar.CarIdxGear = value; }
         public float[] CarIdxRPM { get => Radar.CarIdxRPM; set => Radar.CarIdxRPM = value; }
         public int[] CarIdxPaceFlags { get => Radar.CarIdxPaceFlags; set => Radar.CarIdxPaceFlags = value; }

@@ -38,6 +38,7 @@ namespace SuperBackendNR85IA.Services
         private bool _wasOnPitRoad = false;
         private bool _initialized = false;
         private int _lastPitCount = -1;
+        private string _lastCompoundLogged = string.Empty;
         private float _lfLastHotPress;
         private float _rfLastHotPress;
         private float _lrLastHotPress;
@@ -191,6 +192,20 @@ namespace SuperBackendNR85IA.Services
             UpdateLastHotPress(t);
             await ApplyYamlData(d, t);
             RunCustomCalculations(d, t);
+            if (!string.IsNullOrEmpty(t.Tyres.Compound))
+            {
+                t.CompoundConfirmed = true;
+                if (_lastCompoundLogged != t.Tyres.Compound)
+                {
+                    _lastCompoundLogged = t.Tyres.Compound;
+                    _log.LogInformation($"Tire compound detected: {t.Tyres.Compound}");
+                }
+            }
+            else
+            {
+                t.CompoundConfirmed = false;
+            }
+
             TelemetryCalculations.SanitizeModel(t);
             await PersistCarTrackData(t);
 
