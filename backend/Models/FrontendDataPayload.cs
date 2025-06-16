@@ -12,11 +12,6 @@ namespace SuperBackendNR85IA.Models
         [JsonPropertyName("weekendInfo")] public WeekendInfoPayload? WeekendInfo { get; set; }
         [JsonPropertyName("results")] public List<ResultPayload>? Results { get; set; }
         [JsonPropertyName("proximityCars")] public List<ProximityCar>? ProximityCars { get; set; }
-        [JsonPropertyName("radarRelative")] public RadarRelativePayload? RadarRelative { get; set; }
-        [JsonPropertyName("tyres")] public TyrePayload? Tyres { get; set; }
-        [JsonPropertyName("sectorsDelta")] public SectorsDeltaPayload? SectorsDelta { get; set; }
-        [JsonPropertyName("weather")] public WeatherPayload? Weather { get; set; }
-        [JsonPropertyName("sessionInfoYaml")] public string SessionInfoYaml { get; set; } = string.Empty;
     }
 
 

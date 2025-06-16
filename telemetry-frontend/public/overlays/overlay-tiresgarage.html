@@ -276,10 +276,8 @@
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
           <div class="hotpress text-lg font-bold" id="frt-esq-hot">0.0 psi</div>
-          <div class="text-xs text-blue-300 mt-1">PRESS ATUAL</div>
-          <div class="currpress text-lg font-bold" id="frt-esq-press">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="coldpress text-lg font-bold" id="frt-esq-cold">0.0 psi</div>
+          <div class="press text-lg font-bold" id="frt-esq-press">0.0 psi</div>
           <div class="compound-indicator" id="frt-esq-compound">S</div>
           <div class="compound-name text-xs mt-1" id="frt-esq-compound-name">-</div>
         </div>
@@ -305,10 +303,8 @@
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
           <div class="hotpress text-lg font-bold" id="frt-dir-hot">0.0 psi</div>
-          <div class="text-xs text-blue-300 mt-1">PRESS ATUAL</div>
-          <div class="currpress text-lg font-bold" id="frt-dir-press">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="coldpress text-lg font-bold" id="frt-dir-cold">0.0 psi</div>
+          <div class="press text-lg font-bold" id="frt-dir-press">0.0 psi</div>
           <div class="compound-indicator" id="frt-dir-compound">S</div>
           <div class="compound-name text-xs mt-1" id="frt-dir-compound-name">-</div>
         </div>
@@ -334,10 +330,8 @@
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
           <div class="hotpress text-lg font-bold" id="trs-esq-hot">0.0 psi</div>
-          <div class="text-xs text-blue-300 mt-1">PRESS ATUAL</div>
-          <div class="currpress text-lg font-bold" id="trs-esq-press">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="coldpress text-lg font-bold" id="trs-esq-cold">0.0 psi</div>
+          <div class="press text-lg font-bold" id="trs-esq-press">0.0 psi</div>
           <div class="compound-indicator" id="trs-esq-compound">S</div>
           <div class="compound-name text-xs mt-1" id="trs-esq-compound-name">-</div>
         </div>
@@ -363,10 +357,8 @@
           </div>
           <div class="text-xs text-blue-300 mt-1">PRESS QUENTE</div>
           <div class="hotpress text-lg font-bold" id="trs-dir-hot">0.0 psi</div>
-          <div class="text-xs text-blue-300 mt-1">PRESS ATUAL</div>
-          <div class="currpress text-lg font-bold" id="trs-dir-press">0.0 psi</div>
           <div class="text-xs text-blue-300 mt-1">PRESS FRIA</div>
-          <div class="coldpress text-lg font-bold" id="trs-dir-cold">0.0 psi</div>
+          <div class="press text-lg font-bold" id="trs-dir-press">0.0 psi</div>
           <div class="compound-indicator" id="trs-dir-compound">S</div>
           <div class="compound-name text-xs mt-1" id="trs-dir-compound-name">-</div>
         </div>
@@ -794,14 +786,14 @@
         lastR_el.textContent = `${tireData.lastTemp.right.toFixed(0)}°C`;
       }
 
-      // Update pressures
-      const hotVal = tireData.lastHotPressure ?? 0;
-      const currVal = tireData.pressure ?? 0;
-      const coldVal = tireData.coldPressure ?? 0;
+      // Update final pressure
+      const hotVal = tireData.hotPressure ??
+                      tireData.lastHotPressure ??
+                      tireData.pressure ?? 0;
 
+      const coldVal = tireData.coldPressure ?? tireData.pressure ?? 0;
       getTireElement(tireId, 'hot').textContent = `${hotVal.toFixed(1)} psi`;
-      getTireElement(tireId, 'press').textContent = `${currVal.toFixed(1)} psi`;
-      getTireElement(tireId, 'cold').textContent = `${coldVal.toFixed(1)} psi`;
+      getTireElement(tireId, 'press').textContent = `${coldVal.toFixed(1)} psi`;
 
       // Update compound indicator and tire container border
       const compoundEl = getTireElement(tireId, 'compound');
@@ -958,8 +950,8 @@
         tireMap.forEach(({id, iRacingKey}) => {
             const tObj = tires[iRacingKey];
             if (tObj) {
-                tObj.coldTemp = tObj.coldTemp || tObj.temp;
-                tObj.coldPressure = tObj.coldPressure ?? tObj.pressure;
+                tObj.coldTemp = globalState.startTemps[iRacingKey] || tObj.coldTemp || tObj.temp;
+                tObj.coldPressure = globalState.startPressures[iRacingKey] ?? tObj.coldPressure ?? tObj.pressure;
 
                 updateTireUI(id, tObj);
             }
