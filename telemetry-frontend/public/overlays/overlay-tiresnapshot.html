@@ -16,11 +16,11 @@
   </style>
 </head>
 <body>
+
   <div class="info" id="info"></div>
   <div class="container" id="container"></div>
   <script type="module">
     import { initOverlayWebSocket } from '../overlay-common.js';
-
     const container = document.getElementById('container');
     const info = document.getElementById('info');
     const FIELD_ORDER = [
@@ -64,6 +64,7 @@
       longitudinalAcceleration: 'Lon Acc',
       tireCompound: 'Compound'
     };
+
     function createTire(label) {
       const wrap = document.createElement('div');
       wrap.className = 'tire';
@@ -75,6 +76,7 @@
       container.appendChild(wrap);
       return table;
     }
+
     function createInfoTable() {
       const table = document.createElement('table');
       info.appendChild(table);
@@ -86,8 +88,8 @@
       rearLeft: createTire('Rear Left'),
       rearRight: createTire('Rear Right'),
     };
-    const infoTable = createInfoTable();
 
+    const infoTable = createInfoTable();
     function renderRow(tbl, prop, val) {
       const tr = document.createElement('tr');
       const td1 = document.createElement('td');
@@ -97,7 +99,6 @@
       tr.append(td1, td2);
       tbl.appendChild(tr);
     }
-
     function updateInfo(snapshot) {
       infoTable.innerHTML = '';
       INFO_FIELDS.forEach(f => {
@@ -116,6 +117,7 @@
         FIELD_ORDER.forEach(f => {
           renderRow(tbl, LABELS[f] || f, tire[f]);
         });
+
       });
     }
 
