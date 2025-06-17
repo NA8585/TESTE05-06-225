@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq; // Para usar FirstOrDefault
 using System.Threading;
 using System.Threading.Tasks;
-using irsdksharper; // Biblioteca correta
+using IRSDKSharper; // Biblioteca correta
 using Newtonsoft.Json;
 using YamlDotNet.Serialization; // Para desserializar YAML
 using YamlDotNet.Serialization.NamingConventions;
@@ -46,7 +46,7 @@ public class TireDataCollector
 
         irsdkClient = new IrSdkClient();
 
-        // irsdksharper utiliza eventos para notificar novas amostras
+        // IRSDKSharper utiliza eventos para notificar novas amostras
         irsdkClient.OnNewData += OnTelemetryUpdated;
         irsdkClient.OnSessionInfoUpdated += OnSessionInfoUpdated;
         irsdkClient.OnConnected += OnConnected;
