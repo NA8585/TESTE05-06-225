@@ -401,37 +401,176 @@ namespace SuperBackendNR85IA.Services
             t.Tyres.RrTempCm = GetSdkValue<float>(d, "RRtempCM") ?? 0f;
             t.Tyres.RrTempCr = GetSdkValue<float>(d, "RRtempCR") ?? 0f;
 
-            // Legacy pressure and wear data is currently disabled. Set defaults
-            // so the rest of the system receives zeroed values while the new
-            // implementation is developed.
-            t.Tyres.LfColdPress = 0f;
-            t.Tyres.RfColdPress = 0f;
-            t.Tyres.LrColdPress = 0f;
-            t.Tyres.RrColdPress = 0f;
-            t.Tyres.LfHotPressure = 0f;
-            t.Tyres.RfHotPressure = 0f;
-            t.Tyres.LrHotPressure = 0f;
-            t.Tyres.RrHotPressure = 0f;
-            t.Tyres.LfPress = 0f;
-            t.Tyres.RfPress = 0f;
-            t.Tyres.LrPress = 0f;
-            t.Tyres.RrPress = 0f;
-            t.Tyres.LfWear = Array.Empty<float>();
-            t.Tyres.RfWear = Array.Empty<float>();
-            t.Tyres.LrWear = Array.Empty<float>();
-            t.Tyres.RrWear = Array.Empty<float>();
-            t.Tyres.LfTreadRemainingParts = Array.Empty<float>();
-            t.Tyres.RfTreadRemainingParts = Array.Empty<float>();
-            t.Tyres.LrTreadRemainingParts = Array.Empty<float>();
-            t.Tyres.RrTreadRemainingParts = Array.Empty<float>();
-            t.Tyres.TreadRemainingFl = 0f;
-            t.Tyres.TreadRemainingFr = 0f;
-            t.Tyres.TreadRemainingRl = 0f;
-            t.Tyres.TreadRemainingRr = 0f;
-            t.Tyres.TreadLF = null;
-            t.Tyres.TreadRF = null;
-            t.Tyres.TreadLR = null;
-            t.Tyres.TreadRR = null;
+            // Cold pressures from the car setup (kPa)
+
+            float? lfColdKpa = GetSdkValue<float>(d, "LFcoldPressure");
+            float? rfColdKpa = GetSdkValue<float>(d, "RFcoldPressure");
+            float? lrColdKpa = GetSdkValue<float>(d, "LRcoldPressure");
+            float? rrColdKpa = GetSdkValue<float>(d, "RRcoldPressure");
+
+            // Current hot pressures reported by the SDK (kPa)
+            float? lfHotKpa = GetSdkValue<float>(d, "LFhotPressure");
+            float? rfHotKpa = GetSdkValue<float>(d, "RFhotPressure");
+            float? lrHotKpa = GetSdkValue<float>(d, "LRhotPressure");
+            float? rrHotKpa = GetSdkValue<float>(d, "RRhotPressure");
+
+            // Current tire pressures from telemetry (kPa)
+            float? lfKpa = GetSdkValue<float>(d, "LFpress");
+            float? rfKpa = GetSdkValue<float>(d, "RFpress");
+            float? lrKpa = GetSdkValue<float>(d, "LRpress");
+            float? rrKpa = GetSdkValue<float>(d, "RRpress");
+
+            bool onPitRoad = t.OnPitRoad;
+
+            void ApplyPressures(
+                float? cold, float? hot, float? live,
+                ref float coldField, ref float hotField, ref float liveField,
+                ref float lastHot)
+            {
+                if (cold.HasValue)
+                    coldField = KPaToPsi(cold.Value);
+
+                // Prefer hot values from the SDK, falling back to the last
+                // recorded entry when missing (service started mid-run).
+                hotField = hot.HasValue
+                    ? KPaToPsi(hot.Value)
+                    : (lastHot > 0f ? lastHot : 0f);
+
+                // Use live pressure when available, otherwise fall back to the
+                // known cold pressure so the UI always has a sensible value.
+                liveField = live.HasValue
+                    ? KPaToPsi(live.Value)
+                    : (cold.HasValue ? coldField : liveField);
+            }
+
+            float lfColdPress  = t.Tyres.LfColdPress;
+            float lfHotPress   = t.Tyres.LfHotPressure;
+            float lfPress      = t.Tyres.LfPress;
+            ApplyPressures(lfColdKpa, lfHotKpa, lfKpa,
+                ref lfColdPress,
+                ref lfHotPress,
+                ref lfPress,
+                ref _lfLastHotPress);
+            t.Tyres.LfColdPress   = lfColdPress;
+            t.Tyres.LfHotPressure = lfHotPress;
+            t.Tyres.LfPress       = lfPress;
+
+            float rfColdPress  = t.Tyres.RfColdPress;
+            float rfHotPress   = t.Tyres.RfHotPressure;
+            float rfPress      = t.Tyres.RfPress;
+            ApplyPressures(rfColdKpa, rfHotKpa, rfKpa,
+                ref rfColdPress,
+                ref rfHotPress,
+                ref rfPress,
+                ref _rfLastHotPress);
+            t.Tyres.RfColdPress   = rfColdPress;
+            t.Tyres.RfHotPressure = rfHotPress;
+            t.Tyres.RfPress       = rfPress;
+
+            float lrColdPress  = t.Tyres.LrColdPress;
+            float lrHotPress   = t.Tyres.LrHotPressure;
+            float lrPress      = t.Tyres.LrPress;
+            ApplyPressures(lrColdKpa, lrHotKpa, lrKpa,
+                ref lrColdPress,
+                ref lrHotPress,
+                ref lrPress,
+                ref _lrLastHotPress);
+            t.Tyres.LrColdPress   = lrColdPress;
+            t.Tyres.LrHotPressure = lrHotPress;
+            t.Tyres.LrPress       = lrPress;
+
+            float rrColdPress  = t.Tyres.RrColdPress;
+            float rrHotPress   = t.Tyres.RrHotPressure;
+            float rrPress      = t.Tyres.RrPress;
+            ApplyPressures(rrColdKpa, rrHotKpa, rrKpa,
+                ref rrColdPress,
+                ref rrHotPress,
+                ref rrPress,
+                ref _rrLastHotPress);
+            t.Tyres.RrColdPress   = rrColdPress;
+            t.Tyres.RrHotPressure = rrHotPress;
+            t.Tyres.RrPress       = rrPress;
+
+            if (!lfColdKpa.HasValue)
+            {
+                if (_log.IsEnabled(LogLevel.Debug))
+                    _log.LogDebug("Cold tire pressure data not available for this car (LFcoldPressure missing).");
+            }
+
+
+            if (onPitRoad)
+            {
+                t.Tyres.LfWear = new float?[] {
+                    GetSdkValue<float>(d, "LFWearL"),
+                    GetSdkValue<float>(d, "LFWearM"),
+                    GetSdkValue<float>(d, "LFWearR")
+                }.Select(v => v ?? 0f).ToArray();
+                t.Tyres.RfWear = new float?[] {
+                    GetSdkValue<float>(d, "RFWearL"),
+                    GetSdkValue<float>(d, "RFWearM"),
+                    GetSdkValue<float>(d, "RFWearR")
+                }.Select(v => v ?? 0f).ToArray();
+                t.Tyres.LrWear = new float?[] {
+                    GetSdkValue<float>(d, "LRWearL"),
+                    GetSdkValue<float>(d, "LRWearM"),
+                    GetSdkValue<float>(d, "LRWearR")
+                }.Select(v => v ?? 0f).ToArray();
+                t.Tyres.RrWear = new float?[] {
+                    GetSdkValue<float>(d, "RRWearL"),
+                    GetSdkValue<float>(d, "RRWearM"),
+                    GetSdkValue<float>(d, "RRWearR")
+                }.Select(v => v ?? 0f).ToArray();
+
+                Array.Copy(t.Tyres.LfWear, _lfLastWear, 3);
+                Array.Copy(t.Tyres.RfWear, _rfLastWear, 3);
+                Array.Copy(t.Tyres.LrWear, _lrLastWear, 3);
+                Array.Copy(t.Tyres.RrWear, _rrLastWear, 3);
+            }
+            else
+            {
+                t.Tyres.LfWear = _lfLastWear.ToArray();
+                t.Tyres.RfWear = _rfLastWear.ToArray();
+                t.Tyres.LrWear = _lrLastWear.ToArray();
+                t.Tyres.RrWear = _rrLastWear.ToArray();
+            }
+
+            t.Tyres.LfTreadRemainingParts = t.Tyres.LfWear;
+            t.Tyres.RfTreadRemainingParts = t.Tyres.RfWear;
+            t.Tyres.LrTreadRemainingParts = t.Tyres.LrWear;
+            t.Tyres.RrTreadRemainingParts = t.Tyres.RrWear;
+
+            if (onPitRoad)
+            {
+                t.Tyres.TreadRemainingFl = GetSdkValue<float>(d, "LFWearM") ?? 0f;
+                t.Tyres.TreadRemainingFr = GetSdkValue<float>(d, "RFWearM") ?? 0f;
+                t.Tyres.TreadRemainingRl = GetSdkValue<float>(d, "LRWearM") ?? 0f;
+                t.Tyres.TreadRemainingRr = GetSdkValue<float>(d, "RRWearM") ?? 0f;
+
+                _lfLastTread = t.Tyres.TreadRemainingFl;
+                _rfLastTread = t.Tyres.TreadRemainingFr;
+                _lrLastTread = t.Tyres.TreadRemainingRl;
+                _rrLastTread = t.Tyres.TreadRemainingRr;
+            }
+            else
+            {
+                t.Tyres.TreadRemainingFl = _lfLastTread;
+                t.Tyres.TreadRemainingFr = _rfLastTread;
+                t.Tyres.TreadRemainingRl = _lrLastTread;
+                t.Tyres.TreadRemainingRr = _rrLastTread;
+            }
+
+            t.Tyres.TreadLF = GetSdkValue<float>(d, "TireLF_TreadRemaining");
+            t.Tyres.TreadRF = GetSdkValue<float>(d, "TireRF_TreadRemaining");
+            t.Tyres.TreadLR = GetSdkValue<float>(d, "TireLR_TreadRemaining");
+            t.Tyres.TreadRR = GetSdkValue<float>(d, "TireRR_TreadRemaining");
+
+            _log.LogDebug(
+                $"PopulateTyres raw - Press LF:{t.Tyres.LfPress} RF:{t.Tyres.RfPress} " +
+                $"LR:{t.Tyres.LrPress} RR:{t.Tyres.RrPress}, " +
+                $"Wear LF:[{string.Join(",", t.Tyres.LfWear)}] " +
+                $"RF:[{string.Join(",", t.Tyres.RfWear)}] " +
+                $"LR:[{string.Join(",", t.Tyres.LrWear)}] " +
+                $"RR:[{string.Join(",", t.Tyres.RrWear)}]");
 
             t.BrakeTemp        = GetSdkArray<float>(d, "BrakeTemp").Select(v => v ?? 0f).ToArray();
             t.LfBrakeLinePress = GetSdkValue<float>(d, "LFbrakeLinePress") ?? 0f;
