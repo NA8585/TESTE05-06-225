@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using irsdksharper; // Usando irsdksharper
 using Microsoft.Extensions.Hosting;
-using SuperBackendNR85IA.Services;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -17,7 +16,6 @@ namespace SuperBackendNR85IA.Collectors
     // Esta classe é responsável por coletar dados de telemetria e sessão do iRacing.
     public class TireDataCollector : BackgroundService
     {
-        private readonly Services.TelemetryBroadcaster _broadcaster;
         private IrSdkClient irsdkClient;
         private CancellationTokenSource cancellationTokenSource;
         private List<TelemetrySnapshot> telemetryBatch;
@@ -41,11 +39,10 @@ namespace SuperBackendNR85IA.Collectors
         private string _currentTireCompound = "Unknown";
 
         // Desserializador para o YAML da SessionInfo
-        private IDeserializer _sessionInfoDeserializ
-        
-        public TireDataCollector(Services.TelemetryBroadcaster broadcaster)
+        private IDeserializer _sessionInfoDeserializer;
+
+        public TireDataCollector()
         {
-            _broadcaster = broadcaster;
             irsdkClient = new IrSdkClient();
             irsdkClient.OnNewData += OnTelemetryUpdated;
             irsdkClient.OnSessionInfoUpdated += OnSessionInfoUpdated;
@@ -218,8 +215,8 @@ namespace SuperBackendNR85IA.Collectors
 
             try
             {
-                await _broadcaster.BroadcastTireSnapshots(batch);
-
+                await Task.Delay(50);
+                Console.WriteLine($"Enviando lote de {batch.Count} snapshots. Primeiro timestamp: {batch[0].Timestamp:HH:mm:ss.fff}");
             }
             catch (Exception ex)
             {

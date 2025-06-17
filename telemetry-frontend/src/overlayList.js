@@ -13,6 +13,5 @@ export default [
   { name: 'Teste Final', file: 'overlay-testefinal.html' },
   { name: 'Diagnóstico Raw', file: 'overlay-diagnostico-raw.html' },
   { name: 'Tires Raw', file: 'overlay-tiresraw.html' },
-  { name: 'Tire Snapshots', file: 'overlay-tire-snapshots.html' },
   { name: 'Dados Completos', file: 'overlay-dadoscompletos.html' }
 ];
