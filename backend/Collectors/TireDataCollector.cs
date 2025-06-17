@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using IRSDKSharper; // Usando IRSDKSharper
+using irsdksharper; // Usando irsdksharper
 using Microsoft.Extensions.Hosting;
 using SuperBackendNR85IA.Services;
 using YamlDotNet.Serialization;
@@ -18,7 +18,7 @@ namespace SuperBackendNR85IA.Collectors
     public class TireDataCollector : BackgroundService
     {
         private readonly Services.TelemetryBroadcaster _broadcaster;
-        private IRacingSdk irsdkClient;
+        private IrSdkClient irsdkClient;
         private CancellationTokenSource cancellationTokenSource;
         private List<TelemetrySnapshot> telemetryBatch;
         private readonly int batchSize = 30;
@@ -46,7 +46,7 @@ namespace SuperBackendNR85IA.Collectors
         public TireDataCollector(Services.TelemetryBroadcaster broadcaster)
         {
             _broadcaster = broadcaster;
-            irsdkClient = new IRacingSdk();
+            irsdkClient = new IrSdkClient();
             irsdkClient.OnNewData += OnTelemetryUpdated;
             irsdkClient.OnSessionInfoUpdated += OnSessionInfoUpdated;
             irsdkClient.OnConnected += OnConnected;
