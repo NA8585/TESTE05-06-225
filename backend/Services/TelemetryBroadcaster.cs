@@ -127,5 +127,39 @@ namespace SuperBackendNR85IA.Services
                 }
             }
         }
+
+        public async Task BroadcastTireSnapshots(IEnumerable<Collectors.TelemetrySnapshot> snapshots)
+        {
+            if (!_clients.Any())
+                return;
+
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(snapshots, _jsonSerializerOptions);
+
+            foreach (var (clientId, info) in _clients)
+            {
+                if (info.Overlay != "tire-snapshots")
+                    continue;
+
+                var clientSocket = info.Socket;
+                if (clientSocket.State == WebSocketState.Open)
+                {
+                    var segment = new ArraySegment<byte>(bytes);
+                    try
+                    {
+                        await clientSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        _logger.LogError(ex, $"Erro ao enviar dados para o cliente WebSocket {clientId}. Removendo cliente.");
+                        await RemoveClient(clientId, clientSocket, WebSocketCloseStatus.EndpointUnavailable, "Erro durante envio");
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        _logger.LogWarning($"Tentativa de envio para cliente {clientId} com socket já disposed. Removendo.");
+                        await RemoveClient(clientId, clientSocket, WebSocketCloseStatus.EndpointUnavailable, "Socket disposed");
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tire Snapshots</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#111; color:#e2e8f0; font-family: Arial, sans-serif; margin:0; }
+    .tire { margin-bottom:0.75rem; }
+    .tire div { line-height:1.2; }
+  </style>
+</head>
+<body>
+<div id="root" class="p-2 text-xs"></div>
+<script type="module">
+import { initOverlayWebSocket } from '../overlay-common.js';
+const root = document.getElementById('root');
+
+function tireBlock(label, t) {
+  if (!t) return '';
+  const safe = n => (typeof n === 'number' ? n.toFixed(1) : '0');
+  return `<div class="tire">
+    <div class="font-bold">${label}</div>
+    <div>Press ${safe(t.currentPressure)} | Hot ${safe(t.lastHotPressure)} | Cold ${safe(t.coldPressure)}</div>
+    <div>Temp ${safe(t.currentTempInternal)}/${safe(t.currentTempMiddle)}/${safe(t.currentTempExternal)}</div>
+    <div>Core ${safe(t.coreTemp)} Last ${safe(t.lastHotTemp)} Cold ${safe(t.coldTemp)}</div>
+    <div>Wear ${safe(t.wear)} | Tread ${safe(t.treadRemaining)}</div>
+  </div>`;
+}
+
+function render(s) {
+  root.innerHTML = `
+    <div class="mb-2">Lap ${s.lapNumber} - ${(s.lapDistance*100).toFixed(1)}%</div>
+    <div class="mb-2">Compound: ${s.tireCompound}</div>
+    ${tireBlock('Front Left', s.frontLeftTire)}
+    ${tireBlock('Front Right', s.frontRightTire)}
+    ${tireBlock('Rear Left', s.rearLeftTire)}
+    ${tireBlock('Rear Right', s.rearRightTire)}
+  `;
+}
+
+function handle(data) {
+  const snap = Array.isArray(data) ? data[data.length-1] : data;
+  if (snap) render(snap);
+}
+
+initOverlayWebSocket(handle, { overlay: 'tire-snapshots' });
+</script>
+</body>
+</html>
