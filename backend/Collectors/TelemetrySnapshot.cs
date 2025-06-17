@@ -2,6 +2,8 @@
 
 using System; // Para DateTime
 
+namespace SuperBackendNR85IA.Collectors
+{
 // Esta classe representa um "instantâneo" completo dos dados de telemetria em um ponto no tempo.
 public class TelemetrySnapshot
 {
@@ -27,4 +29,6 @@ public class TelemetrySnapshot
     // Incluí-lo em cada snapshot gera redundância. Para um banco de dados,
     // seria melhor armazená-lo uma vez por sessão e referenciá-lo.
     public string TireCompound { get; set; }
+}
+
 }

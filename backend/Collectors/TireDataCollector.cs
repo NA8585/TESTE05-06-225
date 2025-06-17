@@ -2,15 +2,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq; // Para usar FirstOrDefault
 using System.Threading;
 using System.Threading.Tasks;
 using iRacingSdkWrapper;
-using Newtonsoft.Json;
+using System.Text.Json;
+using Microsoft.Extensions.Hosting;
 
+namespace SuperBackendNR85IA.Collectors
+{
 // Esta classe é responsável por coletar dados de telemetria e sessão do iRacing.
-public class TireDataCollector
+public class TireDataCollector : BackgroundService
 {
     private SdkWrapper iracingSdk;
     private CancellationTokenSource cancellationTokenSource;
@@ -48,26 +50,25 @@ public class TireDataCollector
         lastBatchSendTime = DateTime.UtcNow;
     }
 
-    // Inicia o monitoramento e a coleta de dados
-    public void StartCollecting()
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
         iracingSdk.Start();
         Console.WriteLine("Coletor de dados de telemetria iniciado. Aguardando conexão com iRacing...");
+        return Task.CompletedTask;
     }
 
-    // Para o monitoramento e a coleta de dados
-    public void StopCollecting()
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        cancellationTokenSource?.Cancel(); // Sinaliza para cancelar operações assíncronas
-        iracingSdk.Stop(); // Para o SDK
-        // Envia qualquer lote restante antes de parar completamente
+        cancellationTokenSource?.Cancel();
+        iracingSdk.Stop();
         if (telemetryBatch.Count > 0)
         {
-            _ = SendTelemetryBatchAsync(new List<TelemetrySnapshot>(telemetryBatch));
+            await SendTelemetryBatchAsync(new List<TelemetrySnapshot>(telemetryBatch));
             telemetryBatch.Clear();
         }
         Console.WriteLine("Coletor de dados de telemetria parado.");
+        await base.StopAsync(cancellationToken);
     }
 
     // Evento disparado quando o SDK se conecta ao iRacing
@@ -302,7 +303,7 @@ public class TireDataCollector
             await Task.Delay(50);
 
             // Serializa o lote de snapshots para JSON
-            var jsonBatch = JsonConvert.SerializeObject(batch, Formatting.None);
+            var jsonBatch = JsonSerializer.Serialize(batch);
 
             // Imprime uma mensagem no console (em um cenário real, você enviaria isso para uma API)
             Console.WriteLine($"Enviando lote de {batch.Count} snapshots. Primeiro timestamp: {batch[0].Timestamp:HH:mm:ss.fff}, Composto: {batch[0].TireCompound}");
@@ -323,16 +324,6 @@ public class TireDataCollector
         }
     }
 
-    // Método Main, ponto de entrada da aplicação
-    public static void Main(string[] args)
-    {
-        var collector = new TireDataCollector();
-        collector.StartCollecting();
+}
 
-        Console.WriteLine("\nColetor de Telemetria iRacing em execução. Pressione qualquer tecla para parar.");
-        Console.ReadKey(); // Espera por uma tecla para encerrar
-
-        collector.StopCollecting();
-        Console.WriteLine("Aplicação encerrada.");
-    }
 }

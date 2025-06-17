@@ -1,4 +1,6 @@
-// Esta classe representa todos os dados de um único pneu em um determinado instante.
+namespace SuperBackendNR85IA.Collectors
+{
+classe representa todos os dados de um único pneu em um determinado instante.
 public class TireData
 {
     // Pressões (geralmente em psi ou kPa, dependendo da configuração do iRacing)
@@ -30,4 +32,6 @@ public class TireData
 
     // Você pode adicionar mais propriedades aqui se o iRacing SDK fornecer e forem relevantes para sua análise,
     // como TireTempInnerAir, ou dados de suspensão específicos por roda se preferir agrupá-los aqui.
+}
+
 }
