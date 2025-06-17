@@ -43,6 +43,7 @@ public class TireDataCollector
 
     public TireDataCollector()
     {
+
         irsdkClient = new IrSdkClient();
 
         // irsdksharper utiliza eventos para notificar novas amostras
@@ -81,6 +82,51 @@ public class TireDataCollector
         Console.WriteLine("Coletor de dados de telemetria parado.");
     }
 
+    private T? GetSdkValue<T>(IRacingSdkData data, string name) where T : struct
+    {
+        if (!data.TelemetryDataProperties.TryGetValue(name, out var datum) || datum.Count == 0)
+            return null;
+
+        object? value = null;
+        if (typeof(T) == typeof(float)) value = data.GetFloat(datum);
+        else if (typeof(T) == typeof(int)) value = data.GetInt(datum);
+        else if (typeof(T) == typeof(bool)) value = data.GetBool(datum);
+        else if (typeof(T) == typeof(double)) value = data.GetDouble(datum);
+        return (T?)value;
+    }
+
+    private T[] GetSdkArray<T>(IRacingSdkData data, string name) where T : struct
+    {
+        if (!data.TelemetryDataProperties.TryGetValue(name, out var datum) || datum.Count == 0)
+            return Array.Empty<T>();
+
+        if (typeof(T) == typeof(float))
+        {
+            float[] arr = new float[datum.Count];
+            data.GetFloatArray(datum, arr, 0, datum.Count);
+            return arr.Cast<T>().ToArray();
+        }
+        if (typeof(T) == typeof(int))
+        {
+            int[] arr = new int[datum.Count];
+            data.GetIntArray(datum, arr, 0, datum.Count);
+            return arr.Cast<T>().ToArray();
+        }
+        if (typeof(T) == typeof(bool))
+        {
+            bool[] arr = new bool[datum.Count];
+            data.GetBoolArray(datum, arr, 0, datum.Count);
+            return arr.Cast<T>().ToArray();
+        }
+        if (typeof(T) == typeof(double))
+        {
+            double[] arr = new double[datum.Count];
+            data.GetDoubleArray(datum, arr, 0, datum.Count);
+            return arr.Cast<T>().ToArray();
+        }
+        return Array.Empty<T>();
+    }
+
     // Evento disparado quando o SDK se conecta ao iRacing
     private void OnConnected(object sender, EventArgs e)
     {
@@ -94,7 +140,7 @@ public class TireDataCollector
         // Reseta as inferências de frio e o composto de pneu ao conectar
         _lastInferredFLColdTemp = 0; _lastInferredFRColdTemp = 0; _lastInferredLRColdTemp = 0; _lastInferredRRColdTemp = 0;
         _lastInferredFLColdPressure = 0; _lastInferredFRColdPressure = 0; _lastInferredLRColdPressure = 0; _lastInferredRRColdPressure = 0;
-        _currentTireCompound = "Unknown"; // Será atualizado pelo OnSessionInfoUpdated
+        _currentTireCompound = "Default";
     }
 
     // Evento disparado quando o SDK se desconecta do iRacing
@@ -192,6 +238,7 @@ public class TireDataCollector
             // Popula os dados de cada pneu
             FrontLeftTire = new TireData
             {
+
                 CurrentPressure = irsdkClient.GetTelemetryValue<float>("TireLFPressure"),
                 LastHotPressure = irsdkClient.GetTelemetryValue<float>("TireLFLastHotPressure"),
                 ColdPressure = _lastInferredFLColdPressure,
