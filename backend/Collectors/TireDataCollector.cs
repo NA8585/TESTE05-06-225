@@ -41,7 +41,7 @@ namespace SuperBackendNR85IA.Collectors
         private string _currentTireCompound = "Unknown";
 
         // Desserializador para o YAML da SessionInfo
-        private IDeserializer _sessionInfoDeserializ
+        private IDeserializer _sessionInfoDeserializer;
         
         public TireDataCollector(Services.TelemetryBroadcaster broadcaster)
         {
