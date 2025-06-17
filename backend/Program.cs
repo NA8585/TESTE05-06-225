@@ -38,7 +38,8 @@ app.Map("/ws", async context =>
     {
         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
         var handler = context.RequestServices.GetRequiredService<TelemetryBroadcaster>();
-        await handler.AddClient(webSocket, context.RequestAborted); // passa o CancellationToken para permitir cancelamento gracioso
+        var overlay = context.Request.Query["overlay"].ToString();
+        await handler.AddClient(webSocket, overlay, context.RequestAborted); // passa o CancellationToken para permitir cancelamento gracioso
     }
     else
     {
