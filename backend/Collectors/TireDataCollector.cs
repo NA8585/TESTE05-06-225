@@ -143,7 +143,6 @@ public class TireDataCollector : BackgroundService
         }
     }
 
-
     // Evento disparado a cada atualização de telemetria (alta frequência)
     private void OnTelemetryUpdated(object sender, TelemetryUpdateEventArgs e)
     {
