@@ -422,7 +422,7 @@ namespace SuperBackendNR85IA.Services
             }
 
             // Snapshot simplificado de pneus e dados principais
-            payload["tireSnapshot"] = BuildTelemetrySnapshot(t);
+            payload["telemetrySnapshot"] = BuildTelemetrySnapshot(t);
 
             // Preserve old property name for overlays that expect "telemetry"
             payload["telemetry"] = t;

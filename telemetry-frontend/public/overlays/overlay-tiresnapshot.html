@@ -60,7 +60,7 @@
     }
 
     function handleData(data) {
-      if (data.tireSnapshot) update(data.tireSnapshot);
+      if (data.telemetrySnapshot) update(data.telemetrySnapshot);
     }
 
     initOverlayWebSocket(handleData);
