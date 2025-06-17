@@ -9,7 +9,7 @@ namespace SuperBackendNR85IA.Services
         private TelemetrySnapshot BuildTelemetrySnapshot(TelemetryModel t)
         {
             TireData Map(
-                float press, float lastHotPress, float coldPress,
+                float currentPress, float lastHotPress, float coldPress,
                 float tempL, float tempM, float tempR,
                 float lastHotL, float lastHotM, float lastHotR,
                 float coldL, float coldM, float coldR,
@@ -17,7 +17,7 @@ namespace SuperBackendNR85IA.Services
             {
                 return new TireData
                 {
-                    CurrentPressure = press,
+                    CurrentPressure = currentPress,
                     LastHotPressure = lastHotPress,
                     ColdPressure = coldPress,
                     CurrentTempInternal = tempL,
@@ -39,25 +39,25 @@ namespace SuperBackendNR85IA.Services
                 };
             }
 
-            var fl = Map(t.LfPress, t.LfLastHotPress, t.LfColdPress,
+            var fl = Map(t.LfHotPressure, t.LfLastHotPress, t.LfColdPress,
                 t.LfTempCl, t.LfTempCm, t.LfTempCr,
                 t.LfLastTempCl, t.LfLastTempCm, t.LfLastTempCr,
                 t.LfColdTempCl, t.LfColdTempCm, t.LfColdTempCr,
                 t.TreadRemainingFl, t.StartTreadFl);
 
-            var fr = Map(t.RfPress, t.RfLastHotPress, t.RfColdPress,
+            var fr = Map(t.RfHotPressure, t.RfLastHotPress, t.RfColdPress,
                 t.RfTempCl, t.RfTempCm, t.RfTempCr,
                 t.RfLastTempCl, t.RfLastTempCm, t.RfLastTempCr,
                 t.RfColdTempCl, t.RfColdTempCm, t.RfColdTempCr,
                 t.TreadRemainingFr, t.StartTreadFr);
 
-            var rl = Map(t.LrPress, t.LrLastHotPress, t.LrColdPress,
+            var rl = Map(t.LrHotPressure, t.LrLastHotPress, t.LrColdPress,
                 t.LrTempCl, t.LrTempCm, t.LrTempCr,
                 t.LrLastTempCl, t.LrLastTempCm, t.LrLastTempCr,
                 t.LrColdTempCl, t.LrColdTempCm, t.LrColdTempCr,
                 t.TreadRemainingRl, t.StartTreadRl);
 
-            var rr = Map(t.RrPress, t.RrLastHotPress, t.RrColdPress,
+            var rr = Map(t.RrHotPressure, t.RrLastHotPress, t.RrColdPress,
                 t.RrTempCl, t.RrTempCm, t.RrTempCr,
                 t.RrLastTempCl, t.RrLastTempCm, t.RrLastTempCr,
                 t.RrColdTempCl, t.RrColdTempCm, t.RrColdTempCr,
