@@ -13,7 +13,13 @@ namespace SuperBackendNR85IA.Services
 {
     public class TelemetryBroadcaster
     {
-        private readonly ConcurrentDictionary<Guid, WebSocket> _clients = new();
+        private class ClientInfo
+        {
+            public WebSocket Socket { get; init; } = default!;
+            public string Overlay { get; init; } = string.Empty;
+        }
+
+        private readonly ConcurrentDictionary<Guid, ClientInfo> _clients = new();
         private readonly ILogger<TelemetryBroadcaster> _logger;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
@@ -28,11 +34,11 @@ namespace SuperBackendNR85IA.Services
             _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         }
 
-        public async Task AddClient(WebSocket webSocket, CancellationToken cancellationToken)
+        public async Task AddClient(WebSocket webSocket, string overlay, CancellationToken cancellationToken)
         {
             var clientId = Guid.NewGuid();
-            _clients.TryAdd(clientId, webSocket);
-            _logger.LogInformation($"Cliente WebSocket conectado: {clientId}. Total: {_clients.Count}");
+            _clients.TryAdd(clientId, new ClientInfo { Socket = webSocket, Overlay = overlay });
+            _logger.LogInformation($"Cliente WebSocket conectado: {clientId} (overlay: {overlay}). Total: {_clients.Count}");
 
             try
             {
@@ -89,21 +95,24 @@ namespace SuperBackendNR85IA.Services
             webSocket.Dispose();
         }
 
-        public async Task BroadcastTelemetry<T>(T telemetryData)
+        public async Task BroadcastTelemetry(object fullPayload, object inputsPayload)
         {
-            if (telemetryData == null || !_clients.Any())
+            if (!_clients.Any())
                 return;
 
-            var messageBytes = JsonSerializer.SerializeToUtf8Bytes(telemetryData, _jsonSerializerOptions);
-            var messageSegment = new ArraySegment<byte>(messageBytes);
+            var fullBytes = JsonSerializer.SerializeToUtf8Bytes(fullPayload, _jsonSerializerOptions);
+            var inputsBytes = JsonSerializer.SerializeToUtf8Bytes(inputsPayload, _jsonSerializerOptions);
 
-            foreach (var (clientId, clientSocket) in _clients)
+            foreach (var (clientId, info) in _clients)
             {
+                var clientSocket = info.Socket;
                 if (clientSocket.State == WebSocketState.Open)
                 {
+                    var bytes = info.Overlay == "inputs" ? inputsBytes : fullBytes;
+                    var segment = new ArraySegment<byte>(bytes);
                     try
                     {
-                        await clientSocket.SendAsync(messageSegment, WebSocketMessageType.Text, true, CancellationToken.None);
+                        await clientSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
                     }
                     catch (WebSocketException ex)
                     {

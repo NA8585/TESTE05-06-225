@@ -68,7 +68,6 @@ public class TireDataCollector : BackgroundService
         }
         Console.WriteLine("Coletor de dados de telemetria parado.");
         await base.StopAsync(cancellationToken);
-    }
 
     private T? GetSdkValue<T>(IRacingSdkData data, string name) where T : struct
     {
@@ -143,16 +142,13 @@ public class TireDataCollector : BackgroundService
         }
     }
 
-
     // Evento disparado a cada atualização de telemetria (alta frequência)
     private void OnTelemetryUpdated(object sender, TelemetryUpdateEventArgs e)
     {
         if (cancellationTokenSource.IsCancellationRequested)
         {
             return;
-        }
-
-        var data = e.Telemetry;
+        }        var data = e.Telemetry;
 
         float speed = GetSdkValue<float>(data, "Speed") ?? 0f;
         int playerIdx = GetSdkValue<int>(data, "PlayerCarIdx") ?? 0;
@@ -188,6 +184,7 @@ public class TireDataCollector : BackgroundService
             // Popula os dados de cada pneu
             FrontLeftTire = new TireData
             {
+
                 CurrentPressure = GetSdkValue<float>(data, "LFpress") ?? 0f,
                 LastHotPressure = GetSdkValue<float>(data, "LFhotPressure") ?? 0f,
                 ColdPressure = _lastInferredFLColdPressure,
@@ -316,6 +313,7 @@ public class TireDataCollector : BackgroundService
 
             // Serializa o lote de snapshots para JSON
             var jsonBatch = JsonSerializer.Serialize(batch);
+
 
             // Imprime uma mensagem no console (em um cenário real, você enviaria isso para uma API)
             Console.WriteLine($"Enviando lote de {batch.Count} snapshots. Primeiro timestamp: {batch[0].Timestamp:HH:mm:ss.fff}, Composto: {batch[0].TireCompound}");

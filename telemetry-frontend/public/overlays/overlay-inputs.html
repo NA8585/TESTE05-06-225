@@ -730,7 +730,7 @@
                     latestData = data;
                     hasNewData = true;
                 }
-            });
+            }, { overlay: 'inputs' });
             function animationLoop() {
                 if (hasNewData && latestData) {
                     updateOverlayData(latestData);

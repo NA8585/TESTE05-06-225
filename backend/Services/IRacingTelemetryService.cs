@@ -146,7 +146,8 @@ namespace SuperBackendNR85IA.Services
                             TelemetryCalculations.SanitizeModel(telemetryModel);
 
                             var payload = BuildFrontendPayload(telemetryModel);
-                            await _broadcaster.BroadcastTelemetry(payload);
+                            var inputsPayload = BuildInputsPayload(telemetryModel);
+                            await _broadcaster.BroadcastTelemetry(payload, inputsPayload);
                         }
                         _lastTick = _sdk.Data.TickCount;
                     }
@@ -424,6 +425,17 @@ namespace SuperBackendNR85IA.Services
             payload["telemetry"] = t;
 
             return payload;
+        }
+
+        private object BuildInputsPayload(TelemetryModel t)
+        {
+            return new
+            {
+                throttle = t.Throttle,
+                brake = t.Brake,
+                steeringWheelAngle = t.SteeringWheelAngle,
+                gear = t.Gear
+            };
         }
 
         private void StartSdkWithFlags()
