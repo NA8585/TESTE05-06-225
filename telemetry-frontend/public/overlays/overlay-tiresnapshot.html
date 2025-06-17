@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tire Snapshot</title>
+  <style>
+    body { background:#111; color:#eee; font-family: sans-serif; font-size:12px; margin:0; }
+    .container { display:flex; flex-wrap:wrap; gap:1rem; padding:0.5rem; }
+    .info table { margin:0.5rem; }
+    .tire { border:1px solid #555; padding:0.5rem; }
+    .tire h3 { margin:0 0 0.25rem; font-size:14px; }
+    table { border-collapse:collapse; }
+    td { padding:0 4px; }
+    td:first-child { text-align:right; }
+  </style>
+</head>
+<body>
+  <div class="info" id="info"></div>
+  <div class="container" id="container"></div>
+  <script type="module">
+    import { initOverlayWebSocket } from '../overlay-common.js';
+
+    const container = document.getElementById('container');
+    const info = document.getElementById('info');
+    const FIELD_ORDER = [
+      'currentPressure','lastHotPressure','coldPressure',
+      'currentTempInternal','currentTempMiddle','currentTempExternal','coreTemp',
+      'lastHotTemp','coldTemp','wear','treadRemaining',
+      'slipAngle','slipRatio','load','deflection','rollVelocity',
+      'groundVelocity','lateralForce','longitudinalForce'
+    ];
+    const LABELS = {
+      currentPressure: 'Pressure',
+      lastHotPressure: 'Last Hot',
+      coldPressure: 'Cold',
+      currentTempInternal: 'Temp In',
+      currentTempMiddle: 'Temp Mid',
+      currentTempExternal: 'Temp Out',
+      coreTemp: 'Core Temp',
+      lastHotTemp: 'Last Hot Temp',
+      coldTemp: 'Cold Temp',
+      treadRemaining: 'Tread',
+      slipAngle: 'Slip Angle',
+      slipRatio: 'Slip Ratio',
+      rollVelocity: 'Roll Vel',
+      groundVelocity: 'Ground Vel',
+      lateralForce: 'Lat Force',
+      longitudinalForce: 'Long Force'
+    };
+    const INFO_FIELDS = [
+      'timestamp','lapNumber','lapDistance','speed','rpm',
+      'verticalAcceleration','lateralAcceleration','longitudinalAcceleration',
+      'tireCompound'
+    ];
+    const INFO_LABELS = {
+      timestamp: 'Time',
+      lapNumber: 'Lap',
+      lapDistance: 'Lap Dist',
+      speed: 'Speed',
+      rpm: 'RPM',
+      verticalAcceleration: 'Vert Acc',
+      lateralAcceleration: 'Lat Acc',
+      longitudinalAcceleration: 'Lon Acc',
+      tireCompound: 'Compound'
+    };
+    function createTire(label) {
+      const wrap = document.createElement('div');
+      wrap.className = 'tire';
+      const h = document.createElement('h3');
+      h.textContent = label;
+      const table = document.createElement('table');
+      wrap.appendChild(h);
+      wrap.appendChild(table);
+      container.appendChild(wrap);
+      return table;
+    }
+    function createInfoTable() {
+      const table = document.createElement('table');
+      info.appendChild(table);
+      return table;
+    }
+    const tables = {
+      frontLeft: createTire('Front Left'),
+      frontRight: createTire('Front Right'),
+      rearLeft: createTire('Rear Left'),
+      rearRight: createTire('Rear Right'),
+    };
+    const infoTable = createInfoTable();
+
+    function renderRow(tbl, prop, val) {
+      const tr = document.createElement('tr');
+      const td1 = document.createElement('td');
+      const td2 = document.createElement('td');
+      td1.textContent = prop;
+      td2.textContent = val != null ? (typeof val === 'number' ? val.toFixed(2) : val) : '-';
+      tr.append(td1, td2);
+      tbl.appendChild(tr);
+    }
+
+    function updateInfo(snapshot) {
+      infoTable.innerHTML = '';
+      INFO_FIELDS.forEach(f => {
+        renderRow(infoTable, INFO_LABELS[f] || f, snapshot[f]);
+      });
+    }
+
+    function update(snapshot) {
+      updateInfo(snapshot);
+      ['frontLeft','frontRight','rearLeft','rearRight'].forEach(key => {
+        const tbl = tables[key];
+        if (!tbl) return;
+        tbl.innerHTML = '';
+        const tire = snapshot[key + 'Tire'];
+        if (!tire) return;
+        FIELD_ORDER.forEach(f => {
+          renderRow(tbl, LABELS[f] || f, tire[f]);
+        });
+      });
+    }
+
+    function handleData(data) {
+      if (data.telemetrySnapshot) update(data.telemetrySnapshot);
+    }
+
+    initOverlayWebSocket(handleData);
+  </script>
+</body>
+</html>
