@@ -5,17 +5,16 @@ using System.Collections.Generic;
 using System.Linq; // Para usar FirstOrDefault
 using System.Threading;
 using System.Threading.Tasks;
-using IRSDKSharper; // Biblioteca correta
-using Newtonsoft.Json;
-using YamlDotNet.Serialization; // Para desserializar YAML
-using YamlDotNet.Serialization.NamingConventions;
+using IRSDKSharper;
+using System.Text.Json;
+using Microsoft.Extensions.Hosting;
 
 namespace SuperBackendNR85IA.Collectors
 {
 // Esta classe é responsável por coletar dados de telemetria e sessão do iRacing.
-public class TireDataCollector
+public class TireDataCollector : BackgroundService
 {
-    private IrSdkClient irsdkClient; // Instância do IRSDKSharper
+    private SdkWrapper iracingSdk;
     private CancellationTokenSource cancellationTokenSource;
     private List<TelemetrySnapshot> telemetryBatch; // Lista para acumular snapshots antes de enviar
     private readonly int batchSize = 30;           // Número de snapshots por lote (aprox. 0.5 segundos a 60Hz)
@@ -38,49 +37,37 @@ public class TireDataCollector
     // Variável para armazenar o composto de pneu atual (obtido da SessionInfo)
     private string _currentTireCompound = "Unknown";
 
-    // Desserializador para o YAML da SessionInfo
-    private IDeserializer _sessionInfoDeserializer;
-
     public TireDataCollector()
     {
-
-        irsdkClient = new IrSdkClient();
-
-        // IRSDKSharper utiliza eventos para notificar novas amostras
-        irsdkClient.OnNewData += OnTelemetryUpdated;
-        irsdkClient.OnSessionInfoUpdated += OnSessionInfoUpdated;
-        irsdkClient.OnConnected += OnConnected;
-        irsdkClient.OnDisconnected += OnDisconnected;
+        iracingSdk = new SdkWrapper();
+        iracingSdk.TelemetryUpdateInterval = 16; // Define a frequência de atualização da telemetria (aprox. 60Hz)
+        iracingSdk.TelemetryUpdated += OnTelemetryUpdated; // Assina o evento de atualização de telemetria
+        iracingSdk.Connected += OnConnected;       // Assina o evento de conexão
+        iracingSdk.Disconnected += OnDisconnected; // Assina o evento de desconexão
 
         telemetryBatch = new List<TelemetrySnapshot>();
         lastBatchSendTime = DateTime.UtcNow;
-
-        // Configura o desserializador YAML para camelCase (padrão do iRacing)
-        _sessionInfoDeserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
     }
 
-    // Inicia o monitoramento e a coleta de dados
-    public void StartCollecting()
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        cancellationTokenSource = new CancellationTokenSource();
-        irsdkClient.Start();
+        cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+        iracingSdk.Start();
         Console.WriteLine("Coletor de dados de telemetria iniciado. Aguardando conexão com iRacing...");
+        return Task.CompletedTask;
     }
 
-    // Para o monitoramento e a coleta de dados
-    public void StopCollecting()
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
         cancellationTokenSource?.Cancel();
-        irsdkClient.Stop();
+        iracingSdk.Stop();
         if (telemetryBatch.Count > 0)
         {
-            _ = SendTelemetryBatchAsync(new List<TelemetrySnapshot>(telemetryBatch));
+            await SendTelemetryBatchAsync(new List<TelemetrySnapshot>(telemetryBatch));
             telemetryBatch.Clear();
         }
         Console.WriteLine("Coletor de dados de telemetria parado.");
-    }
+        await base.StopAsync(cancellationToken);
 
     private T? GetSdkValue<T>(IRacingSdkData data, string name) where T : struct
     {
@@ -155,181 +142,140 @@ public class TireDataCollector
         }
     }
 
-    // Evento disparado quando as informações da sessão são atualizadas
-    private void OnSessionInfoUpdated(object sender, EventArgs e)
-    {
-        Console.WriteLine("Informações da sessão atualizadas.");
-        try
-        {
-            var sessionInfoYaml = irsdkClient.SessionInfo;
-            if (string.IsNullOrEmpty(sessionInfoYaml))
-            {
-                Console.WriteLine("SessionInfo YAML está vazio.");
-                return;
-            }
-
-            var sessionInfoData = _sessionInfoDeserializer.Deserialize<SessionInfoData>(sessionInfoYaml);
-
-            int playerCarIdx = sessionInfoData.DriverInfo.DriverCarIdx;
-            var playerDriver = sessionInfoData.DriverInfo.Drivers.FirstOrDefault(d => d.CarIdx == playerCarIdx);
-
-            if (playerDriver != null && playerDriver.CarSetup != null && playerDriver.CarSetup.Tires != null)
-            {
-                string compound = playerDriver.CarSetup.Tires.Compound;
-                if (!string.IsNullOrEmpty(compound))
-                {
-                    _currentTireCompound = compound;
-                    Console.WriteLine($"Composto de Pneu (do seu setup): {_currentTireCompound}");
-                }
-                else
-                {
-                    _currentTireCompound = sessionInfoData.WeekendInfo.WeekendOptions.TireCompound ?? "Não especificado";
-                    Console.WriteLine($"Composto de Pneu (padrão da sessão): {_currentTireCompound}");
-                }
-            }
-            else
-            {
-                _currentTireCompound = sessionInfoData.WeekendInfo.WeekendOptions.TireCompound ?? "Não especificado";
-                Console.WriteLine($"Composto de Pneu (padrão da sessão): {_currentTireCompound}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro ao obter composto de pneu da SessionInfo: {ex.Message}");
-            _currentTireCompound = "Erro";
-        }
-    }
-
     // Evento disparado a cada atualização de telemetria (alta frequência)
-    private void OnTelemetryUpdated(object sender, EventArgs e)
+    private void OnTelemetryUpdated(object sender, TelemetryUpdateEventArgs e)
     {
         if (cancellationTokenSource.IsCancellationRequested)
         {
             return;
-        }
+        }        var data = e.Telemetry;
 
-        float speed = irsdkClient.GetTelemetryValue<float>("Speed");
-        int playerCarIdx = irsdkClient.GetTelemetryValue<int>("PlayerCarIdx");
-        int[] carIdxTrackSurface = irsdkClient.GetTelemetryValue<int[]>("CarIdxTrackSurface");
-
-        bool isInPitStallAndStopped = (speed < 0.1f && carIdxTrackSurface != null &&
-                                        playerCarIdx >= 0 && playerCarIdx < carIdxTrackSurface.Length &&
-                                        carIdxTrackSurface[playerCarIdx] == (int)TrackSurface.InPitStall);
+        float speed = GetSdkValue<float>(data, "Speed") ?? 0f;
+        int playerIdx = GetSdkValue<int>(data, "PlayerCarIdx") ?? 0;
+        var surfaces = GetSdkArray<int>(data, "CarIdxTrackSurface");
+        bool isInPitStallAndStopped = speed < 0.1f &&
+            surfaces.Length > playerIdx && surfaces[playerIdx] == 1;
 
         if (isInPitStallAndStopped)
         {
-            _lastInferredFLColdTemp = irsdkClient.GetTelemetryValue<float>("TireTempCore", 0);
-            _lastInferredFRColdTemp = irsdkClient.GetTelemetryValue<float>("TireTempCore", 1);
-            _lastInferredLRColdTemp = irsdkClient.GetTelemetryValue<float>("TireTempCore", 2);
-            _lastInferredRRColdTemp = irsdkClient.GetTelemetryValue<float>("TireTempCore", 3);
+            var coreTemps = GetSdkArray<float>(data, "TireTempCore");
+            if (coreTemps.Length >= 4)
+            {
+                _lastInferredFLColdTemp = coreTemps[0];
+                _lastInferredFRColdTemp = coreTemps[1];
+                _lastInferredLRColdTemp = coreTemps[2];
+                _lastInferredRRColdTemp = coreTemps[3];
+            }
 
-            _lastInferredFLColdPressure = irsdkClient.GetTelemetryValue<float>("TireLFPressure");
-            _lastInferredFRColdPressure = irsdkClient.GetTelemetryValue<float>("TireRFPressure");
-            _lastInferredLRColdPressure = irsdkClient.GetTelemetryValue<float>("TireLRPressure");
-            _lastInferredRRColdPressure = irsdkClient.GetTelemetryValue<float>("TireRRPressure");
+            _lastInferredFLColdPressure = GetSdkValue<float>(data, "LFpress") ?? 0f;
+            _lastInferredFRColdPressure = GetSdkValue<float>(data, "RFpress") ?? 0f;
+            _lastInferredLRColdPressure = GetSdkValue<float>(data, "LRpress") ?? 0f;
+            _lastInferredRRColdPressure = GetSdkValue<float>(data, "RRpress") ?? 0f;
         }
 
-        var currentSnapshot = new TelemetrySnapshot
+        var tireTempCore = GetSdkArray<float>(data, "TireTempCore");
+
+        var snapshot = new TelemetrySnapshot
         {
             Timestamp = DateTime.UtcNow,
-            LapNumber = irsdkClient.GetTelemetryValue<int>("Lap"),
-            LapDistance = irsdkClient.GetTelemetryValue<float>("LapDistPct"),
+            LapNumber = GetSdkValue<int>(data, "Lap") ?? 0,
+            LapDistance = GetSdkValue<float>(data, "LapDistPct") ?? 0f,
 
             // Popula os dados de cada pneu
             FrontLeftTire = new TireData
             {
 
-                CurrentPressure = irsdkClient.GetTelemetryValue<float>("TireLFPressure"),
-                LastHotPressure = irsdkClient.GetTelemetryValue<float>("TireLFLastHotPressure"),
+                CurrentPressure = GetSdkValue<float>(data, "LFpress") ?? 0f,
+                LastHotPressure = GetSdkValue<float>(data, "LFhotPressure") ?? 0f,
                 ColdPressure = _lastInferredFLColdPressure,
-                CurrentTempInternal = irsdkClient.GetTelemetryValue<float>("TireTempL", 0),
-                CurrentTempMiddle = irsdkClient.GetTelemetryValue<float>("TireTempM", 0),
-                CurrentTempExternal = irsdkClient.GetTelemetryValue<float>("TireTempR", 0),
-                CoreTemp = irsdkClient.GetTelemetryValue<float>("TireTempCore", 0),
-                LastHotTemp = irsdkClient.GetTelemetryValue<float>("TireLFLastHotTemp"),
-                ColdTemp = _lastInferredFLColdTemp, // Usa o último valor inferido
-                Wear = irsdkClient.GetTelemetryValue<float>("TireLFWear"),
-                TreadRemaining = irsdkClient.GetTelemetryValue<float>("TireLFTreadRemaining"),
-                SlipAngle = irsdkClient.GetTelemetryValue<float>("TireLFSliptAngle"),
-                SlipRatio = irsdkClient.GetTelemetryValue<float>("TireLFSliptRatio"),
-                Load = irsdkClient.GetTelemetryValue<float>("TireLFLoad"),
-                Deflection = irsdkClient.GetTelemetryValue<float>("TireLFDeflection"),
-                RollVelocity = irsdkClient.GetTelemetryValue<float>("TireLFRollVel"),
-                GroundVelocity = irsdkClient.GetTelemetryValue<float>("TireLFGroundVel"),
-                LateralForce = irsdkClient.GetTelemetryValue<float>("TireLFLatForce"),
-                LongitudinalForce = irsdkClient.GetTelemetryValue<float>("TireLFLongForce")
+                CurrentTempInternal = GetSdkValue<float>(data, "LFtempCL") ?? 0f,
+                CurrentTempMiddle = GetSdkValue<float>(data, "LFtempCM") ?? 0f,
+                CurrentTempExternal = GetSdkValue<float>(data, "LFtempCR") ?? 0f,
+                CoreTemp = tireTempCore.Length > 0 ? tireTempCore[0] : 0f,
+                LastHotTemp = GetSdkValue<float>(data, "LFhotTemp") ?? 0f,
+                ColdTemp = _lastInferredFLColdTemp,
+                Wear = 0,
+                TreadRemaining = 0,
+                SlipAngle = 0,
+                SlipRatio = 0,
+                Load = 0,
+                Deflection = 0,
+                RollVelocity = 0,
+                GroundVelocity = 0,
+                LateralForce = 0,
+                LongitudinalForce = 0
             },
             FrontRightTire = new TireData
             {
-                CurrentPressure = irsdkClient.GetTelemetryValue<float>("TireRFPressure"),
-                LastHotPressure = irsdkClient.GetTelemetryValue<float>("TireRFLastHotPressure"),
+                CurrentPressure = GetSdkValue<float>(data, "RFpress") ?? 0f,
+                LastHotPressure = GetSdkValue<float>(data, "RFhotPressure") ?? 0f,
                 ColdPressure = _lastInferredFRColdPressure,
-                CurrentTempInternal = irsdkClient.GetTelemetryValue<float>("TireTempL", 1),
-                CurrentTempMiddle = irsdkClient.GetTelemetryValue<float>("TireTempM", 1),
-                CurrentTempExternal = irsdkClient.GetTelemetryValue<float>("TireTempR", 1),
-                CoreTemp = irsdkClient.GetTelemetryValue<float>("TireTempCore", 1),
-                LastHotTemp = irsdkClient.GetTelemetryValue<float>("TireRFLastHotTemp"),
+                CurrentTempInternal = GetSdkValue<float>(data, "RFtempCL") ?? 0f,
+                CurrentTempMiddle = GetSdkValue<float>(data, "RFtempCM") ?? 0f,
+                CurrentTempExternal = GetSdkValue<float>(data, "RFtempCR") ?? 0f,
+                CoreTemp = tireTempCore.Length > 1 ? tireTempCore[1] : 0f,
+                LastHotTemp = GetSdkValue<float>(data, "RFhotTemp") ?? 0f,
                 ColdTemp = _lastInferredFRColdTemp,
-                Wear = irsdkClient.GetTelemetryValue<float>("TireRFWear"),
-                TreadRemaining = irsdkClient.GetTelemetryValue<float>("TireRFTreadRemaining"),
-                SlipAngle = irsdkClient.GetTelemetryValue<float>("TireRFSliptAngle"),
-                SlipRatio = irsdkClient.GetTelemetryValue<float>("TireRFSliptRatio"),
-                Load = irsdkClient.GetTelemetryValue<float>("TireRFLoad"),
-                Deflection = irsdkClient.GetTelemetryValue<float>("TireRFDeflection"),
-                RollVelocity = irsdkClient.GetTelemetryValue<float>("TireRFRollVel"),
-                GroundVelocity = irsdkClient.GetTelemetryValue<float>("TireRFGroundVel"),
-                LateralForce = irsdkClient.GetTelemetryValue<float>("TireRFLatForce"),
-                LongitudinalForce = irsdkClient.GetTelemetryValue<float>("TireRFLongForce")
+                Wear = 0,
+                TreadRemaining = 0,
+                SlipAngle = 0,
+                SlipRatio = 0,
+                Load = 0,
+                Deflection = 0,
+                RollVelocity = 0,
+                GroundVelocity = 0,
+                LateralForce = 0,
+                LongitudinalForce = 0
             },
             RearLeftTire = new TireData
             {
-                CurrentPressure = irsdkClient.GetTelemetryValue<float>("TireLRPressure"),
-                LastHotPressure = irsdkClient.GetTelemetryValue<float>("TireLRLastHotPressure"),
+                CurrentPressure = GetSdkValue<float>(data, "LRpress") ?? 0f,
+                LastHotPressure = GetSdkValue<float>(data, "LRhotPressure") ?? 0f,
                 ColdPressure = _lastInferredLRColdPressure,
-                CurrentTempInternal = irsdkClient.GetTelemetryValue<float>("TireTempL", 2),
-                CurrentTempMiddle = irsdkClient.GetTelemetryValue<float>("TireTempM", 2),
-                CurrentTempExternal = irsdkClient.GetTelemetryValue<float>("TireTempR", 2),
-                CoreTemp = irsdkClient.GetTelemetryValue<float>("TireTempCore", 2),
-                LastHotTemp = irsdkClient.GetTelemetryValue<float>("TireLRLastHotTemp"),
+                CurrentTempInternal = GetSdkValue<float>(data, "LRtempCL") ?? 0f,
+                CurrentTempMiddle = GetSdkValue<float>(data, "LRtempCM") ?? 0f,
+                CurrentTempExternal = GetSdkValue<float>(data, "LRtempCR") ?? 0f,
+                CoreTemp = tireTempCore.Length > 2 ? tireTempCore[2] : 0f,
+                LastHotTemp = GetSdkValue<float>(data, "LRhotTemp") ?? 0f,
                 ColdTemp = _lastInferredLRColdTemp,
-                Wear = irsdkClient.GetTelemetryValue<float>("TireLRWear"),
-                TreadRemaining = irsdkClient.GetTelemetryValue<float>("TireLRTreadRemaining"),
-                SlipAngle = irsdkClient.GetTelemetryValue<float>("TireLRSliptAngle"),
-                SlipRatio = irsdkClient.GetTelemetryValue<float>("TireLRSliptRatio"),
-                Load = irsdkClient.GetTelemetryValue<float>("TireLRLoad"),
-                Deflection = irsdkClient.GetTelemetryValue<float>("TireLRDeflection"),
-                RollVelocity = irsdkClient.GetTelemetryValue<float>("TireLRRollVel"),
-                GroundVelocity = irsdkClient.GetTelemetryValue<float>("TireLRGroundVel"),
-                LateralForce = irsdkClient.GetTelemetryValue<float>("TireLRLatForce"),
-                LongitudinalForce = irsdkClient.GetTelemetryValue<float>("TireLRLongForce")
+                Wear = 0,
+                TreadRemaining = 0,
+                SlipAngle = 0,
+                SlipRatio = 0,
+                Load = 0,
+                Deflection = 0,
+                RollVelocity = 0,
+                GroundVelocity = 0,
+                LateralForce = 0,
+                LongitudinalForce = 0
             },
             RearRightTire = new TireData
             {
-                CurrentPressure = irsdkClient.GetTelemetryValue<float>("TireRRPressure"),
-                LastHotPressure = irsdkClient.GetTelemetryValue<float>("TireRRLastHotPressure"),
+                CurrentPressure = GetSdkValue<float>(data, "RRpress") ?? 0f,
+                LastHotPressure = GetSdkValue<float>(data, "RRhotPressure") ?? 0f,
                 ColdPressure = _lastInferredRRColdPressure,
-                CurrentTempInternal = irsdkClient.GetTelemetryValue<float>("TireTempL", 3),
-                CurrentTempMiddle = irsdkClient.GetTelemetryValue<float>("TireTempM", 3),
-                CurrentTempExternal = irsdkClient.GetTelemetryValue<float>("TireTempR", 3),
-                CoreTemp = irsdkClient.GetTelemetryValue<float>("TireTempCore", 3),
-                LastHotTemp = irsdkClient.GetTelemetryValue<float>("TireRRLastHotTemp"),
+                CurrentTempInternal = GetSdkValue<float>(data, "RRtempCL") ?? 0f,
+                CurrentTempMiddle = GetSdkValue<float>(data, "RRtempCM") ?? 0f,
+                CurrentTempExternal = GetSdkValue<float>(data, "RRtempCR") ?? 0f,
+                CoreTemp = tireTempCore.Length > 3 ? tireTempCore[3] : 0f,
+                LastHotTemp = GetSdkValue<float>(data, "RRhotTemp") ?? 0f,
                 ColdTemp = _lastInferredRRColdTemp,
-                Wear = irsdkClient.GetTelemetryValue<float>("TireRRWear"),
-                TreadRemaining = irsdkClient.GetTelemetryValue<float>("TireRRTreadRemaining"),
-                SlipAngle = irsdkClient.GetTelemetryValue<float>("TireRRSliptAngle"),
-                SlipRatio = irsdkClient.GetTelemetryValue<float>("TireRRSliptRatio"),
-                Load = irsdkClient.GetTelemetryValue<float>("TireRRLoad"),
-                Deflection = irsdkClient.GetTelemetryValue<float>("TireRRDeflection"),
-                RollVelocity = irsdkClient.GetTelemetryValue<float>("TireRRRollVel"),
-                GroundVelocity = irsdkClient.GetTelemetryValue<float>("TireRRGroundVel"),
-                LateralForce = irsdkClient.GetTelemetryValue<float>("TireRRLatForce"),
-                LongitudinalForce = irsdkClient.GetTelemetryValue<float>("TireRRLongForce")
+                Wear = 0,
+                TreadRemaining = 0,
+                SlipAngle = 0,
+                SlipRatio = 0,
+                Load = 0,
+                Deflection = 0,
+                RollVelocity = 0,
+                GroundVelocity = 0,
+                LateralForce = 0,
+                LongitudinalForce = 0
             },
-            Speed = speed,
-            Rpm = irsdkClient.GetTelemetryValue<float>("RPM"),
-            VerticalAcceleration = irsdkClient.GetTelemetryValue<float>("VertAcc"),
-            LateralAcceleration = irsdkClient.GetTelemetryValue<float>("LatAcc"),
-            LongitudinalAcceleration = irsdkClient.GetTelemetryValue<float>("LongAcc"),
+            Speed = GetSdkValue<float>(data, "Speed") ?? 0f,
+            Rpm = GetSdkValue<float>(data, "RPM") ?? 0f,
+            VerticalAcceleration = GetSdkValue<float>(data, "VertAcc") ?? 0f,
+            LateralAcceleration = GetSdkValue<float>(data, "LatAcc") ?? 0f,
+            LongitudinalAcceleration = GetSdkValue<float>(data, "LongAcc") ?? 0f,
             TireCompound = _currentTireCompound // Inclui o composto de pneu no snapshot
         };
 
@@ -366,7 +312,8 @@ public class TireDataCollector
             await Task.Delay(50);
 
             // Serializa o lote de snapshots para JSON
-            var jsonBatch = JsonConvert.SerializeObject(batch);
+            var jsonBatch = JsonSerializer.Serialize(batch);
+
 
             // Imprime uma mensagem no console (em um cenário real, você enviaria isso para uma API)
             Console.WriteLine($"Enviando lote de {batch.Count} snapshots. Primeiro timestamp: {batch[0].Timestamp:HH:mm:ss.fff}, Composto: {batch[0].TireCompound}");
