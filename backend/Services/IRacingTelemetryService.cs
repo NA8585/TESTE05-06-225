@@ -421,6 +421,9 @@ namespace SuperBackendNR85IA.Services
                 payload[ToCamel(prop.Name)] = prop.GetValue(t);
             }
 
+            // Snapshot simplificado de pneus e dados principais
+            payload["telemetrySnapshot"] = BuildTelemetrySnapshot(t);
+
             // Preserve old property name for overlays that expect "telemetry"
             payload["telemetry"] = t;
 
