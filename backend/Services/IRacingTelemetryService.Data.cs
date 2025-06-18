@@ -328,6 +328,7 @@ namespace SuperBackendNR85IA.Services
                 _log.LogWarning($"Negative SessionTime received: {rawSessionTime}");
                 rawSessionTime = 0.0;
             }
+            rawSessionTime = Utilities.DataValidator.EnsurePositive(rawSessionTime);
 
             if (_log.IsEnabled(LogLevel.Debug))
                 _log.LogDebug($"Raw SessionTime: {rawSessionTime}");
@@ -663,7 +664,8 @@ namespace SuperBackendNR85IA.Services
                 _cachedYamlData = _yamlParser.ParseSessionInfo(
                     t.SessionInfoYaml,
                     t.PlayerCarIdx,
-                    t.SessionNum
+                    t.SessionNum,
+                    t.Session.SessionUniqueID
                 );
                 LogYamlDump(t.SessionInfoYaml);
                 _lastYaml = t.SessionInfoYaml;
