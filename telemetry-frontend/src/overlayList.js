@@ -13,6 +13,7 @@ export default [
   { name: 'Teste Final', file: 'overlay-testefinal.html' },
   { name: 'Diagnóstico Raw', file: 'overlay-diagnostico-raw.html' },
   { name: 'Tires Raw', file: 'overlay-tiresraw.html' },
+  { name: 'Tires YAML', file: 'overlay-tiresyaml.html' },
   { name: 'Dados Completos', file: 'overlay-dadoscompletos.html' },
   { name: 'Tire Snapshot', file: 'overlay-tiresnapshot.html' }
 ];

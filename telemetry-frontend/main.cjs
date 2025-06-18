@@ -106,7 +106,19 @@ ipcMain.handle('overlay-is-destroyed', (e, id) => {
   return true;
 });
 
-app.whenReady().then(createMainWindow);
+function openOverlayFromCli() {
+  const arg = process.argv.find(a => a.startsWith('--open='));
+  if (!arg) return;
+  const file = arg.split('=')[1];
+  if (!file) return;
+  const name = file.replace(/\.html$/i, '');
+  createOverlay(name, file);
+}
+
+app.whenReady().then(() => {
+  createMainWindow();
+  openOverlayFromCli();
+});
 app.on('activate', () => BrowserWindow.getAllWindows().length === 0 && createMainWindow());
 app.on('window-all-closed', () => {
   for (const [, win] of overlays) {
