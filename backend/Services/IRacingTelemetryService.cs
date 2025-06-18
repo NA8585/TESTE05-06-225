@@ -85,6 +85,12 @@ namespace SuperBackendNR85IA.Services
         private bool _loggedAvailableVars = false;
         private readonly HashSet<string> _missingVarWarned = new();
 
+        private static readonly PropertyInfo[] _telemetryProps =
+            typeof(TelemetryModel).GetProperties();
+        private static readonly string[] _telemetryPropNames = _telemetryProps
+            .Select(p => char.ToLowerInvariant(p.Name[0]) + p.Name.Substring(1))
+            .ToArray();
+
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
             TelemetryBroadcaster broadcaster,
@@ -419,13 +425,10 @@ namespace SuperBackendNR85IA.Services
 
         private Dictionary<string, object?> BuildFrontendPayload(TelemetryModel t)
         {
-            static string ToCamel(string s) => string.IsNullOrEmpty(s) ? s : char.ToLowerInvariant(s[0]) + s.Substring(1);
-
-            var payload = new Dictionary<string, object?>();
-            var props = typeof(TelemetryModel).GetProperties();
-            foreach (var prop in props)
+            var payload = new Dictionary<string, object?>(_telemetryProps.Length + 2);
+            for (int i = 0; i < _telemetryProps.Length; i++)
             {
-                payload[ToCamel(prop.Name)] = prop.GetValue(t);
+                payload[_telemetryPropNames[i]] = _telemetryProps[i].GetValue(t);
             }
 
             // Snapshot simplificado de pneus e dados principais
