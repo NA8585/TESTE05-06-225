@@ -1,0 +1,17 @@
+using System;
+
+namespace SuperBackendNR85IA.Utilities
+{
+    public static class DataValidator
+    {
+        public static float EnsurePositive(float value)
+        {
+            return float.IsNaN(value) || float.IsInfinity(value) || value < 0f ? 0f : value;
+        }
+
+        public static double EnsurePositive(double value)
+        {
+            return double.IsNaN(value) || double.IsInfinity(value) || value < 0.0 ? 0.0 : value;
+        }
+    }
+}

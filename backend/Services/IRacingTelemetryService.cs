@@ -31,7 +31,7 @@ namespace SuperBackendNR85IA.Services
         private float _consumoUltimaVolta = 0f;
         private readonly Queue<float> _ultimoConsumoVoltas = new();
         private int _lastSessionNum = -1;
-        private readonly CarTrackDataStore _store;
+        private readonly Repositories.ICarTrackRepository _store;
         private string _carPath = string.Empty;
         private string _trackName = string.Empty;
         private bool _awaitingStoredData = false;
@@ -94,7 +94,7 @@ namespace SuperBackendNR85IA.Services
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
             TelemetryBroadcaster broadcaster,
-            CarTrackDataStore store,
+            Repositories.ICarTrackRepository store,
             SessionYamlParser yamlParser)
         {
             _log = log;
@@ -123,15 +123,14 @@ namespace SuperBackendNR85IA.Services
                 return;
             }
 
-            while (!ct.IsCancellationRequested)
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(TICK_MS));
+
+            while (await timer.WaitForNextTickAsync(ct))
             {
                 try
                 {
                     if (!_sdk.IsConnected || !_sdk.IsStarted)
-                    {
-                        await Task.Delay(1000, ct);
                         continue;
-                    }
 
                     if (!_loggedAvailableVars && _sdk.Data != null)
                     {
@@ -142,7 +141,7 @@ namespace SuperBackendNR85IA.Services
 
                     if (_sdk.Data != null && _sdk.Data.TickCount != _lastTick)
                     {
-                        var telemetryModel = await BuildTelemetryModelAsync();
+                        var telemetryModel = await BuildTelemetryModelAsync(ct);
                         if (telemetryModel != null)
                         {
                             TelemetryCalculationsOverlay.PreencherOverlayTanque(ref telemetryModel);
@@ -158,11 +157,14 @@ namespace SuperBackendNR85IA.Services
                         _lastTick = _sdk.Data.TickCount;
                     }
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    break;
+                }
                 catch (Exception ex)
                 {
                     _log.LogError(ex, "Erro no loop principal de telemetria.");
                 }
-                await Task.Delay(TICK_MS, ct);
             }
 
             _log.LogInformation("IRacingTelemetryService está parando.");
@@ -170,7 +172,7 @@ namespace SuperBackendNR85IA.Services
         }
 
 
-        private async Task<TelemetryModel?> BuildTelemetryModelAsync()
+        private async Task<TelemetryModel?> BuildTelemetryModelAsync(CancellationToken ct)
         {
             if (_sdk.Data == null) return null;
 
