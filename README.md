@@ -57,12 +57,18 @@ Each overlay corresponds to an HTML file in `telemetry-frontend/public/overlays`
 - **Radar** – circular radar indicating nearby cars with alerts.
 - **Teste Final** – diagnostic overlay combining various widgets.
 - **Tires Raw** – displays every tire-related value received from iRacing.
+- **Tires YAML** – parses `yamls/input_current.yaml` and lists tire values.
 - **Dados Completos** – shows all backend data, including the raw YAML and parsed fields.
 
 More details sobre os dados de pneus necessários podem ser encontrados em
 `docs/overlay-tires-checklist.md`.
 
 To open an overlay, start the Electron application and click its name in the menu. Windows can be moved, pinned or closed individually.
+You can also launch an overlay directly by passing `--open=<file>` to Electron. For convenience a script is provided:
+
+```bash
+npm run open:tiresyaml
+```
 
 ## Tests
 

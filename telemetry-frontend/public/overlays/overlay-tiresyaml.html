@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tires YAML Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <style>
+    body { background:#111; color:#e2e8f0; font-family: monospace; margin:0; }
+    table { border-collapse: collapse; margin:0.5rem; }
+    th, td { border:1px solid #555; padding:4px; }
+    th { text-align:left; background:#222; }
+  </style>
+</head>
+<body>
+<table id="tire-table">
+  <thead><tr><th>Field</th><th>Value</th></tr></thead>
+  <tbody><tr><td colspan="2">Carregando...</td></tr></tbody>
+</table>
+<script type="module">
+  const tableBody = document.querySelector('#tire-table tbody');
+  async function fetchYaml() {
+    try {
+        const res = await fetch('../../../yamls/input_current.yaml');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const data = jsyaml.load(text);
+      let tires = null;
+      try {
+        tires = data?.DriverInfo?.Drivers?.[0]?.CarSetup?.Tires;
+      } catch (err) {}
+      if (!tires) {
+        tableBody.innerHTML = '<tr><td colspan="2">Dados de pneus não encontrados</td></tr>';
+        return;
+      }
+      tableBody.innerHTML = '';
+      for (const [key, val] of Object.entries(tires)) {
+        const tr = document.createElement('tr');
+        const tdKey = document.createElement('td');
+        const tdVal = document.createElement('td');
+        tdKey.textContent = key;
+        tdVal.textContent = Array.isArray(val) ? val.join(', ') : val;
+        tr.append(tdKey, tdVal);
+        tableBody.appendChild(tr);
+      }
+    } catch (err) {
+      console.error('Fetch YAML', err);
+      tableBody.innerHTML = '<tr><td colspan="2">Erro ao carregar YAML</td></tr>';
+    }
+  }
+  fetchYaml();
+  setInterval(fetchYaml, 5000);
+</script>
+</body>
+</html>
