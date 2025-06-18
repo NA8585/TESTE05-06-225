@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net.WebSockets;                 // Para WebSocket e WebSocketCloseStatus
 using System.Collections.Concurrent;           // Para ConcurrentDictionary
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SuperBackendNR85IA.Models;              // Para TelemetryModel
@@ -103,29 +104,34 @@ namespace SuperBackendNR85IA.Services
             var fullBytes = JsonSerializer.SerializeToUtf8Bytes(fullPayload, _jsonSerializerOptions);
             var inputsBytes = JsonSerializer.SerializeToUtf8Bytes(inputsPayload, _jsonSerializerOptions);
 
-            foreach (var (clientId, info) in _clients)
+            static async Task SendAsync(Guid id, ClientInfo info, ArraySegment<byte> bytes,
+                                        ILogger logger)
             {
-                var clientSocket = info.Socket;
-                if (clientSocket.State == WebSocketState.Open)
+                var socket = info.Socket;
+                if (socket.State != WebSocketState.Open) return;
+                try
                 {
-                    var bytes = info.Overlay == "inputs" ? inputsBytes : fullBytes;
-                    var segment = new ArraySegment<byte>(bytes);
-                    try
-                    {
-                        await clientSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
-                    }
-                    catch (WebSocketException ex)
-                    {
-                        _logger.LogError(ex, $"Erro ao enviar dados para o cliente WebSocket {clientId}. Removendo cliente.");
-                        await RemoveClient(clientId, clientSocket, WebSocketCloseStatus.EndpointUnavailable, "Erro durante envio");
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        _logger.LogWarning($"Tentativa de envio para cliente {clientId} com socket já disposed. Removendo.");
-                        await RemoveClient(clientId, clientSocket, WebSocketCloseStatus.EndpointUnavailable, "Socket disposed");
-                    }
+                    await socket.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
+                }
+                catch (WebSocketException ex)
+                {
+                    logger.LogError(ex, $"Erro ao enviar dados para o cliente WebSocket {id}. Removendo cliente.");
+                    await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Erro durante envio", CancellationToken.None);
+                }
+                catch (ObjectDisposedException)
+                {
+                    logger.LogWarning($"Tentativa de envio para cliente {id} com socket disposed.");
                 }
             }
+
+            var tasks = new List<Task>(_clients.Count);
+            foreach (var (clientId, info) in _clients)
+            {
+                var bytes = info.Overlay == "inputs" ? inputsBytes : fullBytes;
+                tasks.Add(SendAsync(clientId, info, new ArraySegment<byte>(bytes), _logger));
+            }
+
+            await Task.WhenAll(tasks);
         }
     }
 }

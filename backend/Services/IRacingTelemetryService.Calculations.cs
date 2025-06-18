@@ -50,8 +50,7 @@ namespace SuperBackendNR85IA.Services
                     : 0f;
                 if (t.TotalLaps > 0)
                 {
-                    t.LapsRemainingRace = t.TotalLaps - t.Lap;
-                    if (t.LapsRemainingRace < 0) t.LapsRemainingRace = 0;
+                    t.LapsRemainingRace = Utilities.DataValidator.EnsureNonNegative(t.TotalLaps - t.Lap);
                 }
                 else
                 {
