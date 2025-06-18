@@ -11,6 +11,7 @@
     "dev": "concurrently \"npm run backend\" \"npm run dev:vite\" \"npm run dev:electron\"",
     "build": "vite build",
     "start": "electron .",
+    "open:tiresyaml": "electron . --open=overlay-tiresyaml.html",
     "preview": "vite preview",
     "test": "echo \"No tests configured\""
   },
