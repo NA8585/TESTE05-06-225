@@ -12,9 +12,18 @@ namespace SuperBackendNR85IA.Snapshots
         public float CurrentTempInternal { get; set; } // Temperatura da banda de rodagem - lado interno (TireTempL)
         public float CurrentTempMiddle { get; set; }   // Temperatura da banda de rodagem - meio (TireTempM)
         public float CurrentTempExternal { get; set; } // Temperatura da banda de rodagem - lado externo (TireTempR)
-        public float CoreTemp { get; set; }            // Temperatura do núcleo do pneu (TireTempCore)
-        public float LastHotTemp { get; set; }         // Última temperatura quente registrada (TireLFLastHotTemp, etc.)
-        public float ColdTemp { get; set; }            // Temperatura fria inferida (capturada quando o carro está parado no box)
+
+        // Temperaturas registradas em diferentes momentos
+        public float LastHotTempInternal { get; set; } // Temperatura interna na última parada
+        public float LastHotTempMiddle { get; set; }   // Temperatura central na última parada
+        public float LastHotTempExternal { get; set; } // Temperatura externa na última parada
+        public float ColdTempInternal { get; set; }    // Temperatura interna quando frio
+        public float ColdTempMiddle { get; set; }      // Temperatura central quando frio
+        public float ColdTempExternal { get; set; }    // Temperatura externa quando frio
+
+        public float CoreTemp { get; set; }            // Temperatura média do núcleo do pneu
+        public float LastHotTemp { get; set; }         // Temperatura média quente registrada
+        public float ColdTemp { get; set; }            // Temperatura média fria inferida
 
         // Desgaste e Borracha Restante (valores de 0.0 a 1.0)
         public float Wear { get; set; }                // Desgaste do pneu (0.0 = novo, 1.0 = 100% desgastado)

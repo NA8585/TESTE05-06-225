@@ -276,9 +276,14 @@ namespace SuperBackendNR85IA.Calculations
         public static void UpdateSectorData(ref TelemetryModel model)
         {
             if (model.SectorCount <= 0)
-                model.SectorCount = Math.Max(Math.Max(model.LapAllSectorTimes?.Length ?? 0,
-                                                     model.SessionBestSectorTimes?.Length ?? 0),
-                                             3);
+            {
+                model.SectorCount = Math.Max(
+                    Math.Max(model.LapAllSectorTimes?.Length ?? 0,
+                             model.SessionBestSectorTimes?.Length ?? 0),
+                    model.YamlSectorInfo?.SectorCount ?? 0);
+            }
+            if (model.SectorCount <= 0)
+                return;
 
             if (model.LapAllSectorTimes == null || model.LapAllSectorTimes.Length != model.SectorCount)
                 model.LapAllSectorTimes = new float[model.SectorCount];
@@ -289,19 +294,16 @@ namespace SuperBackendNR85IA.Calculations
             if (model.SessionBestSectorTimes == null || model.SessionBestSectorTimes.Length != model.SectorCount)
                 model.SessionBestSectorTimes = new float[model.SectorCount];
 
-            if (model.LapAllSectorTimes.All(v => v == 0f) && model.LapLastLapTime > 0 && model.SectorCount > 0)
-                for (int i = 0; i < model.SectorCount; i++)
-                    model.LapAllSectorTimes[i] = model.LapLastLapTime / model.SectorCount;
+            if (model.LapDeltaToSessionBestSectorTimes.Length != model.LapAllSectorTimes.Length)
+                model.LapDeltaToSessionBestSectorTimes = new float[model.LapAllSectorTimes.Length];
 
-            if (model.SessionBestSectorTimes.All(v => v == 0f) && model.LapBestLapTime > 0 && model.SectorCount > 0)
-                for (int i = 0; i < model.SectorCount; i++)
-                    model.SessionBestSectorTimes[i] = model.LapBestLapTime / model.SectorCount;
+            for (int i = 0; i < model.SectorCount; i++)
+                model.LapDeltaToSessionBestSectorTimes[i] =
+                    model.LapAllSectorTimes.ElementAtOrDefault(i) -
+                    model.SessionBestSectorTimes.ElementAtOrDefault(i);
 
-            if (model.LapDeltaToSessionBestSectorTimes.All(v => v == 0f) && model.LapAllSectorTimes.Length == model.SessionBestSectorTimes.Length)
-                for (int i = 0; i < model.SectorCount; i++)
-                    model.LapDeltaToSessionBestSectorTimes[i] = model.LapAllSectorTimes[i] - model.SessionBestSectorTimes[i];
-
-            model.EstLapTime = model.SessionBestSectorTimes.Sum();
+            if (model.SessionBestSectorTimes.Any(v => v > 0f))
+                model.EstLapTime = model.SessionBestSectorTimes.Sum();
         }
 
         // --- RADAR / ALERTAS ---
