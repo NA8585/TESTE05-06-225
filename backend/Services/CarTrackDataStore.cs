@@ -15,7 +15,7 @@ namespace SuperBackendNR85IA.Services
         public float FuelCapacity { get; set; }
     }
 
-    public class CarTrackDataStore
+    public class CarTrackDataStore : Repositories.ICarTrackRepository
     {
         // Caminho para armazenamento do JSON contendo dados por carro/pista
         private readonly string _filePath;
