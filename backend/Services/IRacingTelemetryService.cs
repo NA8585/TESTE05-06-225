@@ -85,6 +85,12 @@ namespace SuperBackendNR85IA.Services
         private bool _loggedAvailableVars = false;
         private readonly HashSet<string> _missingVarWarned = new();
 
+        private static readonly PropertyInfo[] _telemetryProps =
+            typeof(TelemetryModel).GetProperties();
+        private static readonly string[] _telemetryPropNames = _telemetryProps
+            .Select(p => char.ToLowerInvariant(p.Name[0]) + p.Name.Substring(1))
+            .ToArray();
+
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
             TelemetryBroadcaster broadcaster,
@@ -202,130 +208,24 @@ namespace SuperBackendNR85IA.Services
         {
             if (!_initialized)
             {
-                // Ignore the first update to avoid recording pit entry
-                // values when the service starts while the car is stopped
-                // in the pit lane.
                 _wasOnPitRoad = t.OnPitRoad;
                 _initialized = true;
             }
             else if (t.OnPitRoad && !_wasOnPitRoad)
             {
-                // Entrando nos boxes: registra pressões e temperaturas quentes
-                _lfLastHotPress = t.LfPress;
-                _rfLastHotPress = t.RfPress;
-                _lrLastHotPress = t.LrPress;
-                _rrLastHotPress = t.RrPress;
-
-                Array.Copy(t.LfWear, _lfLastWear, _lfLastWear.Length);
-                Array.Copy(t.RfWear, _rfLastWear, _rfLastWear.Length);
-                Array.Copy(t.LrWear, _lrLastWear, _lrLastWear.Length);
-                Array.Copy(t.RrWear, _rrLastWear, _rrLastWear.Length);
-                _lfLastTread = t.TreadRemainingFl;
-                _rfLastTread = t.TreadRemainingFr;
-                _lrLastTread = t.TreadRemainingRl;
-                _rrLastTread = t.TreadRemainingRr;
-
-                _lfLastTempCl = t.LfTempCl;
-                _lfLastTempCm = t.LfTempCm;
-                _lfLastTempCr = t.LfTempCr;
-                _rfLastTempCl = t.RfTempCl;
-                _rfLastTempCm = t.RfTempCm;
-                _rfLastTempCr = t.RfTempCr;
-                _lrLastTempCl = t.LrTempCl;
-                _lrLastTempCm = t.LrTempCm;
-                _lrLastTempCr = t.LrTempCr;
-                _rrLastTempCl = t.RrTempCl;
-                _rrLastTempCm = t.RrTempCm;
-                _rrLastTempCr = t.RrTempCr;
-                _log.LogInformation(
-                    $"Pit entry - hot pressures LF:{_lfLastHotPress} RF:{_rfLastHotPress} LR:{_lrLastHotPress} RR:{_rrLastHotPress}, " +
-                    $"temps LF:{_lfLastTempCl}/{_lfLastTempCm}/{_lfLastTempCr} RF:{_rfLastTempCl}/{_rfLastTempCm}/{_rfLastTempCr} " +
-                    $"LR:{_lrLastTempCl}/{_lrLastTempCm}/{_lrLastTempCr} RR:{_rrLastTempCl}/{_rrLastTempCm}/{_rrLastTempCr}");
+                RecordPitEntry(t);
             }
             else if (!t.OnPitRoad && _wasOnPitRoad)
             {
-                // Saindo dos boxes: registra pressões e temperaturas frias
-                _lfColdPress = t.LfPress;
-                _rfColdPress = t.RfPress;
-                _lrColdPress = t.LrPress;
-                _rrColdPress = t.RrPress;
-
-                _lfColdTempCl = t.LfTempCl;
-                _lfColdTempCm = t.LfTempCm;
-                _lfColdTempCr = t.LfTempCr;
-                _rfColdTempCl = t.RfTempCl;
-                _rfColdTempCm = t.RfTempCm;
-                _rfColdTempCr = t.RfTempCr;
-                _lrColdTempCl = t.LrTempCl;
-                _lrColdTempCm = t.LrTempCm;
-                _lrColdTempCr = t.LrTempCr;
-                _rrColdTempCl = t.RrTempCl;
-                _rrColdTempCm = t.RrTempCm;
-                _rrColdTempCr = t.RrTempCr;
-
-                _lfStartTread = t.TreadRemainingFl;
-                _rfStartTread = t.TreadRemainingFr;
-                _lrStartTread = t.TreadRemainingRl;
-                _rrStartTread = t.TreadRemainingRr;
-
-                _log.LogInformation(
-                    $"Pit exit - cold pressures LF:{_lfColdPress} RF:{_rfColdPress} LR:{_lrColdPress} RR:{_rrColdPress}, " +
-                    $"temps LF:{_lfColdTempCl}/{_lfColdTempCm}/{_lfColdTempCr} RF:{_rfColdTempCl}/{_rfColdTempCm}/{_rfColdTempCr} " +
-                    $"LR:{_lrColdTempCl}/{_lrColdTempCm}/{_lrColdTempCr} RR:{_rrColdTempCl}/{_rrColdTempCm}/{_rrColdTempCr}, " +
-                    $"tread FL:{_lfStartTread} FR:{_rfStartTread} RL:{_lrStartTread} RR:{_rrStartTread}");
+                RecordPitExit(t);
             }
 
-            // Valores iniciais caso o serviço seja iniciado no meio da pista
-            bool initialUpdate = false;
-            if (_lfColdPress == 0f && t.LfPress > 0f) { _lfColdPress = t.LfPress; initialUpdate = true; }
-            if (_rfColdPress == 0f && t.RfPress > 0f) { _rfColdPress = t.RfPress; initialUpdate = true; }
-            if (_lrColdPress == 0f && t.LrPress > 0f) { _lrColdPress = t.LrPress; initialUpdate = true; }
-            if (_rrColdPress == 0f && t.RrPress > 0f) { _rrColdPress = t.RrPress; initialUpdate = true; }
+            bool initialUpdate = EnsureInitialValues(t);
+            CopyTireStateToModel(t);
+            _wasOnPitRoad = t.OnPitRoad;
 
-            if (_lfColdTempCl == 0f && t.LfTempCl > 0f) { _lfColdTempCl = t.LfTempCl; initialUpdate = true; }
-            if (_lfColdTempCm == 0f && t.LfTempCm > 0f) { _lfColdTempCm = t.LfTempCm; initialUpdate = true; }
-            if (_lfColdTempCr == 0f && t.LfTempCr > 0f) { _lfColdTempCr = t.LfTempCr; initialUpdate = true; }
-            if (_rfColdTempCl == 0f && t.RfTempCl > 0f) { _rfColdTempCl = t.RfTempCl; initialUpdate = true; }
-            if (_rfColdTempCm == 0f && t.RfTempCm > 0f) { _rfColdTempCm = t.RfTempCm; initialUpdate = true; }
-            if (_rfColdTempCr == 0f && t.RfTempCr > 0f) { _rfColdTempCr = t.RfTempCr; initialUpdate = true; }
-            if (_lrColdTempCl == 0f && t.LrTempCl > 0f) { _lrColdTempCl = t.LrTempCl; initialUpdate = true; }
-            if (_lrColdTempCm == 0f && t.LrTempCm > 0f) { _lrColdTempCm = t.LrTempCm; initialUpdate = true; }
-            if (_lrColdTempCr == 0f && t.LrTempCr > 0f) { _lrColdTempCr = t.LrTempCr; initialUpdate = true; }
-            if (_rrColdTempCl == 0f && t.RrTempCl > 0f) { _rrColdTempCl = t.RrTempCl; initialUpdate = true; }
-            if (_rrColdTempCm == 0f && t.RrTempCm > 0f) { _rrColdTempCm = t.RrTempCm; initialUpdate = true; }
-            if (_rrColdTempCr == 0f && t.RrTempCr > 0f) { _rrColdTempCr = t.RrTempCr; initialUpdate = true; }
-
-            if (_lfLastWear[0] == 0f && t.LfWear.Length == 3 && t.LfWear.Sum() > 0f)
-            { Array.Copy(t.LfWear, _lfLastWear, 3); initialUpdate = true; }
-            if (_rfLastWear[0] == 0f && t.RfWear.Length == 3 && t.RfWear.Sum() > 0f)
-            { Array.Copy(t.RfWear, _rfLastWear, 3); initialUpdate = true; }
-            if (_lrLastWear[0] == 0f && t.LrWear.Length == 3 && t.LrWear.Sum() > 0f)
-            { Array.Copy(t.LrWear, _lrLastWear, 3); initialUpdate = true; }
-            if (_rrLastWear[0] == 0f && t.RrWear.Length == 3 && t.RrWear.Sum() > 0f)
-            { Array.Copy(t.RrWear, _rrLastWear, 3); initialUpdate = true; }
-
-            // Do not capture hot pressures during normal running. These values
-            // should only reflect the last pressures recorded when entering the
-            // pits. Avoid copying the current live (cold) pressures while the
-            // car is on track.
-
-            if (_lfStartTread == 0f && t.TreadRemainingFl > 0f) { _lfStartTread = t.TreadRemainingFl; initialUpdate = true; }
-            if (_rfStartTread == 0f && t.TreadRemainingFr > 0f) { _rfStartTread = t.TreadRemainingFr; initialUpdate = true; }
-            if (_lrStartTread == 0f && t.TreadRemainingRl > 0f) { _lrStartTread = t.TreadRemainingRl; initialUpdate = true; }
-            if (_rrStartTread == 0f && t.TreadRemainingRr > 0f) { _rrStartTread = t.TreadRemainingRr; initialUpdate = true; }
-
-            if (_lfLastTempCl == 0f && t.LfTempCl > 0f) { _lfLastTempCl = t.LfTempCl; initialUpdate = true; }
-            if (_lfLastTempCm == 0f && t.LfTempCm > 0f) { _lfLastTempCm = t.LfTempCm; initialUpdate = true; }
-            if (_lfLastTempCr == 0f && t.LfTempCr > 0f) { _lfLastTempCr = t.LfTempCr; initialUpdate = true; }
-            if (_rfLastTempCl == 0f && t.RfTempCl > 0f) { _rfLastTempCl = t.RfTempCl; initialUpdate = true; }
-            if (_rfLastTempCm == 0f && t.RfTempCm > 0f) { _rfLastTempCm = t.RfTempCm; initialUpdate = true; }
-            if (_rfLastTempCr == 0f && t.RfTempCr > 0f) { _rfLastTempCr = t.RfTempCr; initialUpdate = true; }
-            if (_lrLastTempCl == 0f && t.LrTempCl > 0f) { _lrLastTempCl = t.LrTempCl; initialUpdate = true; }
-            if (_lrLastTempCm == 0f && t.LrTempCm > 0f) { _lrLastTempCm = t.LrTempCm; initialUpdate = true; }
-            if (_lrLastTempCr == 0f && t.LrTempCr > 0f) { _lrLastTempCr = t.LrTempCr; initialUpdate = true; }
-            if (_rrLastTempCl == 0f && t.RrTempCl > 0f) { _rrLastTempCl = t.RrTempCl; initialUpdate = true; }
-            if (_rrLastTempCm == 0f && t.RrTempCm > 0f) { _rrLastTempCm = t.RrTempCm; initialUpdate = true; }
-            if (_rrLastTempCr == 0f && t.RrTempCr > 0f) { _rrLastTempCr = t.RrTempCr; initialUpdate = true; }
+            t.FrontStagger = (t.RfRideHeight - t.LfRideHeight) * 1000f;
+            t.RearStagger  = (t.RrRideHeight - t.LrRideHeight) * 1000f;
 
             if (initialUpdate)
             {
@@ -333,8 +233,138 @@ namespace SuperBackendNR85IA.Services
                     $"Startup tyre values - ColdPress LF:{_lfColdPress} RF:{_rfColdPress} LR:{_lrColdPress} RR:{_rrColdPress}, " +
                     $"HotPress LF:{_lfLastHotPress} RF:{_rfLastHotPress} LR:{_lrLastHotPress} RR:{_rrLastHotPress}");
             }
-            _wasOnPitRoad = t.OnPitRoad;
 
+            if (_log.IsEnabled(LogLevel.Debug))
+            {
+                _log.LogDebug(
+                    $"UpdateLastHotPress - Pressures LF:{t.LfPress} RF:{t.RfPress} LR:{t.LrPress} RR:{t.RrPress}, " +
+                    $"HotPress LF:{t.LfLastHotPress} RF:{t.RfLastHotPress} LR:{t.LrLastHotPress} RR:{t.RrLastHotPress}, " +
+                    $"ColdPress LF:{t.LfColdPress} RF:{t.RfColdPress} LR:{t.LrColdPress} RR:{t.RrColdPress}, " +
+                    $"Temps LF:{t.LfTempCl}/{t.LfTempCm}/{t.LfTempCr} RF:{t.RfTempCl}/{t.RfTempCm}/{t.RfTempCr} " +
+                    $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
+                    $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
+            }
+        }
+
+        private void RecordPitEntry(TelemetryModel t)
+        {
+            _lfLastHotPress = t.LfPress;
+            _rfLastHotPress = t.RfPress;
+            _lrLastHotPress = t.LrPress;
+            _rrLastHotPress = t.RrPress;
+
+            Array.Copy(t.LfWear, _lfLastWear, _lfLastWear.Length);
+            Array.Copy(t.RfWear, _rfLastWear, _rfLastWear.Length);
+            Array.Copy(t.LrWear, _lrLastWear, _lrLastWear.Length);
+            Array.Copy(t.RrWear, _rrLastWear, _rrLastWear.Length);
+            _lfLastTread = t.TreadRemainingFl;
+            _rfLastTread = t.TreadRemainingFr;
+            _lrLastTread = t.TreadRemainingRl;
+            _rrLastTread = t.TreadRemainingRr;
+
+            _lfLastTempCl = t.LfTempCl;
+            _lfLastTempCm = t.LfTempCm;
+            _lfLastTempCr = t.LfTempCr;
+            _rfLastTempCl = t.RfTempCl;
+            _rfLastTempCm = t.RfTempCm;
+            _rfLastTempCr = t.RfTempCr;
+            _lrLastTempCl = t.LrTempCl;
+            _lrLastTempCm = t.LrTempCm;
+            _lrLastTempCr = t.LrTempCr;
+            _rrLastTempCl = t.RrTempCl;
+            _rrLastTempCm = t.RrTempCm;
+            _rrLastTempCr = t.RrTempCr;
+
+            _log.LogInformation(
+                $"Pit entry - hot pressures LF:{_lfLastHotPress} RF:{_rfLastHotPress} LR:{_lrLastHotPress} RR:{_rrLastHotPress}, " +
+                $"temps LF:{_lfLastTempCl}/{_lfLastTempCm}/{_lfLastTempCr} RF:{_rfLastTempCl}/{_rfLastTempCm}/{_rfLastTempCr} " +
+                $"LR:{_lrLastTempCl}/{_lrLastTempCm}/{_lrLastTempCr} RR:{_rrLastTempCl}/{_rrLastTempCm}/{_rrLastTempCr}");
+        }
+
+        private void RecordPitExit(TelemetryModel t)
+        {
+            _lfColdPress = t.LfPress;
+            _rfColdPress = t.RfPress;
+            _lrColdPress = t.LrPress;
+            _rrColdPress = t.RrPress;
+
+            _lfColdTempCl = t.LfTempCl;
+            _lfColdTempCm = t.LfTempCm;
+            _lfColdTempCr = t.LfTempCr;
+            _rfColdTempCl = t.RfTempCl;
+            _rfColdTempCm = t.RfTempCm;
+            _rfColdTempCr = t.RfTempCr;
+            _lrColdTempCl = t.LrTempCl;
+            _lrColdTempCm = t.LrTempCm;
+            _lrColdTempCr = t.LrTempCr;
+            _rrColdTempCl = t.RrTempCl;
+            _rrColdTempCm = t.RrTempCm;
+            _rrColdTempCr = t.RrTempCr;
+
+            _lfStartTread = t.TreadRemainingFl;
+            _rfStartTread = t.TreadRemainingFr;
+            _lrStartTread = t.TreadRemainingRl;
+            _rrStartTread = t.TreadRemainingRr;
+
+            _log.LogInformation(
+                $"Pit exit - cold pressures LF:{_lfColdPress} RF:{_rfColdPress} LR:{_lrColdPress} RR:{_rrColdPress}, " +
+                $"temps LF:{_lfColdTempCl}/{_lfColdTempCm}/{_lfColdTempCr} RF:{_rfColdTempCl}/{_rfColdTempCm}/{_rfColdTempCr} " +
+                $"LR:{_lrColdTempCl}/{_lrColdTempCm}/{_lrColdTempCr} RR:{_rrColdTempCl}/{_rrColdTempCm}/{_rrColdTempCr}, " +
+                $"tread FL:{_lfStartTread} FR:{_rfStartTread} RL:{_lrStartTread} RR:{_rrStartTread}");
+        }
+
+        private bool EnsureInitialValues(TelemetryModel t)
+        {
+            bool updated = false;
+            if (_lfColdPress == 0f && t.LfPress > 0f) { _lfColdPress = t.LfPress; updated = true; }
+            if (_rfColdPress == 0f && t.RfPress > 0f) { _rfColdPress = t.RfPress; updated = true; }
+            if (_lrColdPress == 0f && t.LrPress > 0f) { _lrColdPress = t.LrPress; updated = true; }
+            if (_rrColdPress == 0f && t.RrPress > 0f) { _rrColdPress = t.RrPress; updated = true; }
+
+            if (_lfColdTempCl == 0f && t.LfTempCl > 0f) { _lfColdTempCl = t.LfTempCl; updated = true; }
+            if (_lfColdTempCm == 0f && t.LfTempCm > 0f) { _lfColdTempCm = t.LfTempCm; updated = true; }
+            if (_lfColdTempCr == 0f && t.LfTempCr > 0f) { _lfColdTempCr = t.LfTempCr; updated = true; }
+            if (_rfColdTempCl == 0f && t.RfTempCl > 0f) { _rfColdTempCl = t.RfTempCl; updated = true; }
+            if (_rfColdTempCm == 0f && t.RfTempCm > 0f) { _rfColdTempCm = t.RfTempCm; updated = true; }
+            if (_rfColdTempCr == 0f && t.RfTempCr > 0f) { _rfColdTempCr = t.RfTempCr; updated = true; }
+            if (_lrColdTempCl == 0f && t.LrTempCl > 0f) { _lrColdTempCl = t.LrTempCl; updated = true; }
+            if (_lrColdTempCm == 0f && t.LrTempCm > 0f) { _lrColdTempCm = t.LrTempCm; updated = true; }
+            if (_lrColdTempCr == 0f && t.LrTempCr > 0f) { _lrColdTempCr = t.LrTempCr; updated = true; }
+            if (_rrColdTempCl == 0f && t.RrTempCl > 0f) { _rrColdTempCl = t.RrTempCl; updated = true; }
+            if (_rrColdTempCm == 0f && t.RrTempCm > 0f) { _rrColdTempCm = t.RrTempCm; updated = true; }
+            if (_rrColdTempCr == 0f && t.RrTempCr > 0f) { _rrColdTempCr = t.RrTempCr; updated = true; }
+
+            if (_lfLastWear[0] == 0f && t.LfWear.Length == 3 && t.LfWear.Sum() > 0f)
+            { Array.Copy(t.LfWear, _lfLastWear, 3); updated = true; }
+            if (_rfLastWear[0] == 0f && t.RfWear.Length == 3 && t.RfWear.Sum() > 0f)
+            { Array.Copy(t.RfWear, _rfLastWear, 3); updated = true; }
+            if (_lrLastWear[0] == 0f && t.LrWear.Length == 3 && t.LrWear.Sum() > 0f)
+            { Array.Copy(t.LrWear, _lrLastWear, 3); updated = true; }
+            if (_rrLastWear[0] == 0f && t.RrWear.Length == 3 && t.RrWear.Sum() > 0f)
+            { Array.Copy(t.RrWear, _rrLastWear, 3); updated = true; }
+
+            if (_lfStartTread == 0f && t.TreadRemainingFl > 0f) { _lfStartTread = t.TreadRemainingFl; updated = true; }
+            if (_rfStartTread == 0f && t.TreadRemainingFr > 0f) { _rfStartTread = t.TreadRemainingFr; updated = true; }
+            if (_lrStartTread == 0f && t.TreadRemainingRl > 0f) { _lrStartTread = t.TreadRemainingRl; updated = true; }
+            if (_rrStartTread == 0f && t.TreadRemainingRr > 0f) { _rrStartTread = t.TreadRemainingRr; updated = true; }
+
+            if (_lfLastTempCl == 0f && t.LfTempCl > 0f) { _lfLastTempCl = t.LfTempCl; updated = true; }
+            if (_lfLastTempCm == 0f && t.LfTempCm > 0f) { _lfLastTempCm = t.LfTempCm; updated = true; }
+            if (_lfLastTempCr == 0f && t.LfTempCr > 0f) { _lfLastTempCr = t.LfTempCr; updated = true; }
+            if (_rfLastTempCl == 0f && t.RfTempCl > 0f) { _rfLastTempCl = t.RfTempCl; updated = true; }
+            if (_rfLastTempCm == 0f && t.RfTempCm > 0f) { _rfLastTempCm = t.RfTempCm; updated = true; }
+            if (_rfLastTempCr == 0f && t.RfTempCr > 0f) { _rfLastTempCr = t.RfTempCr; updated = true; }
+            if (_lrLastTempCl == 0f && t.LrTempCl > 0f) { _lrLastTempCl = t.LrTempCl; updated = true; }
+            if (_lrLastTempCm == 0f && t.LrTempCm > 0f) { _lrLastTempCm = t.LrTempCm; updated = true; }
+            if (_lrLastTempCr == 0f && t.LrTempCr > 0f) { _lrLastTempCr = t.LrTempCr; updated = true; }
+            if (_rrLastTempCl == 0f && t.RrTempCl > 0f) { _rrLastTempCl = t.RrTempCl; updated = true; }
+            if (_rrLastTempCm == 0f && t.RrTempCm > 0f) { _rrLastTempCm = t.RrTempCm; updated = true; }
+            if (_rrLastTempCr == 0f && t.RrTempCr > 0f) { _rrLastTempCr = t.RrTempCr; updated = true; }
+            return updated;
+        }
+
+        private void CopyTireStateToModel(TelemetryModel t)
+        {
             t.LfColdPress = _lfColdPress;
             t.RfColdPress = _rfColdPress;
             t.LrColdPress = _lrColdPress;
@@ -370,9 +400,6 @@ namespace SuperBackendNR85IA.Services
             t.TreadRemainingRl = _lrLastTread;
             t.TreadRemainingRr = _rrLastTread;
 
-            // Preserve real-time hot pressures read from the SDK. Only fall
-            // back to the last recorded values if no current data is
-            // available (e.g. immediately after leaving the pits).
             if (t.LfHotPressure <= 0f && _lfLastHotPress > 0f)
                 t.LfHotPressure = _lfLastHotPress;
             if (t.RfHotPressure <= 0f && _rfLastHotPress > 0f)
@@ -394,31 +421,14 @@ namespace SuperBackendNR85IA.Services
             t.RrLastTempCl = _rrLastTempCl;
             t.RrLastTempCm = _rrLastTempCm;
             t.RrLastTempCr = _rrLastTempCr;
-
-            t.FrontStagger = (t.RfRideHeight - t.LfRideHeight) * 1000f;
-            t.RearStagger  = (t.RrRideHeight - t.LrRideHeight) * 1000f;
-
-            if (_log.IsEnabled(LogLevel.Debug))
-            {
-                _log.LogDebug(
-                    $"UpdateLastHotPress - Pressures LF:{t.LfPress} RF:{t.RfPress} LR:{t.LrPress} RR:{t.RrPress}, " +
-                    $"HotPress LF:{t.LfLastHotPress} RF:{t.RfLastHotPress} LR:{t.LrLastHotPress} RR:{t.RrLastHotPress}, " +
-                    $"ColdPress LF:{t.LfColdPress} RF:{t.RfColdPress} LR:{t.LrColdPress} RR:{t.RrColdPress}, " +
-                    $"Temps LF:{t.LfTempCl}/{t.LfTempCm}/{t.LfTempCr} RF:{t.RfTempCl}/{t.RfTempCm}/{t.RfTempCr} " +
-                    $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
-                    $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
-            }
         }
 
         private Dictionary<string, object?> BuildFrontendPayload(TelemetryModel t)
         {
-            static string ToCamel(string s) => string.IsNullOrEmpty(s) ? s : char.ToLowerInvariant(s[0]) + s.Substring(1);
-
-            var payload = new Dictionary<string, object?>();
-            var props = typeof(TelemetryModel).GetProperties();
-            foreach (var prop in props)
+            var payload = new Dictionary<string, object?>(_telemetryProps.Length + 2);
+            for (int i = 0; i < _telemetryProps.Length; i++)
             {
-                payload[ToCamel(prop.Name)] = prop.GetValue(t);
+                payload[_telemetryPropNames[i]] = _telemetryProps[i].GetValue(t);
             }
 
             // Snapshot simplificado de pneus e dados principais
