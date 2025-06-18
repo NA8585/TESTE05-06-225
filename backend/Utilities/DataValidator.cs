@@ -13,5 +13,10 @@ namespace SuperBackendNR85IA.Utilities
         {
             return double.IsNaN(value) || double.IsInfinity(value) || value < 0.0 ? 0.0 : value;
         }
+
+        public static int EnsureNonNegative(int value)
+        {
+            return value < 0 ? 0 : value;
+        }
     }
 }

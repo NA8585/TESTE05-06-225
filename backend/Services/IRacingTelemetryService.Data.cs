@@ -664,7 +664,8 @@ namespace SuperBackendNR85IA.Services
                 _cachedYamlData = _yamlParser.ParseSessionInfo(
                     t.SessionInfoYaml,
                     t.PlayerCarIdx,
-                    t.SessionNum
+                    t.SessionNum,
+                    t.Session.SessionUniqueID
                 );
                 LogYamlDump(t.SessionInfoYaml);
                 _lastYaml = t.SessionInfoYaml;
