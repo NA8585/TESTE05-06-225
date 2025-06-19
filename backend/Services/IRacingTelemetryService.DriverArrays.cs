@@ -15,7 +15,7 @@ namespace SuperBackendNR85IA.Services
             void SetValue<T>(ref T[] arr, int idx, T value)
             {
                 Utilities.DataValidator.EnsureArraySize(ref arr, Math.Max(maxIdx + 1, idx + 1));
-                arr[idx] = value;
+             arr[idx] = value;
             }
 
             foreach (var d in drv)
