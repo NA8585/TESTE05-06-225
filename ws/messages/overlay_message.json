@@ -129,5 +129,10 @@
       "carIdx": 1,
       "userName": "Driver Two"
     }
-  ]
+  ],
+  "sdkRaw": {
+    "RPM": 8500,
+    "Speed": 100,
+    "Gear": 4
+  }
 }
