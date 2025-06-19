@@ -661,34 +661,6 @@ namespace SuperBackendNR85IA.Services
             t.Damage.ChassisDamage = t.Damage.SuspensionDamage;
         }
 
-        private void CaptureSdkRawValues(IRacingSdkData d, TelemetryModel t)
-        {
-            var raw = new Dictionary<string, object?>();
-            foreach (var (name, datum) in d.TelemetryDataProperties)
-            {
-                try
-                {
-                    var value = d.GetValue(datum);
-                    if (value is char[] chars)
-                        raw[name] = new string(chars).TrimEnd('\0');
-                    else if (value is Array arr)
-                    {
-                        var list = new List<object?>();
-                        foreach (var item in arr) list.Add(item);
-                        raw[name] = list.ToArray();
-                    }
-                    else
-                    {
-                        raw[name] = value;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _log.LogDebug(ex, $"Falha ao ler variável {name}");
-                }
-            }
-            t.SdkRaw = raw;
-        }
 
         private async Task ApplyYamlData(IRacingSdkData d, TelemetryModel t)
         {
