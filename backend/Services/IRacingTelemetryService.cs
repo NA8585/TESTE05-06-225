@@ -190,6 +190,7 @@ namespace SuperBackendNR85IA.Services
             ComputeRelativeDistances(d, t);
             PopulateSessionInfo(d, t);
             PopulateTyres(d, t);
+            CaptureSdkRawValues(d, t);
             if (_log.IsEnabled(LogLevel.Debug))
             {
                 _log.LogDebug(

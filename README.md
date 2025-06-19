@@ -36,6 +36,9 @@ Every WebSocket payload includes the raw `sessionInfoYaml` string from iRacing *
 - `yamlSessionInfo` – data for the current session, including lap counts
 - `yamlSectorInfo` – sector configuration and best sector times
 - `yamlDrivers` – an array with basic info on all drivers
+- `sdkRaw` – dictionary with every telemetry variable captured from the iRacing SDK
+- `telemetrySnapshot` – condensed tire and lap data for quick updates
+- `missingVars` – array of SDK variable names that were unavailable
 
 A sample payload is available in `ws/messages/overlay_message.json` and the latest YAML dump is written to `yamls/input_current.yaml` whenever the backend updates.
 

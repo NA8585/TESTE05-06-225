@@ -129,5 +129,23 @@
       "carIdx": 1,
       "userName": "Driver Two"
     }
-  ]
+  ],
+  "telemetrySnapshot": {
+    "timestamp": "2025-06-19T12:34:56Z",
+    "lapNumber": 5,
+    "lapDistance": 0.5,
+    "speed": 100,
+    "rpm": 8500
+  },
+  "missingVars": [],
+  "sdkRaw": {
+    "RPM": 8500,
+    "Speed": 100,
+    "Gear": 4,
+    "Throttle": 1.0,
+    "Brake": 0.0,
+    "FuelLevel": 30.5,
+    "LatAccel": 0.5,
+    "LonAccel": 0.0
+  }
 }
