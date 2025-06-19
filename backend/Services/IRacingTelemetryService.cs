@@ -427,7 +427,7 @@ namespace SuperBackendNR85IA.Services
 
         private Dictionary<string, object?> BuildFrontendPayload(TelemetryModel t)
         {
-            var payload = new Dictionary<string, object?>(_telemetryProps.Length + 2);
+            var payload = new Dictionary<string, object?>(_telemetryProps.Length + 3);
             for (int i = 0; i < _telemetryProps.Length; i++)
             {
                 payload[_telemetryPropNames[i]] = _telemetryProps[i].GetValue(t);
@@ -438,6 +438,9 @@ namespace SuperBackendNR85IA.Services
 
             // Preserve old property name for overlays that expect "telemetry"
             payload["telemetry"] = t;
+
+            // Inform clients which SDK variables are missing
+            payload["missingVars"] = _missingVarWarned.ToArray();
 
             return payload;
         }
