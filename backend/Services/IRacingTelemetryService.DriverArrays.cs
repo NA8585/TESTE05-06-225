@@ -12,23 +12,24 @@ namespace SuperBackendNR85IA.Services
         {
             if (drv == null || drv.Length == 0) return;
             int maxIdx = drv.Max(x => x.CarIdx);
-            void SetValue<T>(ref T[] arr, int idx, T value)
+            static T[] SetValue<T>(T[] arr, int size, int idx, T value)
             {
-                Utilities.DataValidator.EnsureArraySize(ref arr, Math.Max(maxIdx + 1, idx + 1));
+                Utilities.DataValidator.EnsureArraySize(ref arr, Math.Max(size, idx + 1));
                 arr[idx] = value;
+                return arr;
             }
 
             foreach (var d in drv)
             {
-                SetValue(ref t.CarIdxCarNumbers, d.CarIdx, d.CarNumber);
-                SetValue(ref t.CarIdxUserNames, d.CarIdx, d.UserName);
-                SetValue(ref t.CarIdxLicStrings, d.CarIdx, d.LicString);
-                SetValue(ref t.CarIdxIRatings, d.CarIdx, d.IRating);
-                SetValue(ref t.CarIdxTeamNames, d.CarIdx, d.TeamName);
-                SetValue(ref t.CarIdxCarClassIds, d.CarIdx, d.CarClassID);
-                SetValue(ref t.CarIdxCarClassShortNames, d.CarIdx, d.CarClassShortName);
-                SetValue(ref t.CarIdxCarClassEstLapTimes, d.CarIdx, d.CarClassEstLapTime);
-                SetValue(ref t.CarIdxTireCompounds, d.CarIdx, d.TireCompound);
+                t.CarIdxCarNumbers        = SetValue(t.CarIdxCarNumbers,        maxIdx + 1, d.CarIdx, d.CarNumber);
+                t.CarIdxUserNames         = SetValue(t.CarIdxUserNames,         maxIdx + 1, d.CarIdx, d.UserName);
+                t.CarIdxLicStrings        = SetValue(t.CarIdxLicStrings,        maxIdx + 1, d.CarIdx, d.LicString);
+                t.CarIdxIRatings          = SetValue(t.CarIdxIRatings,          maxIdx + 1, d.CarIdx, d.IRating);
+                t.CarIdxTeamNames         = SetValue(t.CarIdxTeamNames,         maxIdx + 1, d.CarIdx, d.TeamName);
+                t.CarIdxCarClassIds       = SetValue(t.CarIdxCarClassIds,       maxIdx + 1, d.CarIdx, d.CarClassID);
+                t.CarIdxCarClassShortNames= SetValue(t.CarIdxCarClassShortNames,maxIdx + 1, d.CarIdx, d.CarClassShortName);
+                t.CarIdxCarClassEstLapTimes= SetValue(t.CarIdxCarClassEstLapTimes, maxIdx + 1, d.CarIdx, d.CarClassEstLapTime);
+                t.CarIdxTireCompounds     = SetValue(t.CarIdxTireCompounds,     maxIdx + 1, d.CarIdx, d.TireCompound);
                 if (d.CarIdx == t.PlayerCarIdx)
                 {
                     t.TireCompound   = d.TireCompound;
@@ -38,7 +39,7 @@ namespace SuperBackendNR85IA.Services
                     Array.Resize(ref _irStart, d.CarIdx + 1);
                 if (_irStart[d.CarIdx] == 0)
                     _irStart[d.CarIdx] = d.IRating;
-                SetValue(ref t.CarIdxIRatingDeltas, d.CarIdx, d.IRating - _irStart[d.CarIdx]);
+                t.CarIdxIRatingDeltas = SetValue(t.CarIdxIRatingDeltas, maxIdx + 1, d.CarIdx, d.IRating - _irStart[d.CarIdx]);
             }
         }
     }

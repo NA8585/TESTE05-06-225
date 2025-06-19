@@ -11,6 +11,7 @@ using IRSDKSharper; // Biblioteca IRSDKSharper para conexão com iRacing
 using SuperBackendNR85IA.Models; // TelemetryModel e classes auxiliares
 using SuperBackendNR85IA.Calculations; // Seus cálculos de telemetria personalizados
 using SuperBackendNR85IA.Utilities;
+using SuperBackendNR85IA.Repositories;
 
 namespace SuperBackendNR85IA.Services
 {
@@ -32,7 +33,7 @@ namespace SuperBackendNR85IA.Services
         private float _consumoUltimaVolta = 0f;
         private readonly Queue<float> _ultimoConsumoVoltas = new();
         private int _lastSessionNum = -1;
-        private readonly Repositories.ICarTrackRepository _store;
+        private readonly ICarTrackRepository _store;
         private string _carPath = string.Empty;
         private string _trackName = string.Empty;
         private bool _awaitingStoredData = false;
@@ -95,7 +96,7 @@ namespace SuperBackendNR85IA.Services
         public IRacingTelemetryService(
             ILogger<IRacingTelemetryService> log,
             TelemetryBroadcaster broadcaster,
-            Repositories.ICarTrackRepository store,
+            ICarTrackRepository store,
             SessionYamlParser yamlParser)
         {
             _log = log;
