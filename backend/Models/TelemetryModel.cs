@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using SuperBackendNR85IA.Calculations;
 
 namespace SuperBackendNR85IA.Models
@@ -373,6 +374,7 @@ namespace SuperBackendNR85IA.Models
         // Raw values captured directly from the iRacing SDK. Keys follow the
         // original variable names as provided by the SDK and values can be
         // scalars or arrays depending on the variable type.
+        [JsonIgnore]
         public Dictionary<string, object?> SdkRaw { get; set; } = new();
 
         public TyreStatus LfTempStatus { get; set; } = new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold);

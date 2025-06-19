@@ -88,7 +88,9 @@ namespace SuperBackendNR85IA.Services
         private readonly HashSet<string> _missingVarWarned = new();
 
         private static readonly PropertyInfo[] _telemetryProps =
-            typeof(TelemetryModel).GetProperties();
+            typeof(TelemetryModel).GetProperties()
+                .Where(p => p.Name != nameof(TelemetryModel.SdkRaw))
+                .ToArray();
         private static readonly string[] _telemetryPropNames = _telemetryProps
             .Select(p => char.ToLowerInvariant(p.Name[0]) + p.Name.Substring(1))
             .ToArray();
