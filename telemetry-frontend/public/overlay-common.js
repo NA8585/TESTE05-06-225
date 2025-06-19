@@ -1,4 +1,4 @@
-import { schedule, unschedule } from './overlay-scheduler.js';
+import { schedule } from './overlay-scheduler.js';
 
 let socket;
 let latestData = null;
@@ -12,13 +12,12 @@ function initOverlayWebSocket(onData, params = {}) {
   const query = Object.keys(params).length > 0 ? '?' + new URLSearchParams(params).toString() : '';
   const url = (window.OVERLAY_WS_URL || `ws://${overlayHost()}:5221/ws`) + query;
   console.log('[Overlay] connecting to', url);
-  function dispatch() {
+  schedule(() => {
     if (latestData !== null) {
       onData(latestData);
       latestData = null;
     }
-  }
-  schedule(dispatch);
+  });
 
   function connect() {
     socket = new WebSocket(url);
@@ -34,13 +33,6 @@ function initOverlayWebSocket(onData, params = {}) {
     socket.onerror = (err) => { console.error('WebSocket error', err); socket.close(); };
   }
   connect();
-
-  function cleanup() {
-    unschedule(dispatch);
-    socket?.close();
-  }
-  window.addEventListener('beforeunload', cleanup);
-  return cleanup;
 }
 
 function enableBrowserEditMode(wrapperId, headerId) {

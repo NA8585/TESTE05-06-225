@@ -404,8 +404,7 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initOverlayWebSocket, enableBrowserEditMode } from '../overlay-common.js';
+    <script>
         // --- CACHE & STATE ---
         const dom = {
             wrapper: document.getElementById('wrapper'),
@@ -413,7 +412,6 @@
             competitorList: document.getElementById('competitor-list-container'),
             logo: document.getElementById('logo'),
         };
-        window.isElectron = enableBrowserEditMode(dom.wrapper, dom.header);
         
         const state = {
             isLocked: false,
@@ -429,11 +427,13 @@
                 sessionInfo: null,
                 playerIdx: null,
             },
+            websocket: null,
             displayedCarIdx: new Set(),
+            reconnectAttempts: 0,
         };
 
+        let latestData = null;
         let pendingDragFrame = false;
-        let last = 0;
         const relativeWorker = new Worker('../workers/relative-worker.js', { type: 'module' });
         let workerReady = false;
         relativeWorker.onmessage = (e) => {
@@ -445,6 +445,7 @@
             workerReady = true;
         };
 
+        const WS_URL = window.OVERLAY_WS_URL || 'ws://127.0.0.1:5221/ws';
 
         // --- UTILITY FUNCTIONS ---
         function parseYaml(yamlStr) {
@@ -681,6 +682,61 @@
             dom.competitorList.appendChild(frag);
         }
 
+        // --- WEBSOCKET LOGIC ---
+        function connectWS() {
+            if (state.websocket && (state.websocket.readyState === WebSocket.OPEN || state.websocket.readyState === WebSocket.CONNECTING)) return;
+            
+            if (state.reconnectAttempts === 0 && dom.competitorList) {
+                dom.competitorList.innerHTML = `<div class="driver-row status-message" style="justify-content: center;">Conectando ao servidor...</div>`;
+            }
+
+            state.websocket = new WebSocket(WS_URL);
+            
+            state.websocket.onopen = () => {
+                console.log('Conectado ao Backend WebSocket:', WS_URL);
+                state.reconnectAttempts = 0;
+                dom.wrapper.classList.remove('disconnected');
+                dom.logo.classList.remove('disconnected');
+                if (dom.competitorList.querySelector('.status-message')) {
+                    dom.competitorList.innerHTML = '';
+                }
+            };
+            state.websocket.onmessage = (event) => {
+                try {
+                    latestData = JSON.parse(event.data);
+                } catch (e) {
+                    console.error('Erro ao processar mensagem do WebSocket:', e);
+                }
+            };
+            state.websocket.onerror = () => {
+                 // The onclose event will handle the UI updates and logging for connection failures.
+            };
+            state.websocket.onclose = (event) => {
+                dom.wrapper.classList.add('disconnected');
+                dom.logo.classList.add('disconnected');
+                state.reconnectAttempts++;
+                const reconnectDelay = Math.min(30000, 3000 * state.reconnectAttempts);
+                console.log(`WebSocket disconnected. Code: ${event.code}. Tentando reconectar em ${reconnectDelay / 1000}s...`);
+                
+                if (dom.competitorList) {
+                    dom.competitorList.innerHTML = `<div class="driver-row status-message" style="flex-direction: column; height: auto; padding: 1rem; line-height: 1.5;">
+                        <div style="font-weight: bold; margin-bottom: 0.5rem; font-size: 1rem;">🚨 FALHA NA CONEXÃO 🚨</div>
+                        <div style="font-size: 0.8rem; margin-bottom: 0.75rem;">A overlay não consegue conectar ao servidor de dados.</div>
+                        <div style="font-size: 0.75rem; text-align: left; display: inline-block; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 0.25rem;">
+                            <b>Para corrigir:</b><br>
+                            1. Verifique se o <b>iRacing Web Tools</b> (ou similar) está <b>em execução</b>.<br>
+                            2. Verifique seu <b>Firewall/Antivírus</b> e permita a conexão.<br>
+                            3. Reinicie o simulador e o app de dados.
+                        </div>
+                        <div style="font-size: 0.7rem; margin-top: 0.75rem;">Tentando reconectar em ${reconnectDelay / 1000}s...</div>
+                    </div>`;
+                }
+                
+                state.websocket = null;
+                setTimeout(connectWS, reconnectDelay);
+            };
+        }
+        
         // --- EVENT HANDLERS & INITIALIZATION ---
         function handleDrag(e) {
             if (!state.isDragging || state.isLocked) return;
@@ -701,14 +757,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            initOverlayWebSocket(data => {
-                const now = performance.now();
-                if (now - last > 100) {
-                    renderUI(data);
-                    last = now;
-                }
-            }, { overlay: 'relative' });
+            connectWS();
             dom.wrapper.style.transform = `translate3d(${state.overlayX}px, ${state.overlayY}px, 0)`;
+            (function renderLoop(){
+                if (latestData) { renderUI(latestData); latestData = null; }
+                requestAnimationFrame(renderLoop);
+            })();
             
             // UI Controls
             const settingsPopover = document.getElementById('settings-popover');

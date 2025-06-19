@@ -7,6 +7,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     /* Estilos globais para o corpo */
     body {
@@ -188,81 +191,117 @@
       <input type="range" id="rangeContrast" min="0.5" max="2" step="0.01" value="1" style="width:100%;">
     </div>
   </div>
-  <script type="module">
-    import { initOverlayWebSocket, enableBrowserEditMode } from '../overlay-common.js';
-    const root = document.getElementById('root');
-    const wrapper = document.getElementById('wrapper');
-    const header = document.getElementById('overlay-header');
-    window.isElectron = enableBrowserEditMode(wrapper, header);
+  <script type="text/babel">
+    const { useState, useEffect } = React;
 
-    const els = {
-      currentLap: buildRow('Volta Atual:', true),
-      remainingLaps: buildRow('Voltas Restantes:'),
-      fuelLeft: buildRow('Combustível (L):', true),
-      lapConsumption: buildRow('Consumo / Volta:'),
-      tankCapacity: buildRow('Capacidade (L):'),
-      safetyMargin: buildRow('Margem Segurança:', false, 0.1),
-      simLaps: buildRow('Voltas (rápido):'),
-      result: document.createElement('p')
-    };
-    els.result.className = 'mt-2 text-center text-sm font-semibold';
-    const btnRow = document.createElement('div');
-    btnRow.className = 'flex justify-center';
-    const calcBtn = document.createElement('button');
-    calcBtn.className = 'btn';
-    calcBtn.textContent = 'Calcular';
-    btnRow.appendChild(calcBtn);
+    import('../overlay-common.js').then(m => {
+      window.isElectron = m.enableBrowserEditMode('wrapper','overlay-header');
+    });
 
-    root.append(
-      els.currentLap.row,
-      els.remainingLaps.row,
-      els.fuelLeft.row,
-      els.lapConsumption.row,
-      els.tankCapacity.row,
-      els.safetyMargin.row,
-      document.createElement('hr'),
-      els.simLaps.row,
-      btnRow,
-      els.result
-    );
+    function FuelCalculator() {
+      // estados
+      const [currentLap, setCurrentLap]     = useState(0);
+      const [remainingLaps, setRemainingLaps] = useState(0);
+      const [fuelLeft, setFuelLeft]         = useState(0);
+      const [lapConsumption, setLapConsumption] = useState(3.2);
+      const [tankCapacity, setTankCapacity] = useState(70);
+      const [safetyMargin, setSafetyMargin] = useState(2.0);
+      const [voltasSimuladas, setVoltasSimuladas] = useState('');
+      const [resultado, setResultado]       = useState('');
 
-    function buildRow(label, readOnly=false, step=1) {
-      const row = document.createElement('div');
-      row.className = 'row';
-      const lab = document.createElement('label');
-      lab.textContent = label;
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      if (readOnly) inp.readOnly = true;
-      if (step !== 1) inp.step = step;
-      row.append(lab, inp);
-      return { row, input: inp };
+      // WebSocket para atualizar dados de telemetria
+      useEffect(() => {
+        const host = window.location.hostname || 'localhost';
+        const url = window.OVERLAY_WS_URL || `ws://${host}:5221/ws`;
+        const socket = new WebSocket(url);
+        socket.addEventListener('open', () => console.log('WS FuelCalculator conectado'));
+        let latest = null;
+        let rafId = null;
+        const applyData = () => {
+          rafId = null;
+          if (!latest) return;
+          const d = latest;
+          latest = null;
+          setCurrentLap(d.lap ?? 0);
+          const fuel = d.fuelLevel ?? (d.fuelLevelPct ?? 0) * (d.fuelCapacity ?? tankCapacity);
+          setFuelLeft(fuel);
+          if (d.fuelCapacity) setTankCapacity(d.fuelCapacity);
+          if (typeof d.consumoMedio === 'number' && d.consumoMedio > 0) {
+            setLapConsumption(d.consumoMedio);
+          } else if (typeof d.fuelUsePerLap === 'number' && d.fuelUsePerLap > 0) {
+            setLapConsumption(d.fuelUsePerLap);
+          } else if (typeof d.fuelPerLap === 'number' && d.fuelPerLap > 0) {
+            setLapConsumption(d.fuelPerLap);
+          }
+        };
+        socket.addEventListener('message', ({ data }) => {
+          latest = JSON.parse(data);
+          if (!rafId) rafId = requestAnimationFrame(applyData);
+        });
+        return () => socket.close();
+      }, []);
+
+      // Função de cálculo rápido
+      const calcular = () => {
+        const rl = Number(voltasSimuladas) || 0;
+        const req = rl * lapConsumption + safetyMargin;
+        const falt = Math.max(0, req - fuelLeft);
+        setResultado(`Para ${rl} voltas → Precisa de ${req.toFixed(1)}L (falta ${falt.toFixed(1)}L)`);
+      };
+
+      return (
+        <div>
+          <div className="row">
+            <label>Volta Atual:</label>
+            <input type="number" value={currentLap} readOnly />
+          </div>
+          <div className="row">
+            <label>Voltas Restantes:</label>
+            <input type="number"
+                   value={remainingLaps}
+                   onChange={e => setRemainingLaps(Number(e.target.value))} />
+          </div>
+          <div className="row">
+            <label>Combustível (L):</label>
+            <input type="number" value={fuelLeft.toFixed(1)} readOnly />
+          </div>
+          <div className="row">
+            <label>Consumo / Volta:</label>
+            <input type="number"
+                   value={lapConsumption}
+                   onChange={e => setLapConsumption(Number(e.target.value))} />
+          </div>
+          <div className="row">
+            <label>Capacidade (L):</label>
+            <input type="number"
+                   value={tankCapacity}
+                   onChange={e => setTankCapacity(Number(e.target.value))} />
+          </div>
+          <div className="row">
+            <label>Margem Segurança:</label>
+            <input type="number" step="0.1"
+                   value={safetyMargin}
+                   onChange={e => setSafetyMargin(Number(e.target.value))} />
+          </div>
+
+          <hr className="my-4 border-gray-700"/>
+
+          <div className="row">
+            <label>Voltas (rápido):</label>
+            <input type="number"
+                   value={voltasSimuladas}
+                   onChange={e => setVoltasSimuladas(e.target.value)} />
+          </div>
+          <div className="flex justify-center">
+            <button className="btn" onClick={calcular}>Calcular</button>
+          </div>
+          <p className="mt-2 text-center text-sm font-semibold">{resultado}</p>
+        </div>
+      );
     }
 
-    function calcular() {
-      const rl = Number(els.simLaps.input.value) || 0;
-      const lapCons = Number(els.lapConsumption.input.value) || 0;
-      const fuel = Number(els.fuelLeft.input.value) || 0;
-      const margin = Number(els.safetyMargin.input.value) || 0;
-      const req = rl * lapCons + margin;
-      const falt = Math.max(0, req - fuel);
-      els.result.textContent = `Para ${rl} voltas → Precisa de ${req.toFixed(1)}L (falta ${falt.toFixed(1)}L)`;
-    }
-    calcBtn.addEventListener('click', calcular);
-
-    initOverlayWebSocket(d => {
-      els.currentLap.input.value = d.lap ?? 0;
-      const fuel = d.fuelLevel ?? (d.fuelLevelPct ?? 0) * (d.fuelCapacity ?? Number(els.tankCapacity.input.value) || 0);
-      els.fuelLeft.input.value = fuel.toFixed(1);
-      if (d.fuelCapacity) els.tankCapacity.input.value = d.fuelCapacity;
-      if (typeof d.consumoMedio === 'number' && d.consumoMedio > 0) {
-        els.lapConsumption.input.value = d.consumoMedio;
-      } else if (typeof d.fuelUsePerLap === 'number' && d.fuelUsePerLap > 0) {
-        els.lapConsumption.input.value = d.fuelUsePerLap;
-      } else if (typeof d.fuelPerLap === 'number' && d.fuelPerLap > 0) {
-        els.lapConsumption.input.value = d.fuelPerLap;
-      }
-    }, { overlay: 'calculadora' });
+    ReactDOM.createRoot(document.getElementById('root'))
+             .render(<FuelCalculator />);
   </script>
 
   <script>
