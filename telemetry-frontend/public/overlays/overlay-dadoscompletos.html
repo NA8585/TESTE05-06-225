@@ -7,7 +7,7 @@
   <style>
     html,body { margin:0; padding:0; height:100%; background:#111; color:#e2e8f0; font-family: monospace; font-size:12px; }
     .container { display:flex; height:100%; }
-    pre { flex:1; margin:0; padding:0.5rem; white-space: pre-wrap; word-break: break-all; overflow:auto; }
+    pre { flex:1; margin:0; padding:0.5rem; white-space: pre-wrap; word-break: break-all; overflow:auto; contain: content; }
     pre:first-child { border-right:1px solid #333; }
   </style>
 </head>
@@ -20,11 +20,24 @@
     import { initOverlayWebSocket } from '../overlay-common.js';
     const preYaml = document.getElementById('yaml');
     const preJson = document.getElementById('json');
+    let latest = null;
+    let hasNew = false;
     function handleData(data) {
-      preJson.textContent = JSON.stringify(data, null, 2);
-      preYaml.textContent = data.sessionInfoYaml || '';
+      latest = data;
+      hasNew = true;
     }
     initOverlayWebSocket(handleData);
+    let last = 0;
+    function loop(t) {
+      if (hasNew && t - last > 100) {
+        preJson.textContent = JSON.stringify(latest, null, 2);
+        preYaml.textContent = latest.sessionInfoYaml || '';
+        hasNew = false;
+        last = t;
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
   </script>
 </body>
 </html>

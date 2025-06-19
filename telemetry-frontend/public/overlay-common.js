@@ -1,4 +1,7 @@
+import { schedule } from './overlay-scheduler.js';
+
 let socket;
+let latestData = null;
 
 function overlayHost() {
   const host = window.location.hostname;
@@ -9,13 +12,19 @@ function initOverlayWebSocket(onData, params = {}) {
   const query = Object.keys(params).length > 0 ? '?' + new URLSearchParams(params).toString() : '';
   const url = (window.OVERLAY_WS_URL || `ws://${overlayHost()}:5221/ws`) + query;
   console.log('[Overlay] connecting to', url);
+  schedule(() => {
+    if (latestData !== null) {
+      onData(latestData);
+      latestData = null;
+    }
+  });
+
   function connect() {
     socket = new WebSocket(url);
     socket.onopen = () => console.log('[Overlay] WebSocket connected');
     socket.onmessage = (e) => {
       try {
-        const parsed = JSON.parse(e.data);
-        onData(parsed);
+        latestData = JSON.parse(e.data);
       } catch (err) {
         console.error('WS parse', err);
       }

@@ -31,6 +31,9 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      contain: layout paint;
+      transform: translateZ(0);
+      will-change: transform;
     }
 
     /* --- ESTILOS PARA MODO DE EDIÇÃO GLOBAL --- */
@@ -813,7 +816,7 @@
     }
 
 
-    function handleData(d) {
+    function processData(d) {
         d = { ...d, ...(d.tyres || d.tires || {}) };
 
         const src = d.tyres || d.tires || d;
@@ -969,9 +972,17 @@
     document.addEventListener('DOMContentLoaded', async () => {
       loadAllSettings();
       const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+      const { schedule } = await import('../overlay-scheduler.js');
+      let pending = null;
       isElectron = enableBrowserEditMode('wrapper','overlay-header');
       isCurrentlyInGlobalEditMode = !isElectron;
-      initOverlayWebSocket(handleData);
+      schedule(() => {
+        if (pending) {
+          processData(pending);
+          pending = null;
+        }
+      });
+      initOverlayWebSocket(data => { pending = data; });
       if (!isCurrentlyInGlobalEditMode) {
           resizableOverlayWrapper.classList.remove('global-edit-mode-active');
           overlayHeader.style.cursor = 'default';

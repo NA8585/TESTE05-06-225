@@ -36,6 +36,8 @@
       flex-direction: column;
       overflow: hidden;
       filter: contrast(var(--overlay-contrast, 1));
+      contain: layout paint;
+      will-change: transform;
     }
 
     /* --- ESTILOS PARA MODO DE EDIÇÃO GLOBAL --- */
@@ -697,8 +699,9 @@
       ensureSectorElements(0);
 
       let latest = null;
+      let hasNewData = false;
       function render() {
-        if (!latest) return;
+        if (!latest || !hasNewData) return;
         const dados = latest;
         const deltaValue = getLapDelta(dados);
         const timeDeltaAhead = dados.timeDeltaToCarAhead;
@@ -733,7 +736,10 @@
       }
 
       function animationLoop() {
-        render();
+        if (hasNewData) {
+          render();
+          hasNewData = false;
+        }
         window.requestAnimationFrame(animationLoop);
       }
 
@@ -741,7 +747,7 @@
       isElectron = enableBrowserEditMode('wrapper','overlay-header');
       isCurrentlyInGlobalEditMode = !isElectron;
       initOverlayWebSocket(d => {
-          if (d) latest = d.casper || d;
+          if (d) { latest = d.casper || d; hasNewData = true; }
       });
 
       animationLoop();

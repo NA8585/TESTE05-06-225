@@ -14,13 +14,16 @@
     padding: 0;
     background: transparent;
     font-family: Arial, sans-serif;
-  }
+   transform:translateZ(0); will-change:transform;}
   #root {
     width: 100vw;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    contain: layout paint;
+    will-change: transform;
+    transform: translateZ(0);
   }
   .radar {
     position: relative;
@@ -30,7 +33,7 @@
     background: rgba(0,0,0,0.6);
     border: 2px solid #777;
     overflow: hidden;
-  }
+   contain:layout paint;}
   .player {
     position: absolute;
     width: 16px;
@@ -160,7 +163,7 @@ function beep() {
 }
 
 // Componente de um ponto no radar
-function CarDot({car}) {
+const CarDot = React.memo(function CarDot({car}) {
   const pos = calcularPosicao(car.angle, car.distance, 100, 400);
   const alertColor = car.distance < config.distanceAlert.red ? 'red' :
                      car.distance < config.distanceAlert.yellow ? 'yellow' : 'green';
@@ -179,18 +182,29 @@ function CarDot({car}) {
       <span>{Math.round(car.distance)}</span>
     </div>
   );
-}
+}, (p,n)=>p.car.id===n.car.id && p.car.angle===n.car.angle && p.car.distance===n.car.distance && p.car.classId===n.car.classId);
 
 // Componente principal
 function RadarOverlay() {
   const [cars, setCars] = React.useState([]);
+  const latestRef = React.useRef(null);
+  const hasNew = React.useRef(false);
   React.useEffect(() => {
     window.updateRadar = (d) => {
-      setCars(processarDadosWs(d));
+      latestRef.current = d;
+      hasNew.current = true;
       const msg = d.carLeftRight != null ? String(d.carLeftRight) : '';
       const el = document.getElementById('left-right-msg');
       if (el) el.textContent = msg;
     };
+    function loop() {
+      if (hasNew.current) {
+        setCars(processarDadosWs(latestRef.current));
+        hasNew.current = false;
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
   }, []);
   return (
     <div className="radar">

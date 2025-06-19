@@ -34,6 +34,8 @@
       display:flex;
       flex-direction:column;
       overflow:hidden;
+      contain: layout paint;
+      will-change: transform;
       -webkit-app-region:drag; /* Permite arrastar a janela no Electron */
     }
 
@@ -213,15 +215,17 @@
         const url = window.OVERLAY_WS_URL || `ws://${host}:5221/ws`;
         const socket = new WebSocket(url);
         socket.addEventListener('open', () => console.log('WS FuelCalculator conectado'));
-        socket.addEventListener('message', ({ data }) => {
-          const d = JSON.parse(data);
+        let latest = null;
+        let rafId = null;
+        const applyData = () => {
+          rafId = null;
+          if (!latest) return;
+          const d = latest;
+          latest = null;
           setCurrentLap(d.lap ?? 0);
-
           const fuel = d.fuelLevel ?? (d.fuelLevelPct ?? 0) * (d.fuelCapacity ?? tankCapacity);
           setFuelLeft(fuel);
-
           if (d.fuelCapacity) setTankCapacity(d.fuelCapacity);
-
           if (typeof d.consumoMedio === 'number' && d.consumoMedio > 0) {
             setLapConsumption(d.consumoMedio);
           } else if (typeof d.fuelUsePerLap === 'number' && d.fuelUsePerLap > 0) {
@@ -229,6 +233,10 @@
           } else if (typeof d.fuelPerLap === 'number' && d.fuelPerLap > 0) {
             setLapConsumption(d.fuelPerLap);
           }
+        };
+        socket.addEventListener('message', ({ data }) => {
+          latest = JSON.parse(data);
+          if (!rafId) rafId = requestAnimationFrame(applyData);
         });
         return () => socket.close();
       }, []);

@@ -6,13 +6,24 @@
   <title>Tires Raw Data</title>
   <style>
     html,body { margin:0; padding:0; height:100%; background:#111; color:#e2e8f0; font-family: monospace; font-size:12px; }
-    pre { margin:0; padding:0.5rem; white-space: pre-wrap; word-break: break-all; overflow:auto; height:100%; }
+    pre {
+      margin:0;
+      padding:0.5rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow:auto;
+      height:100%;
+      contain: layout paint;
+      transform: translateZ(0);
+      will-change: transform;
+    }
   </style>
 </head>
 <body>
 <pre id="output">Conectando...</pre>
 <script type="module">
 import { initOverlayWebSocket } from '../overlay-common.js';
+import { schedule } from '../overlay-scheduler.js';
 
 const output = document.getElementById('output');
 
@@ -29,12 +40,19 @@ function filterTireData(src) {
   return result;
 }
 
-function handleData(data) {
+let pending = null;
+function process(data) {
   const flat = { ...data, ...(data.tyres || data.tires || {}) };
   output.textContent = JSON.stringify(filterTireData(flat), null, 2);
 }
 
-initOverlayWebSocket(handleData);
+schedule(() => {
+  if (pending) {
+    process(pending);
+    pending = null;
+  }
+});
+initOverlayWebSocket(d => { pending = d; });
 </script>
 </body>
 </html>

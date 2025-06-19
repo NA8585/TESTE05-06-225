@@ -40,6 +40,9 @@
             overflow:hidden;
             -webkit-app-region:drag; /* Permite arrastar a janela no Electron */
             filter: contrast(var(--overlay-contrast,1));
+            contain: layout paint;
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         /* Estilo dos manipuladores de redimensionamento */

@@ -32,6 +32,9 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      contain: layout paint;
+      will-change: transform;
+      transform: translateZ(0);
     }
 
     /* --- ESTILOS PARA MODO DE EDIÇÃO GLOBAL --- */
@@ -223,6 +226,7 @@
         <button id="click" title="Ignorar cliques">🖱️</button>
         <button id="gear"  title="Ajustes">⚙️</button>
         <button id="closeBtn" title="Fechar overlay">✖</button>
+        <span id="perf" class="ml-2 text-xs"></span>
       </div>
     </div>
 
@@ -744,6 +748,10 @@
           updateVisualClickButtonState(localIgnoreClicks);
       }
     });
+  </script>
+  <script type="module">
+    import { startProfiler } from '../overlay-profiler.js';
+    startProfiler('perf');
   </script>
 </body>
 </html>
