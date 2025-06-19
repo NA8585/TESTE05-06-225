@@ -57,7 +57,6 @@ Each overlay corresponds to an HTML file in `telemetry-frontend/public/overlays`
 - **Classificação** – shows full race classification with lap gaps.
 - **Calculadora** – another compact fuel calculator.
 - **Base** – basic classification template overlay.
-- **Radar** – circular radar indicating nearby cars with alerts.
 - **Teste Final** – diagnostic overlay combining various widgets.
 - **Tires Raw** – displays every tire-related value received from iRacing.
 - **Tires YAML** – parses `yamls/input_current.yaml` and lists tire values.

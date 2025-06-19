@@ -7,7 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
   <style>
     html,body{margin:0;padding:0;height:100%;font-family:'Poppins',sans-serif;background:rgba(15,23,42,0.9);color:#e2e8f0;overflow:hidden;font-size:0.85rem;;transform:translateZ(0);will-change:transform}
-    table{width:100%;border-collapse:collapse;}
     th,td{padding:4px 6px;}
     thead{background:#2563eb;color:#fff;position:sticky;top:0;}
     tbody tr:nth-child(even){background:rgba(30,41,59,0.6);}
@@ -17,7 +16,8 @@
   </style>
 </head>
 <body>
-<table>
+<div id="tableWrapper" style="height:100%;overflow-y:auto;">
+<table style="width:100%;border-collapse:collapse;">
   <thead>
     <tr>
       <th>Pos</th>
@@ -37,10 +37,49 @@
   </thead>
   <tbody id="tbody"></tbody>
 </table>
+</div>
 <script type="module">
 const pitStart={};
+let last=0;
+let prev='';
+let carsCache=[];
+const ROW_HEIGHT=24;
+const VISIBLE_ROWS=25;
+const wrapper=document.getElementById('tableWrapper');
+const tbody=document.getElementById('tbody');
+
 function fmtTime(s){if(typeof s!=='number'||!isFinite(s)||s<=0)return'--';const m=Math.floor(s/60);const sec=Math.floor(s%60);return`${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;}
+
+function renderRows(){
+ const start=Math.floor(wrapper.scrollTop/ROW_HEIGHT);
+ const end=Math.min(start+VISIBLE_ROWS,carsCache.length);
+ const frag=document.createDocumentFragment();
+ const padTop=document.createElement('tr');
+ padTop.style.height=`${start*ROW_HEIGHT}px`;
+ frag.appendChild(padTop);
+ const leaderGap=carsCache.length>0?carsCache[0].gap:0;
+ for(let i=start;i<end;i++){
+  const c=carsCache[i];
+  const diffLeader=c.gap-leaderGap;
+  const diffAhead=c.gap-(i>0?carsCache[i-1].gap:c.gap);
+  const gapL=i===0?'---':(Math.abs(diffLeader)>60?'--':diffLeader.toFixed(1));
+  const gapA=i===0?'---':(Math.abs(diffAhead)>60?'--':diffAhead.toFixed(1));
+  let pitCell='';
+  if(c.pit){pitStart[c.idx]=pitStart[c.idx]??c.sessionTime;pitCell=`<span class="pit-timer">${fmtTime(c.sessionTime-pitStart[c.idx])}</span>`;} else {delete pitStart[c.idx];}
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${c.pos}</td><td>${c.num}</td><td>${c.sr}</td><td>${c.ir}</td><td>${c.delta>0?"+":""}${c.delta}</td><td>${c.name}</td><td>${fmtTime(c.best)}</td><td>${fmtTime(c.last)}</td><td>${c.lap}</td><td>${gapL}</td><td>${gapA}</td><td>${pitCell}</td><td>${c.compound}</td>`;
+  frag.appendChild(tr);
+ }
+ const padBottom=document.createElement('tr');
+ padBottom.style.height=`${(carsCache.length-end)*ROW_HEIGHT}px`;
+ frag.appendChild(padBottom);
+ tbody.replaceChildren(frag);
+}
+
 function update(data){
+ const now=performance.now();
+ if(now-last<100)return;
+ last=now;
  data={...data,...(data.session||{})};
  const pos=data.carIdxPosition||[];
  const nums=data.carIdxCarNumbers||[];
@@ -54,29 +93,19 @@ function update(data){
  const f2=data.carIdxF2Time||[];
  const onPit=data.carIdxOnPitRoad||[];
  const compounds=data.carIdxTireCompounds||[];
- const tbody=document.getElementById('tbody');
- const frag=document.createDocumentFragment();
  const cars=[];
- for(let i=0;i<pos.length;i++){if(pos[i]<=0)continue;cars.push({idx:i,pos:pos[i],num:nums[i]||'',name:names[i]||'',sr:srs[i]||'',ir:irs[i]||'',delta:irDelta[i]||0,best:best[i]||0,last:last[i]||0,lap:laps[i]||0,gap:f2[i]||0,pit:onPit[i],compound:compounds[i]||''});}
- cars.sort((a,b)=>a.pos-b.pos);
- const leaderGap=cars.length>0?cars[0].gap:0;
- for(let i=0;i<cars.length;i++){
-  const c=cars[i];
-  const diffLeader=c.gap-leaderGap;
-  const diffAhead=c.gap-(i>0?cars[i-1].gap:c.gap);
-  const gapL=i===0?'---':(Math.abs(diffLeader)>60?'--':diffLeader.toFixed(1));
-  const gapA=i===0?'---':(Math.abs(diffAhead)>60?'--':diffAhead.toFixed(1));
-  let pitCell='';
-  if(c.pit){pitStart[c.idx]=pitStart[c.idx]??data.sessionTime;pitCell=`<span class="pit-timer">${fmtTime(data.sessionTime-pitStart[c.idx])}</span>`;} else {delete pitStart[c.idx];}
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${c.pos}</td><td>${c.num}</td><td>${c.sr}</td><td>${c.ir}</td><td>${c.delta>0?"+":""}${c.delta}</td><td>${c.name}</td><td>${fmtTime(c.best)}</td><td>${fmtTime(c.last)}</td><td>${c.lap}</td><td>${gapL}</td><td>${gapA}</td><td>${pitCell}</td><td>${c.compound}</td>`;
-  frag.appendChild(tr);
- }
- tbody.replaceChildren(frag);
+  for(let i=0;i<pos.length;i++){if(pos[i]<=0)continue;cars.push({idx:i,pos:pos[i],num:nums[i]||'',name:names[i]||'',sr:srs[i]||'',ir:irs[i]||'',delta:irDelta[i]||0,best:best[i]||0,last:last[i]||0,lap:laps[i]||0,gap:f2[i]||0,pit:onPit[i],compound:compounds[i]||''});}
+  cars.sort((a,b)=>a.pos-b.pos);
+  const serialized=JSON.stringify(cars);
+  if(serialized===prev)return;
+  prev=serialized;
+ carsCache=cars.map(c=>({...c,sessionTime:data.sessionTime}));
+ renderRows();
 }
 const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
 window.isElectron = enableBrowserEditMode(document.body, null);
 initOverlayWebSocket(update);
+wrapper.addEventListener('scroll', renderRows);
 </script>
 </body>
 </html>
