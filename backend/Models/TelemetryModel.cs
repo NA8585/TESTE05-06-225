@@ -370,6 +370,11 @@ namespace SuperBackendNR85IA.Models
         public string SessionInfoYaml { get; set; } = string.Empty;
         public List<ResultPosition> Results { get; set; } = new();
 
+        // Raw values captured directly from the iRacing SDK. Keys follow the
+        // original variable names as provided by the SDK and values can be
+        // scalars or arrays depending on the variable type.
+        public Dictionary<string, object?> SdkRaw { get; set; } = new();
+
         public TyreStatus LfTempStatus { get; set; } = new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold);
         public TyreStatus RfTempStatus { get; set; } = new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold);
         public TyreStatus LrTempStatus { get; set; } = new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold);
