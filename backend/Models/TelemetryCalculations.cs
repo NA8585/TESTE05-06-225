@@ -17,22 +17,18 @@ namespace SuperBackendNR85IA.Calculations
 
         private static float ValidateFloat(float value, string context)
         {
-            if (float.IsNaN(value) || float.IsInfinity(value))
-            {
+            float sanitized = Utilities.DataValidator.EnsurePositive(value);
+            if (sanitized != value)
                 _logger?.LogError($"Invalid float value in {context}: {value}");
-                return 0f;
-            }
-            return value;
+            return sanitized;
         }
 
         private static double ValidateDouble(double value, string context)
         {
-            if (double.IsNaN(value) || double.IsInfinity(value))
-            {
+            double sanitized = Utilities.DataValidator.EnsurePositive(value);
+            if (sanitized != value)
                 _logger?.LogError($"Invalid double value in {context}: {value}");
-                return 0.0;
-            }
-            return value;
+            return sanitized;
         }
 
         // --- SESSÃO ---
