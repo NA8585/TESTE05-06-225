@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace SuperBackendNR85IA.Services
 {
@@ -19,11 +20,13 @@ namespace SuperBackendNR85IA.Services
     {
         // Caminho para armazenamento do JSON contendo dados por carro/pista
         private readonly string _filePath;
+        private readonly ILogger<CarTrackDataStore> _logger;
         private readonly object _lock = new();
         private Dictionary<string, CarTrackData> _data = new();
 
-        public CarTrackDataStore(IConfiguration configuration)
+        public CarTrackDataStore(IConfiguration configuration, ILogger<CarTrackDataStore> logger)
         {
+            _logger = logger;
             var configured = configuration["CarTrackStorePath"];
             _filePath = string.IsNullOrWhiteSpace(configured)
                 ? Path.Combine(AppContext.BaseDirectory, "carTrackData.json")
@@ -37,8 +40,9 @@ namespace SuperBackendNR85IA.Services
                     _data = JsonSerializer.Deserialize<Dictionary<string, CarTrackData>>(json) ?? new();
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to load car track data from {Path}", _filePath);
                 _data = new();
             }
         }
@@ -74,7 +78,10 @@ namespace SuperBackendNR85IA.Services
                     var json = JsonSerializer.Serialize(_data, new JsonSerializerOptions { WriteIndented = true });
                     File.WriteAllText(_filePath, json);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to write car track data to {Path}", _filePath);
+                }
             }
         }
 
@@ -101,7 +108,10 @@ namespace SuperBackendNR85IA.Services
                 var json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(_filePath, json);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to write car track data to {Path}", _filePath);
+            }
         }
     }
 }
