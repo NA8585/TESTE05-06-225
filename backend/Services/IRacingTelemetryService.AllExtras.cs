@@ -37,6 +37,8 @@ namespace SuperBackendNR85IA.Services
             PopulateSystemPerformanceData(d, t);
             PopulateHighFreqData(d, t);
             PopulateDamageExtraData(d, t);
+            PopulateReplayData(d, t);
+            PopulateDcuData(d, t);
         }
 
         private void PopulateAdvancedVehicleData(IRacingSdkData d, TelemetryModel t)
@@ -94,6 +96,8 @@ namespace SuperBackendNR85IA.Services
             t.Session.SessionUniqueID = NonNegLong(d, "SessionUniqueID");
             t.Session.SessionTick = NonNeg(d, "SessionTick");
             t.Session.SessionTimeTotal = Pos(d, "SessionTimeTotal");
+            t.Session.DisplayUnits = (GetSdkValue<bool>(d, "DisplayUnits") ?? false) ? 1 : 0;
+            t.Session.DriverMarker = GetSdkValue<bool>(d, "DriverMarker") ?? false;
             t.Environment.WeatherDeclaredWet = GetSdkValue<bool>(d, "WeatherDeclaredWet") ?? false;
             t.Environment.SolarAltitude = Pos(d, "SolarAltitude");
             t.Environment.SolarAzimuth = Pos(d, "SolarAzimuth");
@@ -143,6 +147,20 @@ namespace SuperBackendNR85IA.Services
             t.Damage.PlayerCarWeightPenalty = Pos(d, "PlayerCarWeightPenalty");
             t.Damage.PlayerCarPowerAdjust = Pos(d, "PlayerCarPowerAdjust");
             t.Damage.PlayerCarTowTime = Pos(d, "PlayerCarTowTime");
+        }
+
+        private void PopulateReplayData(IRacingSdkData d, TelemetryModel t)
+        {
+            t.Replay.PlaySpeed = NonNeg(d, "ReplayPlaySpeed");
+            t.Replay.PlaySlowMotion = GetSdkValue<bool>(d, "ReplayPlaySlowMotion") ?? false;
+            t.Replay.SessionTime = GetSdkValue<double>(d, "ReplaySessionTime") ?? 0.0;
+            t.Replay.SessionNum = NonNeg(d, "ReplaySessionNum");
+        }
+
+        private void PopulateDcuData(IRacingSdkData d, TelemetryModel t)
+        {
+            t.Dcu.DcLapStatus = NonNeg(d, "dcLapStatus");
+            t.Dcu.DcDriversSoFar = NonNeg(d, "dcDriversSoFar");
         }
     }
 }
