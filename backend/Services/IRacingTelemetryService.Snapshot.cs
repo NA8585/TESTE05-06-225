@@ -15,11 +15,13 @@ namespace SuperBackendNR85IA.Services
                 float coldL, float coldM, float coldR,
                 float tread, float startTread)
             {
+                static float Avg(float a, float b, float c) => (a + b + c) / 3f;
+
                 return new TireData
                 {
-                    CurrentPressure = currentPress,
-                    LastHotPressure = lastHotPress,
-                    ColdPressure = coldPress,
+                    CurrentPressure = Utilities.DataValidator.EnsurePositive(currentPress),
+                    LastHotPressure = Utilities.DataValidator.EnsurePositive(lastHotPress),
+                    ColdPressure = Utilities.DataValidator.EnsurePositive(coldPress),
                     CurrentTempInternal = tempL,
                     CurrentTempMiddle = tempM,
                     CurrentTempExternal = tempR,
@@ -29,11 +31,11 @@ namespace SuperBackendNR85IA.Services
                     ColdTempInternal = coldL,
                     ColdTempMiddle = coldM,
                     ColdTempExternal = coldR,
-                    CoreTemp = (tempL + tempM + tempR) / 3f,
-                    LastHotTemp = (lastHotL + lastHotM + lastHotR) / 3f,
-                    ColdTemp = (coldL + coldM + coldR) / 3f,
+                    CoreTemp = Avg(tempL, tempM, tempR),
+                    LastHotTemp = Avg(lastHotL, lastHotM, lastHotR),
+                    ColdTemp = Avg(coldL, coldM, coldR),
                     Wear = startTread > 0f ? 1f - tread / startTread : 0f,
-                    TreadRemaining = tread,
+                    TreadRemaining = Utilities.DataValidator.EnsurePositive(tread),
                     SlipAngle = 0f,
                     SlipRatio = 0f,
                     Load = 0f,
@@ -78,8 +80,8 @@ namespace SuperBackendNR85IA.Services
                 FrontRightTire = fr,
                 RearLeftTire = rl,
                 RearRightTire = rr,
-                Speed = t.Speed,
-                Rpm = t.Rpm,
+                Speed = Utilities.DataValidator.EnsurePositive(t.Speed),
+                Rpm = Utilities.DataValidator.EnsurePositive(t.Rpm),
                 VerticalAcceleration = t.VertAccel,
                 LateralAcceleration = t.LatAccel,
                 LongitudinalAcceleration = t.LonAccel,

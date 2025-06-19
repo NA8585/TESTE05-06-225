@@ -10,5 +10,7 @@ namespace SuperBackendNR85IA.Models
         public int IncidentLimit { get; set; }
         public int SessionLaps { get; set; } // Adicionada para armazenar as voltas da sessão do YAML
         public List<ResultPosition>? ResultsPositions { get; set; }
+
+        public bool HasResults => ResultsPositions != null && ResultsPositions.Count > 0;
     }
 }
