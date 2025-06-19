@@ -1,0 +1,32 @@
+# Refactoring Progress
+
+- [x] backend/Program.cs
+- [x] backend/Repositories/ICarTrackRepository.cs
+- [x] backend/Services/CarTrackDataStore.cs
+- [x] backend/Services/IRacingTelemetryService.cs
+- [x] backend/Services/IRacingTelemetryService.Data.cs
+- [x] backend/Services/IRacingTelemetryService.Calculations.cs
+- [x] backend/Services/SessionYamlParser.cs
+- [x] backend/Utilities/DataValidator.cs
+- [x] backend/Services/TelemetryBroadcaster.cs
+- [x] backend/Services/IRacingTelemetryService.DriverArrays.cs
+- [x] backend/Services/IRacingTelemetryService.AllExtras.cs
+- [x] backend/Services/IRacingTelemetryService.Persistence.cs
+- [x] backend/Services/IRacingTelemetryService.Snapshot.cs
+- [x] backend/Services/EnumTranslations.cs
+- [ ] backend/Models/DamageData.cs
+- [ ] backend/Models/DriverInfo.cs
+- [ ] backend/Models/FrontendDataPayload.cs
+- [ ] backend/Models/Proximity.cs
+- [ ] backend/Models/ResultPosition.cs
+- [ ] backend/Models/SessionData.cs
+- [ ] backend/Models/SessionDetailFromYaml.cs
+- [ ] backend/Models/SessionInfo.cs
+- [ ] backend/Models/SectorInfo.cs
+- [ ] backend/Models/TelemetryCalculations.cs
+- [ ] backend/Models/TelemetryCalculationsOverlay.cs
+- [ ] backend/Models/TelemetryExtras.Models.cs
+- [ ] backend/Models/TelemetryModel.cs
+- [ ] backend/Models/TyreData.cs
+- [ ] backend/Models/VehicleData.cs
+- [ ] backend/Models/WeekendInfo.cs

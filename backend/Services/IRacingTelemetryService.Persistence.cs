@@ -7,17 +7,19 @@ namespace SuperBackendNR85IA.Services
     {
         private async Task PersistCarTrackData(TelemetryModel t)
         {
-            if (!string.IsNullOrEmpty(_carPath) && !string.IsNullOrEmpty(_trackName))
+            if (string.IsNullOrEmpty(_carPath) || string.IsNullOrEmpty(_trackName))
+                return;
+
+            var data = new CarTrackData
             {
-                await _store.UpdateAsync(new CarTrackData
-                {
-                    CarPath = _carPath,
-                    TrackName = _trackName,
-                    ConsumoMedio = t.ConsumoMedio,
-                    ConsumoUltimaVolta = _consumoUltimaVolta,
-                    FuelCapacity = t.FuelCapacity
-                });
-            }
+                CarPath = _carPath,
+                TrackName = _trackName,
+                ConsumoMedio = Utilities.DataValidator.EnsurePositive(t.ConsumoMedio),
+                ConsumoUltimaVolta = Utilities.DataValidator.EnsurePositive(_consumoUltimaVolta),
+                FuelCapacity = Utilities.DataValidator.EnsurePositive(t.FuelCapacity)
+            };
+
+            await _store.UpdateAsync(data);
         }
     }
 }
