@@ -21,12 +21,14 @@ namespace SuperBackendNR85IA.Services
     {
         // Caminho para armazenamento do JSON contendo dados por carro/pista
         private readonly string _filePath;
+        private readonly ILogger<CarTrackDataStore> _logger;
         private readonly object _lock = new();
         private readonly ILogger<CarTrackDataStore> _logger;
         private Dictionary<string, CarTrackData> _data = new();
 
         public CarTrackDataStore(IConfiguration configuration, ILogger<CarTrackDataStore> logger)
         {
+
             _logger = logger;
             var configured = configuration["CarTrackStorePath"];
             _filePath = string.IsNullOrWhiteSpace(configured)
@@ -41,6 +43,7 @@ namespace SuperBackendNR85IA.Services
                     _data = JsonSerializer.Deserialize<Dictionary<string, CarTrackData>>(json) ?? new();
                 }
             }
+
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to load car/track data store");
@@ -81,6 +84,7 @@ namespace SuperBackendNR85IA.Services
                 }
                 catch (Exception ex)
                 {
+
                     _logger.LogWarning(ex, "Failed to persist car/track data");
                 }
             }
@@ -112,6 +116,7 @@ namespace SuperBackendNR85IA.Services
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to persist car/track data asynchronously");
+
             }
         }
     }
