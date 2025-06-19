@@ -18,5 +18,13 @@ namespace SuperBackendNR85IA.Utilities
         {
             return value < 0 ? 0 : value;
         }
+
+        public static void EnsureArraySize<T>(ref T[] array, int size)
+        {
+            if (array == null)
+                array = new T[size];
+            else if (array.Length < size)
+                Array.Resize(ref array, size);
+        }
     }
 }

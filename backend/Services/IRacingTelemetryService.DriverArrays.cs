@@ -14,10 +14,8 @@ namespace SuperBackendNR85IA.Services
             int maxIdx = drv.Max(x => x.CarIdx);
             void SetValue<T>(ref T[] arr, int idx, T value)
             {
-                if (arr == null) arr = Array.Empty<T>();
-                if (arr.Length <= maxIdx || arr.Length <= idx)
-                    Array.Resize(ref arr, Math.Max(maxIdx + 1, idx + 1));
-                arr[idx] = value;
+                Utilities.DataValidator.EnsureArraySize(ref arr, Math.Max(maxIdx + 1, idx + 1));
+             arr[idx] = value;
             }
 
             foreach (var d in drv)

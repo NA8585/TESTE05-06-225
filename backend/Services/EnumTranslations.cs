@@ -4,42 +4,45 @@ namespace SuperBackendNR85IA.Services
 {
     public static class EnumTranslations
     {
+        private static readonly Dictionary<int, string> SessionStates = new()
+        {
+            [0] = "Invalid",
+            [1] = "GetInCar",
+            [2] = "Warmup",
+            [3] = "ParadeLaps",
+            [4] = "Racing",
+            [5] = "Checkered",
+            [6] = "CoolDown"
+        };
+
         public static string TranslateSessionState(int state) =>
-            state switch
-            {
-                0 => "Invalid",
-                1 => "GetInCar",
-                2 => "Warmup",
-                3 => "ParadeLaps",
-                4 => "Racing",
-                5 => "Checkered",
-                6 => "CoolDown",
-                _ => "Unknown",
-            };
+            SessionStates.TryGetValue(state, out var s) ? s : "Unknown";
+
+        private static readonly Dictionary<int, string> PaceModes = new()
+        {
+            [0] = "SingleFileStart",
+            [1] = "DoubleFileStart",
+            [2] = "SingleFileRestart",
+            [3] = "DoubleFileRestart",
+            [4] = "NotPacing",
+            [5] = "Pacing",
+            [6] = "CautionLap",
+            [7] = "LastLap"
+        };
 
         public static string TranslatePaceMode(int mode) =>
-            mode switch
-            {
-                0 => "SingleFileStart",
-                1 => "DoubleFileStart",
-                2 => "SingleFileRestart",
-                3 => "DoubleFileRestart",
-                4 => "NotPacing",
-                5 => "Pacing",
-                6 => "CautionLap",
-                7 => "LastLap",
-                _ => "Unknown",
-            };
+            PaceModes.TryGetValue(mode, out var p) ? p : "Unknown";
+
+        private static readonly Dictionary<int, string> SkiesDict = new()
+        {
+            [0] = "Clear",
+            [1] = "Partly Cloudy",
+            [2] = "Mostly Cloudy",
+            [3] = "Overcast"
+        };
 
         public static string TranslateSkies(int skies) =>
-            skies switch
-            {
-                0 => "Clear",
-                1 => "Partly Cloudy",
-                2 => "Mostly Cloudy",
-                3 => "Overcast",
-                _ => "Unknown",
-            };
+            SkiesDict.TryGetValue(skies, out var s) ? s : "Unknown";
 
         public static List<string> TranslateSessionFlags(int flags)
         {

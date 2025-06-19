@@ -13,7 +13,7 @@
 - [ ] backend/Services/IRacingTelemetryService.AllExtras.cs
 - [ ] backend/Services/IRacingTelemetryService.Persistence.cs
 - [ ] backend/Services/IRacingTelemetryService.Snapshot.cs
-- [ ] backend/Services/EnumTranslations.cs
+- [x] backend/Services/EnumTranslations.cs
 - [ ] backend/Models/DamageData.cs
 - [ ] backend/Models/DriverInfo.cs
 - [ ] backend/Models/FrontendDataPayload.cs
