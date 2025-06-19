@@ -1,6 +1,6 @@
 namespace SuperBackendNR85IA.Models
 {
-    public record SessionData
+    public partial record SessionData
     {
         public int SessionNum { get; set; }
         public double SessionTime { get; set; }
