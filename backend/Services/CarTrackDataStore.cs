@@ -21,7 +21,6 @@ namespace SuperBackendNR85IA.Services
     {
         // Caminho para armazenamento do JSON contendo dados por carro/pista
         private readonly string _filePath;
-        private readonly ILogger<CarTrackDataStore> _logger;
         private readonly object _lock = new();
         private readonly ILogger<CarTrackDataStore> _log;
         private Dictionary<string, CarTrackData> _data = new();
