@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using SuperBackendNR85IA.Services;
+using SuperBackendNR85IA.Collectors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,7 @@ builder.WebHost.UseUrls("http://localhost:5221");
 builder.Services.AddSingleton<TelemetryBroadcaster>();
 builder.Services.AddSingleton<Repositories.ICarTrackRepository, CarTrackDataStore>();
 builder.Services.AddSingleton<SessionYamlParser>();
-builder.Services.AddHostedService<IRacingTelemetryService>();
+builder.Services.AddHostedService<TireDataCollector>();
 
 // Serializa todas as propriedades em camelCase
 builder.Services.AddControllers().AddJsonOptions(options =>
