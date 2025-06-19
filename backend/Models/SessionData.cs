@@ -24,5 +24,8 @@ namespace SuperBackendNR85IA.Models
         public long SessionUniqueID { get; set; }
         public int SessionTick { get; set; }
         public bool SessionOnJokerLap { get; set; }
+
+        public System.TimeSpan TimeSpan => System.TimeSpan.FromSeconds(SessionTime);
+        public System.TimeSpan TimeRemainingSpan => System.TimeSpan.FromSeconds(SessionTimeRemain);
     }
 }

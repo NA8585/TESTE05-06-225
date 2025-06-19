@@ -46,6 +46,8 @@ namespace SuperBackendNR85IA.Models
         public int FastRepairAvailable { get; set; }
         public int FastRepairUsed { get; set; }
         public bool PlayerCarInPitStall { get; set; }
+
+        public bool NeedsService => PitSvFuel > 0 || PitSvLFP > 0 || PitSvLRP > 0 || PitSvRFP > 0 || PitSvRRP > 0;
     }
 
     public record EnvironmentData
@@ -56,6 +58,8 @@ namespace SuperBackendNR85IA.Models
         public float FogLevel { get; set; }
         public float Precipitation { get; set; }
         public string TrackGripStatus { get; set; } = string.Empty;
+
+        public bool HasPrecipitation => Precipitation > 0f;
     }
 
     public record SystemPerfData
@@ -69,6 +73,8 @@ namespace SuperBackendNR85IA.Models
         public float ChanPartnerQuality { get; set; }
         public float ChanAvgLatency { get; set; }
         public float ChanClockSkew { get; set; }
+
+        public float AvgCpuUsage => (CpuUsageFg + CpuUsageBg) / 2f;
     }
 
     public record RadarData
@@ -86,12 +92,16 @@ namespace SuperBackendNR85IA.Models
         public float[] CarIdxPowerAdjust { get; set; } = Array.Empty<float>();
         public float[] CarIdxWeightPenalty { get; set; } = Array.Empty<float>();
         public int CarLeftRight { get; set; }
+
+        public int CarCount => CarIdxGear.Length;
     }
 
     public record HighFreqData
     {
         public float LatAccel_ST { get; set; }
         public float LongAccel_ST { get; set; }
+
+        public float TotalAccel => System.MathF.Sqrt((LatAccel_ST * LatAccel_ST) + (LongAccel_ST * LongAccel_ST));
     }
 
     // Partial TelemetryModel with new groups and convenience wrappers

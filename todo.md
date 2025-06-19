@@ -14,19 +14,19 @@
 - [x] backend/Services/IRacingTelemetryService.Persistence.cs
 - [x] backend/Services/IRacingTelemetryService.Snapshot.cs
 - [x] backend/Services/EnumTranslations.cs
-- [ ] backend/Models/DamageData.cs
-- [ ] backend/Models/DriverInfo.cs
-- [ ] backend/Models/FrontendDataPayload.cs
-- [ ] backend/Models/Proximity.cs
-- [ ] backend/Models/ResultPosition.cs
-- [ ] backend/Models/SessionData.cs
-- [ ] backend/Models/SessionDetailFromYaml.cs
-- [ ] backend/Models/SessionInfo.cs
-- [ ] backend/Models/SectorInfo.cs
-- [ ] backend/Models/TelemetryCalculations.cs
-- [ ] backend/Models/TelemetryCalculationsOverlay.cs
-- [ ] backend/Models/TelemetryExtras.Models.cs
-- [ ] backend/Models/TelemetryModel.cs
-- [ ] backend/Models/TyreData.cs
-- [ ] backend/Models/VehicleData.cs
-- [ ] backend/Models/WeekendInfo.cs
+- [x] backend/Models/DamageData.cs
+- [x] backend/Models/DriverInfo.cs
+- [x] backend/Models/FrontendDataPayload.cs
+- [x] backend/Models/Proximity.cs
+- [x] backend/Models/ResultPosition.cs
+- [x] backend/Models/SessionData.cs
+- [x] backend/Models/SessionDetailFromYaml.cs
+- [x] backend/Models/SessionInfo.cs
+- [x] backend/Models/SectorInfo.cs
+- [x] backend/Models/TelemetryCalculations.cs
+- [x] backend/Models/TelemetryCalculationsOverlay.cs
+- [x] backend/Models/TelemetryExtras.Models.cs
+- [x] backend/Models/TelemetryModel.cs
+- [x] backend/Models/TyreData.cs
+- [x] backend/Models/VehicleData.cs
+- [x] backend/Models/WeekendInfo.cs

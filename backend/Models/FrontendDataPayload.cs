@@ -7,11 +7,13 @@ namespace SuperBackendNR85IA.Models
     public class FrontendDataPayload
     {
         [JsonPropertyName("telemetry")] public TelemetryModel? Telemetry { get; set; }
-        [JsonPropertyName("drivers")] public List<DriverPayload>? Drivers { get; set; }
+        [JsonPropertyName("drivers")] public List<DriverPayload> Drivers { get; set; } = new();
         [JsonPropertyName("sessionInfo")] public SessionInfoPayload? SessionInfo { get; set; }
         [JsonPropertyName("weekendInfo")] public WeekendInfoPayload? WeekendInfo { get; set; }
-        [JsonPropertyName("results")] public List<ResultPayload>? Results { get; set; }
-        [JsonPropertyName("proximityCars")] public List<ProximityCar>? ProximityCars { get; set; }
+        [JsonPropertyName("results")] public List<ResultPayload> Results { get; set; } = new();
+        [JsonPropertyName("proximityCars")] public List<ProximityCar> ProximityCars { get; set; } = new();
+
+        public bool HasResults => Results.Count > 0;
     }
 
 

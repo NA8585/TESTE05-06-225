@@ -12,5 +12,16 @@ namespace SuperBackendNR85IA.Models
         public float GearboxDamage { get; set; }
         public float SuspensionDamage { get; set; }
         public float ChassisDamage { get; set; }
+
+        /// <summary>
+        /// Quick helper to know if the car has any damage recorded.
+        /// </summary>
+        public bool HasAnyDamage()
+        {
+            return LfDamage > 0f || RfDamage > 0f || LrDamage > 0f || RrDamage > 0f
+                   || FrontWingDamage > 0f || RearWingDamage > 0f
+                   || EngineDamage > 0f || GearboxDamage > 0f
+                   || SuspensionDamage > 0f || ChassisDamage > 0f;
+        }
     }
 }

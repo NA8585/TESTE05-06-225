@@ -12,5 +12,7 @@ namespace SuperBackendNR85IA.Models
         public List<SessionDetailFromYaml>? AllSessionsFromYaml { get; set; }
         public int IncidentLimit { get; set; }
         public int CurrentSessionTotalLaps { get; set; } // Adicionada para o total de voltas da sessão atual
+
+        public string DisplayName => $"{SessionName} ({SessionType})";
     }
 }

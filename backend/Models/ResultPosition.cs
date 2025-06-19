@@ -12,5 +12,7 @@ namespace SuperBackendNR85IA.Models
         public bool InGarage { get; set; }
         public int PitStopCount { get; set; }
         public int NewIRating { get; set; }
+
+        public bool Finished => Position > 0 && Time > 0f;
     }
 }

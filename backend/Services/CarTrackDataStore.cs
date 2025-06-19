@@ -26,7 +26,7 @@ namespace SuperBackendNR85IA.Services
 
         public CarTrackDataStore(IConfiguration configuration, ILogger<CarTrackDataStore> logger)
         {
-            _logger = logger;
+
             var configured = configuration["CarTrackStorePath"];
             _filePath = string.IsNullOrWhiteSpace(configured)
                 ? Path.Combine(AppContext.BaseDirectory, "carTrackData.json")
@@ -40,9 +40,9 @@ namespace SuperBackendNR85IA.Services
                     _data = JsonSerializer.Deserialize<Dictionary<string, CarTrackData>>(json) ?? new();
                 }
             }
-            catch (Exception ex)
+
+            catch
             {
-                _logger.LogError(ex, "Failed to load car track data from {Path}", _filePath);
                 _data = new();
             }
         }
