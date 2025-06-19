@@ -14,19 +14,30 @@ namespace SuperBackendNR85IA.Services
     {
         private readonly ILogger<SessionYamlParser> _logger;
         private readonly HashSet<string> _loggedMissingKeys = new();
+        private readonly Dictionary<long, (string yaml, (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?, List<DriverInfo>) data)> _cache = new();
 
         public SessionYamlParser(ILogger<SessionYamlParser> logger)
         {
             _logger = logger;
         }
 
-        public (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?, List<DriverInfo>) ParseSessionInfo(string yaml, int playerCarIdx, int currentSessionNum)
+        public (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?, List<DriverInfo>) ParseSessionInfo(string yaml, int playerCarIdx, int currentSessionNum, long sessionUniqueId)
         {
             _loggedMissingKeys.Clear();
 
             if (string.IsNullOrWhiteSpace(yaml))
                 return (null, null, null, null, new List<DriverInfo>());
 
+            if (_cache.TryGetValue(sessionUniqueId, out var entry) && entry.yaml == yaml)
+                return entry.data;
+
+            var result = ParseSessionInfoInternal(yaml, playerCarIdx, currentSessionNum);
+            _cache[sessionUniqueId] = (yaml, result);
+            return result;
+        }
+
+        private (DriverInfo?, WeekendInfo?, SessionInfo?, SectorInfo?, List<DriverInfo>) ParseSessionInfoInternal(string yaml, int playerCarIdx, int currentSessionNum)
+        {
             var ys = new YamlStream();
             ys.Load(new StringReader(yaml));
             var root = (YamlMappingNode)ys.Documents[0].RootNode;
@@ -34,7 +45,6 @@ namespace SuperBackendNR85IA.Services
             var driver = ParsePlayerDriverInfo(root, playerCarIdx);
             var weekend = ParseWeekendInfo(root);
             var session = ParseCurrentSessionDetails(root, currentSessionNum);
-            // Novo objeto para setores
             var sectors = ParseSectorInfo(root, currentSessionNum);
             var drivers = ParseAllDrivers(root);
 

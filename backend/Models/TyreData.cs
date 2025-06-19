@@ -149,5 +149,7 @@ namespace SuperBackendNR85IA.Models
         public float RfLastHotPressKpa => PsiToKpa(RfLastHotPress);
         public float LrLastHotPressKpa => PsiToKpa(LrLastHotPress);
         public float RrLastHotPressKpa => PsiToKpa(RrLastHotPress);
+
+        public float AverageWear => (LfWearAvg + RfWearAvg + LrWearAvg + RrWearAvg) / 4f;
     }
 }

@@ -381,6 +381,8 @@ namespace SuperBackendNR85IA.Models
             new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold),
             new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold));
 
+        public void Sanitize() => TelemetryCalculations.SanitizeModel(this);
+
         public static string FormatTime(double seconds)
         {
             if (double.IsNaN(seconds) || double.IsInfinity(seconds) || seconds < 0 || seconds > 60 * 60 * 24 * 365)
