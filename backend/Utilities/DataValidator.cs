@@ -19,6 +19,10 @@ namespace SuperBackendNR85IA.Utilities
             return value < 0 ? 0 : value;
         }
 
+        public static long EnsureNonNegative(long value)
+        {
+            return value < 0 ? 0 : value;
+        }
         public static void EnsureArraySize<T>(ref T[] array, int size)
         {
             if (array == null)

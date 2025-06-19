@@ -10,9 +10,9 @@
 - [x] backend/Utilities/DataValidator.cs
 - [x] backend/Services/TelemetryBroadcaster.cs
 - [x] backend/Services/IRacingTelemetryService.DriverArrays.cs
-- [ ] backend/Services/IRacingTelemetryService.AllExtras.cs
-- [ ] backend/Services/IRacingTelemetryService.Persistence.cs
-- [ ] backend/Services/IRacingTelemetryService.Snapshot.cs
+- [x] backend/Services/IRacingTelemetryService.AllExtras.cs
+- [x] backend/Services/IRacingTelemetryService.Persistence.cs
+- [x] backend/Services/IRacingTelemetryService.Snapshot.cs
 - [x] backend/Services/EnumTranslations.cs
 - [ ] backend/Models/DamageData.cs
 - [ ] backend/Models/DriverInfo.cs
