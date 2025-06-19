@@ -104,8 +104,7 @@ namespace SuperBackendNR85IA.Services
             var fullBytes = JsonSerializer.SerializeToUtf8Bytes(fullPayload, _jsonSerializerOptions);
             var inputsBytes = JsonSerializer.SerializeToUtf8Bytes(inputsPayload, _jsonSerializerOptions);
 
-            static async Task SendAsync(Guid id, ClientInfo info, ArraySegment<byte> bytes,
-                                        ILogger logger)
+            async Task SendAsync(Guid id, ClientInfo info, ArraySegment<byte> bytes)
             {
                 var socket = info.Socket;
                 if (socket.State != WebSocketState.Open) return;
@@ -115,12 +114,13 @@ namespace SuperBackendNR85IA.Services
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.LogError(ex, $"Erro ao enviar dados para o cliente WebSocket {id}. Removendo cliente.");
-                    await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, "Erro durante envio", CancellationToken.None);
+                    _logger.LogError(ex, $"Erro ao enviar dados para o cliente WebSocket {id}. Removendo cliente.");
+                    await RemoveClient(id, socket, WebSocketCloseStatus.EndpointUnavailable, "Erro durante envio");
                 }
                 catch (ObjectDisposedException)
                 {
-                    logger.LogWarning($"Tentativa de envio para cliente {id} com socket disposed.");
+                    _logger.LogWarning($"Tentativa de envio para cliente {id} com socket disposed.");
+                    await RemoveClient(id, socket, WebSocketCloseStatus.EndpointUnavailable, "Socket disposed");
                 }
             }
 
@@ -128,7 +128,7 @@ namespace SuperBackendNR85IA.Services
             foreach (var (clientId, info) in _clients)
             {
                 var bytes = info.Overlay == "inputs" ? inputsBytes : fullBytes;
-                tasks.Add(SendAsync(clientId, info, new ArraySegment<byte>(bytes), _logger));
+                tasks.Add(SendAsync(clientId, info, new ArraySegment<byte>(bytes)));
             }
 
             await Task.WhenAll(tasks);
