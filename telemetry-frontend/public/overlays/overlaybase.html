@@ -35,6 +35,9 @@
       border:2px solid var(--border-accent); border-radius:1rem;
       box-shadow:0 4px 10px rgba(0,0,0,0.5);
       display:flex; flex-direction:column; overflow:hidden;
+      contain: layout paint;
+      transform: translateZ(0);
+      will-change: transform;
       -webkit-app-region:drag;
     }
 
@@ -71,6 +74,7 @@
     .relative-content-pane {
       flex-grow: 1; padding: 8px; overflow-y: auto;
       display: flex; flex-direction:column; gap: 8px;
+      contain: layout paint;
     }
 
     .header-bar, .footer-bar {
@@ -222,8 +226,16 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      initOverlayWebSocket(update);
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { schedule } = await import('../overlay-scheduler.js');
+      let pending = null;
+      schedule(() => {
+        if (pending) {
+          update(pending);
+          pending = null;
+        }
+      });
+      initOverlayWebSocket(data => { pending = data; });
     });
   </script>
 </body>

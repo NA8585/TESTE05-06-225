@@ -30,3 +30,38 @@
 - [x] backend/Models/TyreData.cs
 - [x] backend/Models/VehicleData.cs
 - [x] backend/Models/WeekendInfo.cs
+- [x] Review overall frontend architecture and component structure
+- [x] Profile each overlay to measure CPU and memory usage
+- [x] Create a shared render scheduler using `requestAnimationFrame`
+- [x] Refactor WebSocket handling to batch messages per frame
+- [x] Replace layout-changing styles with `transform` animations
+ - [x] Audit event listeners and apply delegation where possible
+- [x] Implement lazy loading or virtual scrolling for large lists
+- [x] Migrate heavy calculations to Web Workers if needed
+- [x] Optimize React overlays with `memo`, `useCallback`, and `useMemo`
+- [x] Ensure CSS containment and hardware acceleration hints (`will-change`)
+- [x] Review individual overlay files:
+  - [x] `overlay-calculadora.html`
+  - [x] `overlay-classificacao.html`
+  - [x] `overlay-dadoscompletos.html`
+  - [x] `overlay-delta.html`
+  - [x] `overlay-diagnostico-raw.html`
+  - [x] `overlay-inputs.html`
+  - [x] `overlay-radar.html`
+  - [x] `overlay-relative.html`
+  - [x] `overlay-sessao.html`
+  - [x] `overlay-standings.html`
+  - [x] `overlay-tanque.html`
+  - [x] `overlay-tiresandbrakes.html`
+  - [x] `overlay-tiresgarage.html`
+  - [x] `overlay-tiresnapshot.html`
+  - [x] `overlay-tiresraw.html`
+  - [x] `overlay-tiresyaml.html`
+  - [x] `overlay-tirewear.html`
+  - [x] `overlaybase.html`
+  - [x] `supermegaultra.html`
+- [x] Validate no visual regressions after optimizations
+- [x] Document performance metrics before and after changes
+
+
+## Optimization Plan Completed

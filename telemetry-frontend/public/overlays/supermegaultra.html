@@ -51,11 +51,14 @@
       right: 0;
       bottom: 0;
       overflow-y: auto; /* Permite rolagem vertical para o conteúdo */
-      padding: 0.5rem; 
+      padding: 0.5rem;
       display: grid;
       gap: 0.2rem 0.7rem; /* Espaçamento entre linhas e colunas */
       grid-template-columns: repeat(4, 1fr); /* 4 colunas de largura igual */
       align-content: start; /* Alinha o conteúdo ao topo */
+      contain: layout paint;
+      transform: translateZ(0);
+      will-change: transform;
     }
 
     /* Estilo para as seções (cabeçalhos de categoria) */
@@ -840,8 +843,11 @@ if (window.getComputedStyle(document.body).backgroundColor === 'rgba(0, 0, 0, 0)
 
 // Inicia a conexão WebSocket ao carregar a página
 const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+const { schedule } = await import('../overlay-scheduler.js');
+let pending = null;
 window.isElectron = enableBrowserEditMode('root', document.querySelector('header'));
-initOverlayWebSocket(handleData);
+schedule(() => { if (pending) { handleData(pending); pending = null; } });
+initOverlayWebSocket(data => { pending = data; });
 </script>
 <script type="module" src="/index.tsx"></script>
 </body>

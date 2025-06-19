@@ -6,12 +6,13 @@
   <title>Classificação - NR85 IA</title>
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
   <style>
-    html,body{margin:0;padding:0;height:100%;font-family:'Poppins',sans-serif;background:rgba(15,23,42,0.9);color:#e2e8f0;overflow:hidden;font-size:0.85rem;}
+    html,body{margin:0;padding:0;height:100%;font-family:'Poppins',sans-serif;background:rgba(15,23,42,0.9);color:#e2e8f0;overflow:hidden;font-size:0.85rem;;transform:translateZ(0);will-change:transform}
     table{width:100%;border-collapse:collapse;}
     th,td{padding:4px 6px;}
     thead{background:#2563eb;color:#fff;position:sticky;top:0;}
     tbody tr:nth-child(even){background:rgba(30,41,59,0.6);}
     tbody tr:nth-child(odd){background:rgba(30,41,59,0.4);}
+    tbody{contain:layout paint;}
     .pit-timer{border:1px solid #facc15;padding:0 4px;border-radius:3px;color:#facc15;}
   </style>
 </head>
@@ -54,7 +55,7 @@ function update(data){
  const onPit=data.carIdxOnPitRoad||[];
  const compounds=data.carIdxTireCompounds||[];
  const tbody=document.getElementById('tbody');
- tbody.innerHTML='';
+ const frag=document.createDocumentFragment();
  const cars=[];
  for(let i=0;i<pos.length;i++){if(pos[i]<=0)continue;cars.push({idx:i,pos:pos[i],num:nums[i]||'',name:names[i]||'',sr:srs[i]||'',ir:irs[i]||'',delta:irDelta[i]||0,best:best[i]||0,last:last[i]||0,lap:laps[i]||0,gap:f2[i]||0,pit:onPit[i],compound:compounds[i]||''});}
  cars.sort((a,b)=>a.pos-b.pos);
@@ -69,8 +70,9 @@ function update(data){
   if(c.pit){pitStart[c.idx]=pitStart[c.idx]??data.sessionTime;pitCell=`<span class="pit-timer">${fmtTime(data.sessionTime-pitStart[c.idx])}</span>`;} else {delete pitStart[c.idx];}
   const tr=document.createElement('tr');
   tr.innerHTML=`<td>${c.pos}</td><td>${c.num}</td><td>${c.sr}</td><td>${c.ir}</td><td>${c.delta>0?"+":""}${c.delta}</td><td>${c.name}</td><td>${fmtTime(c.best)}</td><td>${fmtTime(c.last)}</td><td>${c.lap}</td><td>${gapL}</td><td>${gapA}</td><td>${pitCell}</td><td>${c.compound}</td>`;
-  tbody.appendChild(tr);
+  frag.appendChild(tr);
  }
+ tbody.replaceChildren(frag);
 }
 const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
 window.isElectron = enableBrowserEditMode(document.body, null);

@@ -38,6 +38,8 @@
       overflow: hidden;
       position: relative;
       filter: contrast(var(--overlay-contrast, 1)); /* Contraste controlável */
+      contain: layout paint;
+      will-change: transform;
     }
 
     .header {
@@ -130,6 +132,14 @@
     .controls button#clickThroughBtn.active { background-color: #6366f1; border-color: #818cf8;}
     .controls button#closeBtn { background:#ef4444; border-color: #f87171;}
     .controls button#closeBtn:hover { background:#dc2626; border-color: #ef4444;}
+
+    #perf {
+        position: absolute;
+        top: 2px;
+        right: 6px;
+        font-size: 0.65rem;
+        color: #9ca3af;
+    }
 
     @keyframes pulse {
         0% { transform: scale(1); opacity: 0.7; }
@@ -293,6 +303,7 @@
           <button id="settingsBtn" title="Ajustes"><i class="fas fa-cog"></i></button>
           <button id="closeBtn" title="Fechar Overlay"><i class="fas fa-times"></i></button>
       </div>
+      <div id="perf"></div>
     </div>
 
     <div class="connection-status-container">
@@ -409,6 +420,7 @@
     const wsUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://localhost:5221/ws';
     let ws;
     let lastFullData = null;
+    let hasNewData = false;
     const OVERLAY_NAME = 'session-overlay-detailed-v2-com-setores'; // Nome único atualizado
 
     console.log('Overlay de Sessão Detalhada v2.6 (NR85IA com Setores) iniciando...');
@@ -446,7 +458,7 @@
         ws.onmessage = (event) => {
             try {
                 lastFullData = JSON.parse(event.data);
-                updateUI(lastFullData);
+                hasNewData = true;
             } catch (e) {
                 console.error('Falha ao parsear JSON:', e, event.data);
             }
@@ -459,6 +471,14 @@
             el.textContent = text;
             el.className = `connection-status ${cssClass}`;
         }
+    }
+
+    function renderLoop() {
+        if (hasNewData && lastFullData) {
+            updateUI(lastFullData);
+            hasNewData = false;
+        }
+        requestAnimationFrame(renderLoop);
     }
 
     // Funções utilitárias (combinadas e refinadas de ambos os arquivos)
@@ -831,10 +851,15 @@
         }
         loadSettings();
         connectWebSocket();
+        renderLoop();
         updatePinButtonState(pinnedState); // Garante estado visual inicial correto
         updateLockButtonState(lockedState);
         updateClickButtonState(clickThroughState);
     });
+  </script>
+  <script type="module">
+    import { startProfiler } from '../overlay-profiler.js';
+    startProfiler('perf');
   </script>
 </body>
 </html>

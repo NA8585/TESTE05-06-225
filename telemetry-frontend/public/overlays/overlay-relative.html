@@ -26,8 +26,11 @@
 
         .resizable-overlay-wrapper {
             position: absolute;
-            top: 50px;
-            left: 50px;
+            top: 0;
+            left: 0;
+            transform: translate3d(50px, 50px, 0);
+            will-change: transform;
+            contain: layout paint;
             width:480px;
             height:450px;
             min-width:450px;
@@ -141,6 +144,13 @@
         }
         .overlay-header #closeBtn { background:#dc2626;}
         .overlay-header #closeBtn:hover { background:#ef4444;}
+        #perf {
+            position: absolute;
+            top: 2px;
+            right: 6px;
+            font-size: 0.65rem;
+            color: #9ca3af;
+        }
 
         .relative-content-pane {
             flex-grow: 1;
@@ -348,6 +358,7 @@
                     <button id="settingsBtn" title="Ajustes">⚙️</button>
                     <button id="closeBtn" title="Fechar overlay">✖</button>
                 </div>
+                <div id="perf"></div>
             </header>
 
             <div id="settings-popover" class="hidden absolute top-10 right-2 bg-gray-800 p-4 rounded-lg shadow-lg z-10 w-64">
@@ -414,10 +425,24 @@
                 driverInfo: null,
                 weekendInfo: null,
                 sessionInfo: null,
+                playerIdx: null,
             },
             websocket: null,
             displayedCarIdx: new Set(),
-            reconnectAttempts: 0, 
+            reconnectAttempts: 0,
+        };
+
+        let latestData = null;
+        let pendingDragFrame = false;
+        const relativeWorker = new Worker('../workers/relative-worker.js', { type: 'module' });
+        let workerReady = false;
+        relativeWorker.onmessage = (e) => {
+            if (e.data.type === 'cars') {
+                renderProcessedCars(e.data.cars, e.data.sessionType, e.data.numCarClasses);
+            } else if (e.data.type === 'error') {
+                console.error('Worker error:', e.data.error);
+            }
+            workerReady = true;
         };
 
         const WS_URL = window.OVERLAY_WS_URL || 'ws://127.0.0.1:5221/ws';
@@ -491,6 +516,7 @@
             
             const { driverInfo, weekendInfo, sessionInfo } = state.cachedData;
             const playerCarIdx = flatData.playerCarIdx;
+            state.cachedData.playerIdx = playerCarIdx;
             
             if (!driverInfo || !weekendInfo || !sessionInfo || playerCarIdx === undefined) {
                  if (!dom.competitorList.querySelector('.status-message')) {
@@ -551,91 +577,11 @@
             player.lapDiff = 0;
             player.effectiveGap = 0;
 
-            const playerEstLap = player.estLap || 120;
-            const others = displayableDrivers.filter(d => d.idx !== player.idx);
-
-            others.forEach(d => {
-                if (d.carClassShortName === player.carClassShortName) {
-                    const estLapTime = d.estLap || playerEstLap;
-                    if (estLapTime === 0) {
-                        d.effectiveGap = undefined; d.timeGap = undefined; d.lapDiff = undefined;
-                        return;
-                    }
-                    
-                    let deltaPct = d.distPct - player.distPct;
-                    if (deltaPct > 0.5) deltaPct -= 1.0;
-                    if (deltaPct < -0.5) deltaPct += 1.0;
-                    
-                    const timeGap = deltaPct * estLapTime;
-                    d.timeGap = timeGap;
-                    d.effectiveGap = timeGap;
-
-                    if (!sessionType.toLowerCase().includes('practice')) {
-                        d.lapDiff = (d.lap || 0) - (player.lap || 0);
-                        if (deltaPct > 0.5) d.lapDiff--;
-                        if (deltaPct < -0.5) d.lapDiff++;
-                    } else {
-                        d.lapDiff = undefined;
-                    }
-
-                } else {
-                    d.timeGap = undefined;
-                    d.lapDiff = undefined;
-                    d.effectiveGap = undefined;
-                }
-            });
-
-            const N_AROUND = 4; // Máximo de 4 pilotos
-            const sameClassActiveOthers = others.filter(d => d.effectiveGap !== undefined);
-            
-            const ahead = sameClassActiveOthers
-                .filter(d => d.effectiveGap > 0)
-                .sort((a, b) => a.effectiveGap - b.effectiveGap)
-                .slice(0, N_AROUND)
-                .reverse();
-
-            const behind = sameClassActiveOthers
-                .filter(d => d.effectiveGap <= 0)
-                .sort((a, b) => b.effectiveGap - a.effectiveGap)
-                .slice(0, N_AROUND);
-            
-            const carsToDisplay = [...ahead, player, ...behind];
-            const currentCarIdxOnScreen = new Set(carsToDisplay.map(c => c.idx));
-
-            state.displayedCarIdx.forEach(idx => {
-                if (!currentCarIdxOnScreen.has(idx)) {
-                    const rowToRemove = document.getElementById(`driver-row-${idx}`);
-                    if (rowToRemove) {
-                        rowToRemove.style.opacity = '0';
-                        rowToRemove.style.transform = 'scale(0.95)';
-                        setTimeout(() => rowToRemove.remove(), 300);
-                    }
-                    state.displayedCarIdx.delete(idx);
-                }
-            });
-
-            carsToDisplay.forEach(car => {
-                const rowId = `driver-row-${car.idx}`;
-                let el = document.getElementById(rowId);
-                const isNew = !el;
-
-                if (isNew) {
-                    el = document.createElement('div');
-                    el.id = rowId;
-                    el.style.opacity = '0';
-                    el.style.transform = 'scale(0.95)';
-                    state.displayedCarIdx.add(car.idx);
-                }
-
-                updateRowContent(el, car, player, sessionType, numCarClasses);
-                dom.competitorList.appendChild(el);
-
-                if (isNew) {
-                    setTimeout(() => {
-                        el.style.opacity = '1';
-                        el.style.transform = 'scale(1)';
-                    }, 20);
-                }
+            relativeWorker.postMessage({
+                drivers: displayableDrivers,
+                playerIdx: player.idx,
+                sessionType,
+                numCarClasses
             });
         }
         
@@ -688,9 +634,52 @@
                 </div>
                 <span class="driver-name ${isInactive ? 'inactive' : ''}">${car.name}</span>
                 <span class="gap-time">
-                    <span class="gap-time-value ${gapTextColorClass}">${gapText}</span>
+                <span class="gap-time-value ${gapTextColorClass}">${gapText}</span>
                     ${lapDiffIndicator}
                 </span>`;
+        }
+
+        function renderProcessedCars(carsToDisplay, sessionType, numCarClasses) {
+            const player = carsToDisplay.find(c => c.idx === state.cachedData.playerIdx);
+            const currentCarIdxOnScreen = new Set(carsToDisplay.map(c => c.idx));
+
+            state.displayedCarIdx.forEach(idx => {
+                if (!currentCarIdxOnScreen.has(idx)) {
+                    const rowToRemove = document.getElementById(`driver-row-${idx}`);
+                    if (rowToRemove) {
+                        rowToRemove.style.opacity = '0';
+                        rowToRemove.style.transform = 'scale(0.95)';
+                        setTimeout(() => rowToRemove.remove(), 300);
+                    }
+                    state.displayedCarIdx.delete(idx);
+                }
+            });
+
+            const frag = document.createDocumentFragment();
+            carsToDisplay.forEach(car => {
+                const rowId = `driver-row-${car.idx}`;
+                let el = document.getElementById(rowId);
+                const isNew = !el;
+
+                if (isNew) {
+                    el = document.createElement('div');
+                    el.id = rowId;
+                    el.style.opacity = '0';
+                    el.style.transform = 'scale(0.95)';
+                    state.displayedCarIdx.add(car.idx);
+                }
+
+                updateRowContent(el, car, player, sessionType, numCarClasses);
+                frag.appendChild(el);
+
+                if (isNew) {
+                    requestAnimationFrame(() => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'scale(1)';
+                    });
+                }
+            });
+            dom.competitorList.appendChild(frag);
         }
 
         // --- WEBSOCKET LOGIC ---
@@ -714,8 +703,7 @@
             };
             state.websocket.onmessage = (event) => {
                 try {
-                    const data = JSON.parse(event.data);
-                    renderUI(data);
+                    latestData = JSON.parse(event.data);
                 } catch (e) {
                     console.error('Erro ao processar mensagem do WebSocket:', e);
                 }
@@ -755,16 +743,26 @@
             e.preventDefault();
             const currentX = e.clientX || e.touches[0].clientX;
             const currentY = e.clientY || e.touches[0].clientY;
-            state.overlayX = state.overlayX + (currentX - state.dragStartX);
-            state.overlayY = state.overlayY + (currentY - state.dragStartY);
+            state.overlayX += currentX - state.dragStartX;
+            state.overlayY += currentY - state.dragStartY;
             state.dragStartX = currentX;
             state.dragStartY = currentY;
-            dom.wrapper.style.left = `${state.overlayX}px`;
-            dom.wrapper.style.top = `${state.overlayY}px`;
+            if (!pendingDragFrame) {
+                pendingDragFrame = true;
+                requestAnimationFrame(() => {
+                    dom.wrapper.style.transform = `translate3d(${state.overlayX}px, ${state.overlayY}px, 0)`;
+                    pendingDragFrame = false;
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             connectWS();
+            dom.wrapper.style.transform = `translate3d(${state.overlayX}px, ${state.overlayY}px, 0)`;
+            (function renderLoop(){
+                if (latestData) { renderUI(latestData); latestData = null; }
+                requestAnimationFrame(renderLoop);
+            })();
             
             // UI Controls
             const settingsPopover = document.getElementById('settings-popover');
@@ -773,7 +771,6 @@
             const closeBtn = document.getElementById('closeBtn');
             const pinBtn = document.getElementById('pinBtn');
             const passThroughBtn = document.getElementById('passThroughBtn');
-            const modalCloseBtn = document.getElementById('modalCloseBtn');
             const customModal = document.getElementById('customModal');
 
             settingsBtn.addEventListener('click', (e) => {
@@ -786,12 +783,12 @@
                 }
             });
 
-            document.getElementById('rangeOpacity')?.addEventListener('input', (e) => dom.wrapper.style.opacity = e.target.value);
-            document.getElementById('rangeContrast')?.addEventListener('input', (e) => dom.wrapper.style.filter = `contrast(${e.target.value})`);
-            
-            modalCloseBtn.addEventListener('click', hideModal);
+            settingsPopover.addEventListener('input', (e) => {
+                if (e.target.id === 'rangeOpacity') dom.wrapper.style.opacity = e.target.value;
+                if (e.target.id === 'rangeContrast') dom.wrapper.style.filter = `contrast(${e.target.value})`;
+            });
             customModal.addEventListener('click', (e) => {
-                if (e.target === customModal) hideModal();
+                if (e.target === customModal || e.target.id === 'modalCloseBtn') hideModal();
             });
             
             closeBtn.addEventListener('click', () => window.close());
@@ -819,6 +816,10 @@
                 }, { once: true });
             });
         });
+    </script>
+    <script type="module">
+        import { startProfiler } from '../overlay-profiler.js';
+        startProfiler('perf');
     </script>
 </body>
 </html>
