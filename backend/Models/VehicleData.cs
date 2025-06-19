@@ -44,5 +44,7 @@ namespace SuperBackendNR85IA.Models
         public float SteeringWheelPctTorque { get; set; }
         public float SteeringWheelPctTorqueSign { get; set; }
         public float SteeringWheelPctTorqueSignStops { get; set; }
+
+        public bool NeedsRepair => PitRepairLeft > 0f || PitOptRepairLeft > 0f;
     }
 }

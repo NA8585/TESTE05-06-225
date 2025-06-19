@@ -7,6 +7,25 @@ namespace SuperBackendNR85IA.Services
 {
     public sealed partial class IRacingTelemetryService
     {
+        private float Pos(IRacingSdkData d, string name) =>
+            Utilities.DataValidator.EnsurePositive(GetSdkValue<float>(d, name) ?? 0f);
+
+        private int NonNeg(IRacingSdkData d, string name) =>
+            Utilities.DataValidator.EnsureNonNegative(GetSdkValue<int>(d, name) ?? 0);
+
+        private long NonNegLong(IRacingSdkData d, string name) =>
+            Utilities.DataValidator.EnsureNonNegative(GetSdkValue<long>(d, name) ?? 0);
+
+        private float[] PosArray(IRacingSdkData d, string name) =>
+            GetSdkArray<float>(d, name)
+                .Select(v => Utilities.DataValidator.EnsurePositive(v ?? 0f))
+                .ToArray();
+
+        private int[] NonNegArray(IRacingSdkData d, string name) =>
+            GetSdkArray<int>(d, name)
+                .Select(v => Utilities.DataValidator.EnsureNonNegative(v ?? 0))
+                .ToArray();
+
         private void PopulateAllExtraData(IRacingSdkData d, TelemetryModel t)
         {
             PopulateAdvancedVehicleData(d, t);
@@ -22,108 +41,108 @@ namespace SuperBackendNR85IA.Services
 
         private void PopulateAdvancedVehicleData(IRacingSdkData d, TelemetryModel t)
         {
-            t.Vehicle.ThrottleRaw = GetSdkValue<float>(d, "ThrottleRaw") ?? 0f;
-            t.Vehicle.BrakeRaw = GetSdkValue<float>(d, "BrakeRaw") ?? 0f;
-            t.Vehicle.HandBrake = GetSdkValue<float>(d, "HandBrake") ?? 0f;
-            t.Vehicle.HandBrakeRaw = GetSdkValue<float>(d, "HandBrakeRaw") ?? 0f;
-            t.Vehicle.SteeringWheelPctTorque = GetSdkValue<float>(d, "SteeringWheelPctTorque") ?? 0f;
-            t.Vehicle.SteeringWheelLimiter = GetSdkValue<int>(d, "SteeringWheelLimiter") ?? 0;
-            t.Vehicle.SteeringWheelPeakForceNm = GetSdkValue<float>(d, "SteeringWheelPeakForceNm") ?? 0f;
-            t.Vehicle.Voltage = GetSdkValue<float>(d, "Voltage") ?? 0f;
-            t.Vehicle.OilLevel = GetSdkValue<float>(d, "OilLevel") ?? 0f;
-            t.Vehicle.WaterLevel = GetSdkValue<float>(d, "WaterLevel") ?? 0f;
+            t.Vehicle.ThrottleRaw = Pos(d, "ThrottleRaw");
+            t.Vehicle.BrakeRaw = Pos(d, "BrakeRaw");
+            t.Vehicle.HandBrake = Pos(d, "HandBrake");
+            t.Vehicle.HandBrakeRaw = Pos(d, "HandBrakeRaw");
+            t.Vehicle.SteeringWheelPctTorque = Pos(d, "SteeringWheelPctTorque");
+            t.Vehicle.SteeringWheelLimiter = NonNeg(d, "SteeringWheelLimiter");
+            t.Vehicle.SteeringWheelPeakForceNm = Pos(d, "SteeringWheelPeakForceNm");
+            t.Vehicle.Voltage = Pos(d, "Voltage");
+            t.Vehicle.OilLevel = Pos(d, "OilLevel");
+            t.Vehicle.WaterLevel = Pos(d, "WaterLevel");
         }
 
         private void PopulateForceDetailData(IRacingSdkData d, TelemetryModel t)
         {
-            t.Vehicle.SteeringWheelPctTorqueSign = GetSdkValue<float>(d, "SteeringWheelPctTorqueSign") ?? 0f;
-            t.Vehicle.SteeringWheelPctTorqueSignStops = GetSdkValue<float>(d, "SteeringWheelPctTorqueSignStops") ?? 0f;
+            t.Vehicle.SteeringWheelPctTorqueSign = Pos(d, "SteeringWheelPctTorqueSign");
+            t.Vehicle.SteeringWheelPctTorqueSignStops = Pos(d, "SteeringWheelPctTorqueSignStops");
         }
 
         private void PopulatePowertrainData(IRacingSdkData d, TelemetryModel t)
         {
-            t.Powertrain.ShiftIndicatorPct = GetSdkValue<float>(d, "ShiftIndicatorPct") ?? 0f;
-            t.Powertrain.ShiftPowerPct = GetSdkValue<float>(d, "ShiftPowerPct") ?? 0f;
-            t.Powertrain.ShiftGrindRpm = GetSdkValue<float>(d, "ShiftGrindRPM") ?? 0f;
+            t.Powertrain.ShiftIndicatorPct = Pos(d, "ShiftIndicatorPct");
+            t.Powertrain.ShiftPowerPct = Pos(d, "ShiftPowerPct");
+            t.Powertrain.ShiftGrindRpm = Pos(d, "ShiftGrindRPM");
             t.Powertrain.ManualBoost = GetSdkValue<bool>(d, "ManualBoost") ?? false;
             t.Powertrain.ManualNoBoost = GetSdkValue<bool>(d, "ManualNoBoost") ?? false;
             t.Powertrain.PushToPass = GetSdkValue<bool>(d, "PushToPass") ?? false;
-            t.Powertrain.P2PCount = GetSdkValue<int>(d, "P2P_Count") ?? 0;
-            t.Powertrain.P2PStatus = GetSdkValue<int>(d, "P2P_Status") ?? 0;
-            t.Powertrain.EnergyErsBattery = GetSdkValue<float>(d, "EnergyERSBattery") ?? 0f;
-            t.Powertrain.EnergyErsBatteryPct = GetSdkValue<float>(d, "EnergyERSBatteryPct") ?? 0f;
-            t.Powertrain.EnergyBatteryToMguKLap = GetSdkValue<float>(d, "EnergyBatteryToMGU_KLap") ?? 0f;
-            t.Powertrain.EnergyMguKLapDeployPct = GetSdkValue<float>(d, "EnergyMGU_KLapDeployPct") ?? 0f;
+            t.Powertrain.P2PCount = NonNeg(d, "P2P_Count");
+            t.Powertrain.P2PStatus = NonNeg(d, "P2P_Status");
+            t.Powertrain.EnergyErsBattery = Pos(d, "EnergyERSBattery");
+            t.Powertrain.EnergyErsBatteryPct = Pos(d, "EnergyERSBatteryPct");
+            t.Powertrain.EnergyBatteryToMguKLap = Pos(d, "EnergyBatteryToMGU_KLap");
+            t.Powertrain.EnergyMguKLapDeployPct = Pos(d, "EnergyMGU_KLapDeployPct");
         }
 
         private void PopulatePitStrategyData(IRacingSdkData d, TelemetryModel t)
         {
-            t.Pit.PitSvFuel = GetSdkValue<float>(d, "PitSvFuel") ?? 0f;
-            t.Pit.PitSvFlags = GetSdkValue<int>(d, "PitSvFlags") ?? 0;
-            t.Pit.PitSvTireCompound = GetSdkValue<int>(d, "PitSvTireCompound") ?? 0;
-            t.Pit.PitSvLFP = GetSdkValue<float>(d, "PitSvLFP") ?? 0f;
-            t.Pit.PitSvLRP = GetSdkValue<float>(d, "PitSvLRP") ?? 0f;
-            t.Pit.PitSvRFP = GetSdkValue<float>(d, "PitSvRFP") ?? 0f;
-            t.Pit.PitSvRRP = GetSdkValue<float>(d, "PitSvRRP") ?? 0f;
-            t.Pit.FastRepairAvailable = GetSdkValue<int>(d, "FastRepairAvailable") ?? 0;
-            t.Pit.FastRepairUsed = GetSdkValue<int>(d, "FastRepairUsed") ?? 0;
+            t.Pit.PitSvFuel = Pos(d, "PitSvFuel");
+            t.Pit.PitSvFlags = NonNeg(d, "PitSvFlags");
+            t.Pit.PitSvTireCompound = NonNeg(d, "PitSvTireCompound");
+            t.Pit.PitSvLFP = Pos(d, "PitSvLFP");
+            t.Pit.PitSvLRP = Pos(d, "PitSvLRP");
+            t.Pit.PitSvRFP = Pos(d, "PitSvRFP");
+            t.Pit.PitSvRRP = Pos(d, "PitSvRRP");
+            t.Pit.FastRepairAvailable = NonNeg(d, "FastRepairAvailable");
+            t.Pit.FastRepairUsed = NonNeg(d, "FastRepairUsed");
             t.Pit.PlayerCarInPitStall = GetSdkValue<bool>(d, "PlayerCarInPitStall") ?? false;
         }
 
         private void PopulateSessionEnvironmentData(IRacingSdkData d, TelemetryModel t)
         {
-            t.Session.SessionUniqueID = GetSdkValue<long>(d, "SessionUniqueID") ?? 0;
-            t.Session.SessionTick = GetSdkValue<int>(d, "SessionTick") ?? 0;
-            t.Session.SessionTimeTotal = GetSdkValue<float>(d, "SessionTimeTotal") ?? 0f;
+            t.Session.SessionUniqueID = NonNegLong(d, "SessionUniqueID");
+            t.Session.SessionTick = NonNeg(d, "SessionTick");
+            t.Session.SessionTimeTotal = Pos(d, "SessionTimeTotal");
             t.Environment.WeatherDeclaredWet = GetSdkValue<bool>(d, "WeatherDeclaredWet") ?? false;
-            t.Environment.SolarAltitude = GetSdkValue<float>(d, "SolarAltitude") ?? 0f;
-            t.Environment.SolarAzimuth = GetSdkValue<float>(d, "SolarAzimuth") ?? 0f;
-            t.Environment.FogLevel = GetSdkValue<float>(d, "FogLevel") ?? 0f;
-            t.Environment.Precipitation = GetSdkValue<float>(d, "Precipitation") ?? 0f;
+            t.Environment.SolarAltitude = Pos(d, "SolarAltitude");
+            t.Environment.SolarAzimuth = Pos(d, "SolarAzimuth");
+            t.Environment.FogLevel = Pos(d, "FogLevel");
+            t.Environment.Precipitation = Pos(d, "Precipitation");
             t.Environment.TrackGripStatus = t.TrackGripStatus;
         }
 
         private void PopulateRadarExtraData(IRacingSdkData d, TelemetryModel t)
         {
-            t.Radar.CarIdxGear = GetSdkArray<int>(d, "CarIdxGear").Select(v => v ?? 0).ToArray();
-            t.Radar.CarIdxRPM = GetSdkArray<float>(d, "CarIdxRPM").Select(v => v ?? 0f).ToArray();
-            t.Radar.CarIdxSteer = GetSdkArray<float>(d, "CarIdxSteer").Select(v => v ?? 0f).ToArray();
-            t.Radar.CarIdxTrackSurfaceMaterial = GetSdkArray<int>(d, "CarIdxTrackSurfaceMaterial").Select(v => v ?? 0).ToArray();
-            t.Radar.CarIdxEstTime = GetSdkArray<float>(d, "CarIdxEstTime").Select(v => v ?? 0f).ToArray();
-            t.Radar.CarIdxPaceFlags = GetSdkArray<int>(d, "CarIdxPaceFlags").Select(v => v ?? 0).ToArray();
-            t.Radar.CarIdxPaceLine = GetSdkArray<int>(d, "CarIdxPaceLine").Select(v => v ?? 0).ToArray();
-            t.Radar.CarIdxPaceRow = GetSdkArray<int>(d, "CarIdxPaceRow").Select(v => v ?? 0).ToArray();
-            t.Radar.CarIdxFastRepairsUsed = GetSdkArray<int>(d, "CarIdxFastRepairsUsed").Select(v => v ?? 0).ToArray();
-            t.Radar.CarIdxTireCompound = GetSdkArray<int>(d, "CarIdxTireCompound").Select(v => v ?? 0).ToArray();
-            t.Radar.CarIdxPowerAdjust = GetSdkArray<float>(d, "CarIdxPowerAdjust").Select(v => v ?? 0f).ToArray();
-            t.Radar.CarIdxWeightPenalty = GetSdkArray<float>(d, "CarIdxWeightPenalty").Select(v => v ?? 0f).ToArray();
-            t.Radar.CarLeftRight = GetSdkValue<int>(d, "CarLeftRight") ?? 0;
+            t.Radar.CarIdxGear = NonNegArray(d, "CarIdxGear");
+            t.Radar.CarIdxRPM = PosArray(d, "CarIdxRPM");
+            t.Radar.CarIdxSteer = PosArray(d, "CarIdxSteer");
+            t.Radar.CarIdxTrackSurfaceMaterial = NonNegArray(d, "CarIdxTrackSurfaceMaterial");
+            t.Radar.CarIdxEstTime = PosArray(d, "CarIdxEstTime");
+            t.Radar.CarIdxPaceFlags = NonNegArray(d, "CarIdxPaceFlags");
+            t.Radar.CarIdxPaceLine = NonNegArray(d, "CarIdxPaceLine");
+            t.Radar.CarIdxPaceRow = NonNegArray(d, "CarIdxPaceRow");
+            t.Radar.CarIdxFastRepairsUsed = NonNegArray(d, "CarIdxFastRepairsUsed");
+            t.Radar.CarIdxTireCompound = NonNegArray(d, "CarIdxTireCompound");
+            t.Radar.CarIdxPowerAdjust = PosArray(d, "CarIdxPowerAdjust");
+            t.Radar.CarIdxWeightPenalty = PosArray(d, "CarIdxWeightPenalty");
+            t.Radar.CarLeftRight = NonNeg(d, "CarLeftRight");
         }
 
         private void PopulateSystemPerformanceData(IRacingSdkData d, TelemetryModel t)
         {
-            t.System.FrameRate = GetSdkValue<float>(d, "FrameRate") ?? 0f;
-            t.System.CpuUsageFg = GetSdkValue<float>(d, "CpuUsageFG") ?? 0f;
-            t.System.CpuUsageBg = GetSdkValue<float>(d, "CpuUsageBG") ?? 0f;
-            t.System.GpuUsage = GetSdkValue<float>(d, "GpuUsage") ?? 0f;
-            t.System.ChanLatency = GetSdkValue<float>(d, "ChanLatency") ?? 0f;
-            t.System.ChanQuality = GetSdkValue<float>(d, "ChanQuality") ?? 0f;
-            t.System.ChanPartnerQuality = GetSdkValue<float>(d, "ChanPartnerQuality") ?? 0f;
-            t.System.ChanAvgLatency = GetSdkValue<float>(d, "ChanAvgLatency") ?? 0f;
-            t.System.ChanClockSkew = GetSdkValue<float>(d, "ChanClockSkew") ?? 0f;
+            t.System.FrameRate = Pos(d, "FrameRate");
+            t.System.CpuUsageFg = Pos(d, "CpuUsageFG");
+            t.System.CpuUsageBg = Pos(d, "CpuUsageBG");
+            t.System.GpuUsage = Pos(d, "GpuUsage");
+            t.System.ChanLatency = Pos(d, "ChanLatency");
+            t.System.ChanQuality = Pos(d, "ChanQuality");
+            t.System.ChanPartnerQuality = Pos(d, "ChanPartnerQuality");
+            t.System.ChanAvgLatency = Pos(d, "ChanAvgLatency");
+            t.System.ChanClockSkew = Pos(d, "ChanClockSkew");
         }
 
         private void PopulateHighFreqData(IRacingSdkData d, TelemetryModel t)
         {
-            t.HighFreq.LatAccel_ST = GetSdkValue<float>(d, "LatAccel_ST") ?? 0f;
-            t.HighFreq.LongAccel_ST = GetSdkValue<float>(d, "LongAccel_ST") ?? 0f;
+            t.HighFreq.LatAccel_ST = Pos(d, "LatAccel_ST");
+            t.HighFreq.LongAccel_ST = Pos(d, "LongAccel_ST");
         }
 
         private void PopulateDamageExtraData(IRacingSdkData d, TelemetryModel t)
         {
-            t.Damage.PlayerCarWeightPenalty = GetSdkValue<float>(d, "PlayerCarWeightPenalty") ?? 0f;
-            t.Damage.PlayerCarPowerAdjust = GetSdkValue<float>(d, "PlayerCarPowerAdjust") ?? 0f;
-            t.Damage.PlayerCarTowTime = GetSdkValue<float>(d, "PlayerCarTowTime") ?? 0f;
+            t.Damage.PlayerCarWeightPenalty = Pos(d, "PlayerCarWeightPenalty");
+            t.Damage.PlayerCarPowerAdjust = Pos(d, "PlayerCarPowerAdjust");
+            t.Damage.PlayerCarTowTime = Pos(d, "PlayerCarTowTime");
         }
     }
 }

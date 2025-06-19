@@ -19,5 +19,8 @@ namespace SuperBackendNR85IA.Models
         public float  CarClassEstLapTime { get; set; }
         public string TireCompound { get; set; } = string.Empty;
         public int    TeamIncidentCount { get; set; }
+
+        /// <summary>Formatted display name combining car number and user.</summary>
+        public string DisplayName => $"#{CarNumber} - {UserName}";
     }
 }

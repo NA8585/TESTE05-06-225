@@ -18,5 +18,7 @@ namespace SuperBackendNR85IA.Models
         public float  TrackAirTemp      { get; set; }
         public string TrackNumTurns     { get; set; } = string.Empty;
         public int    NumCarClasses     { get; set; }
+
+        public float TrackLengthMiles => TrackLengthKm * 0.621371f;
     }
 }

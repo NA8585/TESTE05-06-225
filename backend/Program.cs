@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using SuperBackendNR85IA.Services;
+using SuperBackendNR85IA.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,7 @@ builder.WebHost.UseUrls("http://localhost:5221");
 
 // DI ------------------------------------------------------------------------
 builder.Services.AddSingleton<TelemetryBroadcaster>();
-builder.Services.AddSingleton<CarTrackDataStore>();
+builder.Services.AddSingleton<ICarTrackRepository, CarTrackDataStore>();
 builder.Services.AddSingleton<SessionYamlParser>();
 builder.Services.AddHostedService<IRacingTelemetryService>();
 
