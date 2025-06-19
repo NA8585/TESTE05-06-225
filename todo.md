@@ -47,7 +47,6 @@
   - [x] `overlay-delta.html`
   - [x] `overlay-diagnostico-raw.html`
   - [x] `overlay-inputs.html`
-  - [x] `overlay-radar.html`
   - [x] `overlay-relative.html`
   - [x] `overlay-sessao.html`
   - [x] `overlay-standings.html`
@@ -65,3 +64,14 @@
 
 
 ## Optimization Plan Completed
+
+## Ongoing Frontend Optimization
+- [x] Remove requestAnimationFrame loops from diagnostic overlays
+- [x] Scheduler runs only when callbacks exist
+- [x] Remove unused Radar overlay
+- [x] Convert calculator overlay to vanilla JS
+- [x] Throttle classification overlay updates
+- [x] Migrate Relative overlay to common WebSocket helper
+- [x] Prebuild overlays to remove Babel/React dev dependencies
+- [x] Implement virtualization for long tables
+- [x] Measure CPU and memory usage after changes
