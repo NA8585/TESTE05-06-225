@@ -10,6 +10,7 @@ using System.Reflection;
 using IRSDKSharper; // Biblioteca IRSDKSharper para conexão com iRacing
 using SuperBackendNR85IA.Models; // TelemetryModel e classes auxiliares
 using SuperBackendNR85IA.Calculations; // Seus cálculos de telemetria personalizados
+using SuperBackendNR85IA.Utilities;
 
 namespace SuperBackendNR85IA.Services
 {
@@ -178,6 +179,7 @@ namespace SuperBackendNR85IA.Services
 
             var d = _sdk.Data;
             var t = new TelemetryModel();
+            using var perf = new Utilities.PerformanceMonitor(_log, "BuildTelemetry");
 
             PopulateVehicleData(d, t);
             PopulateAllExtraData(d, t);
