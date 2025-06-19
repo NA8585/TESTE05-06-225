@@ -162,6 +162,13 @@ namespace SuperBackendNR85IA.Services
             t.Powertrain.EnergyBatteryToMguKLap  = GetSdkValue<float>(d, "EnergyBatteryToMGU_KLap") ?? 0f;
             t.Powertrain.ManualBoost             = GetSdkValue<bool>(d, "ManualBoost") ?? false;
             t.Powertrain.ManualNoBoost           = GetSdkValue<bool>(d, "ManualNoBoost") ?? false;
+
+            t.Vehicle.IsOnTrack  = GetSdkValue<bool>(d, "IsOnTrack") ?? false;
+            t.Vehicle.IsInGarage = GetSdkValue<bool>(d, "IsInGarage") ?? false;
+            t.Vehicle.VelocityX  = GetSdkValue<float>(d, "VelocityX") ?? 0f;
+            t.Vehicle.VelocityY  = GetSdkValue<float>(d, "VelocityY") ?? 0f;
+            t.Vehicle.VelocityZ  = GetSdkValue<float>(d, "VelocityZ") ?? 0f;
+            t.Vehicle.YawNorth   = GetSdkValue<float>(d, "YawNorth") ?? 0f;
         }
 
         private void UpdateLapInfo(IRacingSdkData d, TelemetryModel t)
