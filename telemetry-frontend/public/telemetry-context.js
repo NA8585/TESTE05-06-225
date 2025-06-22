@@ -6,7 +6,12 @@
     const [telemetry, setTelemetry] = useState({});
 
     useEffect(() => {
-      const url = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
+      function overlayHost() {
+        const host = window.location.hostname;
+        return host && host.length > 0 ? host : 'localhost';
+      }
+
+      const url = window.OVERLAY_WS_URL || `ws://${overlayHost()}:5221/ws`;
       let socket;
       let reconnect;
 
