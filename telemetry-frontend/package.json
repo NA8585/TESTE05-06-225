@@ -13,7 +13,8 @@
     "start": "electron .",
     "open:tiresyaml": "electron . --open=overlay-tiresyaml.html",
     "preview": "vite preview",
-    "test": "echo \"No tests configured\""
+    "test": "echo \"No tests configured\"",
+    "lint": "eslint \"src/**/*.{js,jsx}\""
   },
   "dependencies": {
     "electron-store": "^10.0.1",
@@ -28,6 +29,7 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.1",
     "vite": "^4.5.0",
-    "wait-on": "^7.0.1"
+    "wait-on": "^7.0.1",
+    "eslint": "^8.56.0"
   }
 }

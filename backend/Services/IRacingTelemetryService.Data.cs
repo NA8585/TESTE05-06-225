@@ -664,7 +664,7 @@ namespace SuperBackendNR85IA.Services
 
         private async Task ApplyYamlData(IRacingSdkData d, TelemetryModel t)
         {
-            t.SessionInfoYaml = _sdk.Data?.SessionInfoYaml ?? string.Empty;
+            t.SessionInfoYaml = _reader.Data?.SessionInfoYaml ?? string.Empty;
             if (!string.IsNullOrEmpty(t.SessionInfoYaml) && t.SessionInfoYaml != _lastYaml)
             {
                 if (_log.IsEnabled(LogLevel.Debug))

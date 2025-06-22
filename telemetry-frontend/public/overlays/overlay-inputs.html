@@ -8,6 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    <script crossorigin src="https://unpkg.com/react/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="../telemetry-context.js"></script>
     <style>
         /* CSS para o corpo e a overlay */
         html, body {
@@ -451,24 +455,23 @@
             setupEventListeners();
             await loadSettings();
             resizeCanvas();
-
-            initOverlayWebSocket(data => {
-                // A verificação `data.vehicle` garante que estamos a receber dados do carro
-                if (data.vehicle) {
-                    state.hasNewData = true;
-                    state.latestData = data.vehicle;
-                }
-            });
-
-            function animationLoop() {
-                if (state.hasNewData) { 
-                    updateOverlayData(state.latestData);
-                    state.hasNewData = false;
-                }
-                window.requestAnimationFrame(animationLoop);
-            }
-            animationLoop();
         });
     </script>
+<div id="react-root"></div>
+<script type="text/babel">
+const { useContext, useEffect } = React;
+function InputsBridge() {
+  const telemetry = useContext(TelemetryContext);
+  useEffect(() => {
+    if (telemetry) {
+      const d = telemetry.vehicle || telemetry;
+      state.latestData = d;
+      updateOverlayData(d);
+    }
+  }, [telemetry]);
+  return null;
+}
+ReactDOM.createRoot(document.getElementById("react-root")).render(React.createElement(TelemetryProvider, null, React.createElement(InputsBridge, null)));
+</script>
 </body>
 </html>

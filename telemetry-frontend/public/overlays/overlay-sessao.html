@@ -8,6 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <script crossorigin src="https://unpkg.com/react/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com//standalone/babel.min.js"></script>
+  <script src="../telemetry-context.js"></script>
   <style>
     body, html {
       font-family: 'Poppins', sans-serif;
@@ -417,8 +421,6 @@
 
         </div> </div> </div> <script>
     const q = s => document.querySelector(s);
-    const wsUrl = (location.protocol === 'https:' ? 'wss' : 'ws') + '://localhost:5221/ws';
-    let ws;
     let lastFullData = null;
     let hasNewData = false;
     const OVERLAY_NAME = 'session-overlay-detailed-v2-com-setores'; // Nome único atualizado
@@ -439,31 +441,6 @@
     let lockedState = false;
     let clickThroughState = false;
 
-    function connectWebSocket() {
-        updateConnectionStatus('Conectando...', 'status-connecting');
-        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-            console.log("WebSocket já está aberto ou conectando.");
-            return;
-        }
-        ws = new WebSocket(wsUrl);
-        ws.onopen = () => updateConnectionStatus('Conectado', 'status-connected');
-        ws.onerror = (error) => console.error('Erro no WebSocket:', error);
-        ws.onclose = (event) => {
-            updateConnectionStatus('Desconectado', 'status-disconnected');
-            console.log('WebSocket desconectado. Código:', event.code, 'Motivo:', event.reason, 'Estava limpo:', event.wasClean);
-            if (!event.wasClean || event.code === 1006) {
-                setTimeout(connectWebSocket, 5000);
-            }
-        };
-        ws.onmessage = (event) => {
-            try {
-                lastFullData = JSON.parse(event.data);
-                hasNewData = true;
-            } catch (e) {
-                console.error('Falha ao parsear JSON:', e, event.data);
-            }
-        };
-    }
 
     function updateConnectionStatus(text, cssClass) {
         const el = q('#connection-status-display');
@@ -850,7 +827,6 @@
             document.querySelector('.overlay-header')?.style && (document.querySelector('.overlay-header').style.cursor = 'move');
         }
         loadSettings();
-        connectWebSocket();
         renderLoop();
         updatePinButtonState(pinnedState); // Garante estado visual inicial correto
         updateLockButtonState(lockedState);
@@ -861,5 +837,15 @@
     import { startProfiler } from '../overlay-profiler.js';
     startProfiler('perf');
   </script>
+<div id="react-root"></div>
+<script type="text/babel">
+const { useContext, useEffect } = React;
+function SessaoBridge(){
+  const telemetry = useContext(TelemetryContext);
+  useEffect(()=>{ if(telemetry){ lastFullData = telemetry; hasNewData = true; } }, [telemetry]);
+  return null;
+}
+ReactDOM.createRoot(document.getElementById("react-root")).render(React.createElement(TelemetryProvider,null,React.createElement(SessaoBridge,null)));
+</script>
 </body>
 </html>

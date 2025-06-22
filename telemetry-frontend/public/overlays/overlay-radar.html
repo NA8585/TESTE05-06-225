@@ -8,6 +8,7 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../telemetry-context.js"></script>
 <style>
   body {
     margin: 0;
@@ -186,26 +187,15 @@ const CarDot = React.memo(function CarDot({car}) {
 
 // Componente principal
 function RadarOverlay() {
+  const telemetry = React.useContext(TelemetryContext);
   const [cars, setCars] = React.useState([]);
-  const latestRef = React.useRef(null);
-  const hasNew = React.useRef(false);
   React.useEffect(() => {
-    window.updateRadar = (d) => {
-      latestRef.current = d;
-      hasNew.current = true;
-      const msg = d.carLeftRight != null ? String(d.carLeftRight) : '';
-      const el = document.getElementById('left-right-msg');
-      if (el) el.textContent = msg;
-    };
-    function loop() {
-      if (hasNew.current) {
-        setCars(processarDadosWs(latestRef.current));
-        hasNew.current = false;
-      }
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
-  }, []);
+    if (!telemetry) return;
+    const msg = telemetry.carLeftRight != null ? String(telemetry.carLeftRight) : '';
+    const el = document.getElementById('left-right-msg');
+    if (el) el.textContent = msg;
+    setCars(processarDadosWs(telemetry));
+  }, [telemetry]);
   return (
     <div className="radar">
       <div className="player" />
@@ -215,12 +205,11 @@ function RadarOverlay() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<RadarOverlay />);
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const { initOverlayWebSocket } = await import('../overlay-common.js');
-  initOverlayWebSocket(d => window.updateRadar?.(d));
-});
+ReactDOM.createRoot(document.getElementById('root')).render(
+  React.createElement(TelemetryProvider, null,
+    React.createElement(RadarOverlay, null)
+  )
+);
 </script>
 </body>
 </html>

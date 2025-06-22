@@ -11,6 +11,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+  <script src="../telemetry-context.js"></script>
   <style>
     body { margin: 0; background: transparent; font-family: 'Poppins', sans-serif; }
   </style>
@@ -18,7 +19,7 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useMemo, useCallback } = React;
+const { useState, useEffect, useMemo, useCallback, useContext } = React;
 const { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } = Recharts;
 
 const TireCard = React.memo(function TireCard({ label, wear, temp, press }) {
@@ -47,6 +48,7 @@ const TireCard = React.memo(function TireCard({ label, wear, temp, press }) {
 
 function TireWearOverlay() {
   const [state, setState] = useState({ history: [] });
+  const telemetry = useContext(TelemetryContext);
 
   const handleWear = useCallback(data => {
       const lap = data.lap || 0;
@@ -74,8 +76,8 @@ function TireWearOverlay() {
   }, []);
 
   useEffect(() => {
-    window.updateTireWear = handleWear;
-  }, [handleWear]);
+    if (telemetry) handleWear(telemetry);
+  }, [telemetry, handleWear]);
 
   const hist = state.history;
   const dataForChart = useMemo(() =>
@@ -109,7 +111,11 @@ function TireWearOverlay() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<TireWearOverlay />);
+ReactDOM.createRoot(document.getElementById('root')).render(
+  React.createElement(TelemetryProvider, null,
+    React.createElement(TireWearOverlay, null)
+  )
+);
 
 // Draggable logic
 (function(){
@@ -129,10 +135,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(<TireWearOverlay />)
   document.addEventListener('mouseup', () => dragging=false);
 })();
 
-// WebSocket initialization
-import('../overlay-common.js').then(m => {
-  m.initOverlayWebSocket(data => window.updateTireWear?.(data));
-});
+// No direct WebSocket connection; TelemetryProvider supplies data
 </script>
 </body>
 </html>

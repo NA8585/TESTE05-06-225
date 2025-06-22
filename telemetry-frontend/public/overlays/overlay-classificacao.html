@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classificação - NR85 IA</title>
-  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js">
+  <script crossorigin src="https://unpkg.com/react/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com//standalone/babel.min.js"></script>
+  <script src="../telemetry-context.js"></script></script>
   <style>
     html,body{margin:0;padding:0;height:100%;font-family:'Poppins',sans-serif;background:rgba(15,23,42,0.9);color:#e2e8f0;overflow:hidden;font-size:0.85rem;;transform:translateZ(0);will-change:transform}
     table{width:100%;border-collapse:collapse;}
@@ -74,9 +78,18 @@ function update(data){
  }
  tbody.replaceChildren(frag);
 }
-const { initOverlayWebSocket, enableBrowserEditMode } = await import('../overlay-common.js');
+const { enableBrowserEditMode } = await import('../overlay-common.js');
 window.isElectron = enableBrowserEditMode(document.body, null);
-initOverlayWebSocket(update);
+</script>
+<div id="react-root"></div>
+<script type="text/babel">
+const { useContext, useEffect } = React;
+function ClassificacaoBridge(){
+  const telemetry = useContext(TelemetryContext);
+  useEffect(()=>{ if(telemetry) update(telemetry.session ? {...telemetry, ...telemetry.session} : telemetry); }, [telemetry]);
+  return null;
+}
+ReactDOM.createRoot(document.getElementById("react-root")).render(React.createElement(TelemetryProvider,null,React.createElement(ClassificacaoBridge,null)));
 </script>
 </body>
 </html>
