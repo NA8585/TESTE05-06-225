@@ -8,9 +8,9 @@ export function TelemetryProvider({ children }) {
   useEffect(() => {
     const url = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
     let socket;
-    let reconnectTimer;
+    let reconnect;
 
-    const handleMessage = (event) => {
+    const handle = (event) => {
       try {
         const data = JSON.parse(event.data);
         setTelemetry(data);
@@ -21,18 +21,17 @@ export function TelemetryProvider({ children }) {
 
     const connect = () => {
       socket = new WebSocket(url);
-      socket.addEventListener('message', handleMessage);
-      socket.addEventListener('close', () => {
-        reconnectTimer = setTimeout(connect, 3000);
-      });
-      socket.addEventListener('error', () => socket.close());
+      socket.addEventListener('message', handle);
+      socket.onclose = () => {
+        reconnect = setTimeout(connect, 3000);
+      };
     };
 
     connect();
 
     return () => {
-      clearTimeout(reconnectTimer);
-      socket.removeEventListener('message', handleMessage);
+      clearTimeout(reconnect);
+      socket.removeEventListener('message', handle);
       socket.close();
     };
   }, []);

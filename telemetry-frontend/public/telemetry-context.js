@@ -21,10 +21,9 @@
       const connect = () => {
         socket = new WebSocket(url);
         socket.addEventListener('message', handler);
-        socket.addEventListener('close', () => {
+        socket.onclose = () => {
           reconnect = setTimeout(connect, 3000);
-        });
-        socket.addEventListener('error', () => socket.close());
+        };
       };
 
       connect();
