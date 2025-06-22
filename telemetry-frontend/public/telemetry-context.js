@@ -7,7 +7,9 @@
 
     useEffect(() => {
       const url = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
-      const socket = new WebSocket(url);
+      let socket;
+      let reconnect;
+
       const handler = (ev) => {
         try {
           setTelemetry(JSON.parse(ev.data));
@@ -15,8 +17,20 @@
           console.error('WebSocket parse error:', err);
         }
       };
-      socket.addEventListener('message', handler);
+
+      const connect = () => {
+        socket = new WebSocket(url);
+        socket.addEventListener('message', handler);
+        socket.addEventListener('close', () => {
+          reconnect = setTimeout(connect, 3000);
+        });
+        socket.addEventListener('error', () => socket.close());
+      };
+
+      connect();
+
       return () => {
+        clearTimeout(reconnect);
         socket.removeEventListener('message', handler);
         socket.close();
       };
