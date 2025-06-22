@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste - Novos Dados</title>
+  <style>
+    body { 
+      margin: 0; 
+      padding: 20px; 
+      background: #1a1a1a; 
+      color: #e2e8f0; 
+      font-family: 'Courier New', monospace; 
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .container { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+      gap: 20px; 
+      max-width: 1400px; 
+    }
+    .section { 
+      background: #2d2d2d; 
+      border: 1px solid #444; 
+      border-radius: 8px; 
+      padding: 15px; 
+    }
+    .section h3 { 
+      margin: 0 0 10px 0; 
+      color: #60a5fa; 
+      border-bottom: 1px solid #444; 
+      padding-bottom: 5px; 
+    }
+    .data-item { 
+      display: flex; 
+      justify-content: space-between; 
+      margin: 5px 0; 
+      padding: 3px 0;
+    }
+    .data-label { 
+      color: #94a3b8; 
+    }
+    .data-value { 
+      color: #fbbf24; 
+      font-weight: bold; 
+    }
+    .status-ok { color: #10b981; }
+    .status-warning { color: #f59e0b; }
+    .status-error { color: #ef4444; }
+    .header { 
+      text-align: center; 
+      margin-bottom: 20px; 
+      color: #60a5fa; 
+    }
+    .connection-status {
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .connected { background: #065f46; color: #10b981; }
+    .disconnected { background: #7f1d1d; color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Teste de Novos Dados - iRacing Telemetry</h1>
+    <div id="connectionStatus" class="connection-status disconnected">
+      Desconectado
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="section">
+      <h3>📊 Dados de Performance do Sistema</h3>
+      <div class="data-item">
+        <span class="data-label">Frame Rate:</span>
+        <span class="data-value" id="frameRate">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">CPU Usage (FG):</span>
+        <span class="data-value" id="cpuFg">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">CPU Usage (BG):</span>
+        <span class="data-value" id="cpuBg">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">GPU Usage:</span>
+        <span class="data-value" id="gpuUsage">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Network Latency:</span>
+        <span class="data-value" id="latency">--</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🏁 Dados de Pit Stop</h3>
+      <div class="data-item">
+        <span class="data-label">Fuel para Pit:</span>
+        <span class="data-value" id="pitFuel">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">No Pit Stall:</span>
+        <span class="data-value" id="inPitStall">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Precisa Serviço:</span>
+        <span class="data-value" id="needsService">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Reparos Rápidos:</span>
+        <span class="data-value" id="fastRepairs">--</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🌤️ Dados Ambientais</h3>
+      <div class="data-item">
+        <span class="data-label">Clima Úmido:</span>
+        <span class="data-value" id="weatherWet">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Precipitação:</span>
+        <span class="data-value" id="precipitation">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Neblina:</span>
+        <span class="data-value" id="fogLevel">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Altitude Solar:</span>
+        <span class="data-value" id="solarAlt">--</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>⚡ Dados do Powertrain</h3>
+      <div class="data-item">
+        <span class="data-label">ERS Battery:</span>
+        <span class="data-value" id="ersBattery">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">P2P Count:</span>
+        <span class="data-value" id="p2pCount">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Manual Boost:</span>
+        <span class="data-value" id="manualBoost">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Shift Indicator:</span>
+        <span class="data-value" id="shiftIndicator">--</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🔧 Dados Extras do Veículo</h3>
+      <div class="data-item">
+        <span class="data-label">Voltagem:</span>
+        <span class="data-value" id="voltage">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Nível de Óleo:</span>
+        <span class="data-value" id="oilLevel">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Nível de Água:</span>
+        <span class="data-value" id="waterLevel">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Na Pista:</span>
+        <span class="data-value" id="onTrack">--</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🏎️ Dados de Radar</h3>
+      <div class="data-item">
+        <span class="data-label">Carros na Sessão:</span>
+        <span class="data-value" id="carCount">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Esquerda/Direita:</span>
+        <span class="data-value" id="carLeftRight">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Reparos Rápidos Usados:</span>
+        <span class="data-value" id="fastRepairsUsed">--</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>📈 Acelerações Alta Frequência</h3>
+      <div class="data-item">
+        <span class="data-label">Lateral ST:</span>
+        <span class="data-value" id="latAccelST">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Longitudinal ST:</span>
+        <span class="data-value" id="longAccelST">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Total Accel:</span>
+        <span class="data-value" id="totalAccel">--</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>📋 Contadores de Dados</h3>
+      <div class="data-item">
+        <span class="data-label">Campos Session:</span>
+        <span class="data-value" id="sessionFields">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Campos Vehicle:</span>
+        <span class="data-value" id="vehicleFields">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Campos Powertrain:</span>
+        <span class="data-value" id="powertrainFields">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Campos System:</span>
+        <span class="data-value" id="systemFields">--</span>
+      </div>
+      <div class="data-item">
+        <span class="data-label">Total Props:</span>
+        <span class="data-value" id="totalProps">--</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initOverlayWebSocket } from '../overlay-common.js';
+    
+    const connectionStatus = document.getElementById('connectionStatus');
+    let isConnected = false;
+
+    function updateConnectionStatus(connected) {
+      isConnected = connected;
+      connectionStatus.textContent = connected ? 'Conectado' : 'Desconectado';
+      connectionStatus.className = `connection-status ${connected ? 'connected' : 'disconnected'}`;
+    }
+
+    function formatValue(value, unit = '') {
+      if (value === null || value === undefined) return '--';
+      if (typeof value === 'boolean') return value ? 'Sim' : 'Não';
+      if (typeof value === 'number') {
+        if (unit === '%') return `${(value * 100).toFixed(1)}%`;
+        if (unit === 'fps') return `${value.toFixed(1)} fps`;
+        if (unit === 'ms') return `${value.toFixed(1)} ms`;
+        if (unit === 'v') return `${value.toFixed(1)}V`;
+        if (unit === 'g') return `${value.toFixed(2)}g`;
+        return value.toFixed(2) + unit;
+      }
+      return value.toString();
+    }
+
+    function updateDisplay(data) {
+      // System Performance
+      document.getElementById('frameRate').textContent = formatValue(data.systemFrameRate || data.system?.frameRate, ' fps');
+      document.getElementById('cpuFg').textContent = formatValue(data.systemCpuUsageFg || data.system?.cpuUsageFg, '%');
+      document.getElementById('cpuBg').textContent = formatValue(data.systemCpuUsageBg || data.system?.cpuUsageBg, '%');
+      document.getElementById('gpuUsage').textContent = formatValue(data.systemGpuUsage || data.system?.gpuUsage, '%');
+      document.getElementById('latency').textContent = formatValue(data.systemChanLatency || data.system?.chanLatency, ' ms');
+
+      // Pit Data
+      document.getElementById('pitFuel').textContent = formatValue(data.pitSvFuel || data.pit?.pitSvFuel, 'L');
+      document.getElementById('inPitStall').textContent = formatValue(data.playerCarInPitStall || data.pit?.playerCarInPitStall);
+      document.getElementById('needsService').textContent = formatValue(data.needsService || data.pit?.needsService);
+      document.getElementById('fastRepairs').textContent = formatValue(data.fastRepairAvailable || data.pit?.fastRepairAvailable);
+
+      // Environment
+      document.getElementById('weatherWet').textContent = formatValue(data.environmentWeatherDeclaredWet || data.environment?.weatherDeclaredWet);
+      document.getElementById('precipitation').textContent = formatValue(data.environmentPrecipitation || data.environment?.precipitation, '%');
+      document.getElementById('fogLevel').textContent = formatValue(data.environmentFogLevel || data.environment?.fogLevel, '%');
+      document.getElementById('solarAlt').textContent = formatValue(data.environmentSolarAltitude || data.environment?.solarAltitude, '°');
+
+      // Powertrain
+      document.getElementById('ersBattery').textContent = formatValue(data.energyErsBatteryPct || data.powertrain?.energyErsBatteryPct, '%');
+      document.getElementById('p2pCount').textContent = formatValue(data.p2PCount || data.powertrain?.p2PCount);
+      document.getElementById('manualBoost').textContent = formatValue(data.manualBoost || data.powertrain?.manualBoost);
+      document.getElementById('shiftIndicator').textContent = formatValue(data.shiftIndicatorPct || data.powertrain?.shiftIndicatorPct, '%');
+
+      // Vehicle Extra
+      document.getElementById('voltage').textContent = formatValue(data.voltage || data.vehicle?.voltage, 'V');
+      document.getElementById('oilLevel').textContent = formatValue(data.oilLevel || data.vehicle?.oilLevel, '%');
+      document.getElementById('waterLevel').textContent = formatValue(data.waterLevel || data.vehicle?.waterLevel, '%');
+      document.getElementById('onTrack').textContent = formatValue(data.isOnTrack || data.vehicle?.isOnTrack);
+
+      // Radar
+      document.getElementById('carCount').textContent = formatValue(data.radarCarCount || data.radar?.carCount);
+      document.getElementById('carLeftRight').textContent = formatValue(data.carLeftRight || data.radar?.carLeftRight);
+      document.getElementById('fastRepairsUsed').textContent = formatValue(data.radarCarIdxFastRepairsUsed?.length || data.radar?.carIdxFastRepairsUsed?.length);
+
+      // High Freq
+      document.getElementById('latAccelST').textContent = formatValue(data.highFreqLatAccel_ST || data.highFreq?.latAccel_ST, 'g');
+      document.getElementById('longAccelST').textContent = formatValue(data.highFreqLongAccel_ST || data.highFreq?.longAccel_ST, 'g');
+      document.getElementById('totalAccel').textContent = formatValue(data.highFreqTotalAccel || data.highFreq?.totalAccel, 'g');
+
+      // Data Fields Count
+      const dataFields = data.dataFields;
+      if (dataFields) {
+        document.getElementById('sessionFields').textContent = dataFields.sessionFields || '--';
+        document.getElementById('vehicleFields').textContent = dataFields.vehicleFields || '--';
+        document.getElementById('powertrainFields').textContent = dataFields.powertrainFields || '--';
+        document.getElementById('systemFields').textContent = dataFields.systemFields || '--';
+        document.getElementById('totalProps').textContent = dataFields.totalTelemetryProps || '--';
+      }
+    }
+
+    function handleData(data) {
+      updateConnectionStatus(true);
+      updateDisplay(data);
+    }
+
+    // Initialize WebSocket connection
+    initOverlayWebSocket(handleData);
+
+    // Show disconnected status initially
+    updateConnectionStatus(false);
+
+    // Check for connection timeout
+    setTimeout(() => {
+      if (!isConnected) {
+        console.log('No data received after 5 seconds');
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

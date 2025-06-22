@@ -186,6 +186,7 @@ namespace SuperBackendNR85IA.Services
 
             PopulateVehicleData(d, t);
             PopulateAllExtraData(d, t);
+            PopulateDamageData(d, t);
             UpdateLapInfo(d, t);
             ReadSectorTimes(d, t);
             ComputeForceFeedback(d, t);
@@ -432,11 +433,25 @@ namespace SuperBackendNR85IA.Services
 
         private Dictionary<string, object?> BuildFrontendPayload(TelemetryModel t)
         {
-            var payload = new Dictionary<string, object?>(_telemetryProps.Length + 3);
+            var payload = new Dictionary<string, object?>(_telemetryProps.Length + 20);
             for (int i = 0; i < _telemetryProps.Length; i++)
             {
                 payload[_telemetryPropNames[i]] = _telemetryProps[i].GetValue(t);
             }
+
+            // Include all nested data structures explicitly
+            payload["session"] = t.Session;
+            payload["vehicle"] = t.Vehicle;
+            payload["tyres"] = t.Tyres;
+            payload["damage"] = t.Damage;
+            payload["powertrain"] = t.Powertrain;
+            payload["pit"] = t.Pit;
+            payload["environment"] = t.Environment;
+            payload["system"] = t.System;
+            payload["radar"] = t.Radar;
+            payload["highFreq"] = t.HighFreq;
+            payload["replay"] = t.Replay;
+            payload["dcu"] = t.Dcu;
 
             // Snapshot simplificado de pneus e dados principais
             payload["telemetrySnapshot"] = BuildTelemetrySnapshot(t);
@@ -447,7 +462,30 @@ namespace SuperBackendNR85IA.Services
             // Inform clients which SDK variables are missing
             payload["missingVars"] = _missingVarWarned.ToArray();
 
+            // Add comprehensive data summary for debugging
+            payload["dataFields"] = new
+            {
+                sessionFields = GetObjectPropertyCount(t.Session),
+                vehicleFields = GetObjectPropertyCount(t.Vehicle),
+                tyreFields = GetObjectPropertyCount(t.Tyres),
+                damageFields = GetObjectPropertyCount(t.Damage),
+                powertrainFields = GetObjectPropertyCount(t.Powertrain),
+                pitFields = GetObjectPropertyCount(t.Pit),
+                environmentFields = GetObjectPropertyCount(t.Environment),
+                systemFields = GetObjectPropertyCount(t.System),
+                radarFields = GetObjectPropertyCount(t.Radar),
+                highFreqFields = GetObjectPropertyCount(t.HighFreq),
+                replayFields = GetObjectPropertyCount(t.Replay),
+                dcuFields = GetObjectPropertyCount(t.Dcu),
+                totalTelemetryProps = _telemetryProps.Length
+            };
+
             return payload;
+        }
+
+        private int GetObjectPropertyCount(object obj)
+        {
+            return obj?.GetType().GetProperties().Length ?? 0;
         }
 
         private object BuildInputsPayload(TelemetryModel t)

@@ -388,6 +388,71 @@ namespace SuperBackendNR85IA.Models
             new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold),
             new(TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold, TyreHelpers.TempStatus.Cold));
 
+        // ---- New wrapper properties for nested data structures ----
+        
+        // Powertrain wrappers (some already exist, adding missing ones)
+        public float Voltage { get => Vehicle.Voltage; set => Vehicle.Voltage = value; }
+        public float OilLevel { get => Vehicle.OilLevel; set => Vehicle.OilLevel = value; }
+        public float WaterLevel { get => Vehicle.WaterLevel; set => Vehicle.WaterLevel = value; }
+
+        // Pit data wrappers
+        public float PitSvFuel { get => Pit.PitSvFuel; set => Pit.PitSvFuel = value; }
+        public int PitSvFlags { get => Pit.PitSvFlags; set => Pit.PitSvFlags = value; }
+        public int PitSvTireCompound { get => Pit.PitSvTireCompound; set => Pit.PitSvTireCompound = value; }
+        public float PitSvLFP { get => Pit.PitSvLFP; set => Pit.PitSvLFP = value; }
+        public float PitSvLRP { get => Pit.PitSvLRP; set => Pit.PitSvLRP = value; }
+        public float PitSvRFP { get => Pit.PitSvRFP; set => Pit.PitSvRFP = value; }
+        public float PitSvRRP { get => Pit.PitSvRRP; set => Pit.PitSvRRP = value; }
+        public int FastRepairAvailable { get => Pit.FastRepairAvailable; set => Pit.FastRepairAvailable = value; }
+        public int FastRepairUsed { get => Pit.FastRepairUsed; set => Pit.FastRepairUsed = value; }
+        public bool PlayerCarInPitStall { get => Pit.PlayerCarInPitStall; set => Pit.PlayerCarInPitStall = value; }
+        public bool NeedsService { get => Pit.NeedsService; }
+
+        // Environment data wrappers (avoiding conflicts with existing properties)
+        public bool EnvironmentWeatherDeclaredWet { get => Environment.WeatherDeclaredWet; set => Environment.WeatherDeclaredWet = value; }
+        public float EnvironmentSolarAltitude { get => Environment.SolarAltitude; set => Environment.SolarAltitude = value; }
+        public float EnvironmentSolarAzimuth { get => Environment.SolarAzimuth; set => Environment.SolarAzimuth = value; }
+        public float EnvironmentFogLevel { get => Environment.FogLevel; set => Environment.FogLevel = value; }
+        public float EnvironmentPrecipitation { get => Environment.Precipitation; set => Environment.Precipitation = value; }
+        public string EnvironmentTrackGripStatus { get => Environment.TrackGripStatus; set => Environment.TrackGripStatus = value; }
+        public bool EnvironmentHasPrecipitation { get => Environment.HasPrecipitation; }
+
+        // System performance wrappers
+        public float SystemFrameRate { get => System.FrameRate; set => System.FrameRate = value; }
+        public float SystemCpuUsageFg { get => System.CpuUsageFg; set => System.CpuUsageFg = value; }
+        public float SystemCpuUsageBg { get => System.CpuUsageBg; set => System.CpuUsageBg = value; }
+        public float SystemGpuUsage { get => System.GpuUsage; set => System.GpuUsage = value; }
+        public float SystemChanLatency { get => System.ChanLatency; set => System.ChanLatency = value; }
+        public float SystemChanQuality { get => System.ChanQuality; set => System.ChanQuality = value; }
+        public float SystemChanPartnerQuality { get => System.ChanPartnerQuality; set => System.ChanPartnerQuality = value; }
+        public float SystemChanAvgLatency { get => System.ChanAvgLatency; set => System.ChanAvgLatency = value; }
+        public float SystemChanClockSkew { get => System.ChanClockSkew; set => System.ChanClockSkew = value; }
+        public float SystemAvgCpuUsage { get => System.AvgCpuUsage; }
+
+        // Radar data wrappers (some already exist, ensuring all are exposed)
+        public int RadarCarCount { get => Radar.CarCount; }
+        public float[] RadarCarIdxSteer { get => Radar.CarIdxSteer; set => Radar.CarIdxSteer = value; }
+        public float[] RadarCarIdxEstTime { get => Radar.CarIdxEstTime; set => Radar.CarIdxEstTime = value; }
+        public int[] RadarCarIdxFastRepairsUsed { get => Radar.CarIdxFastRepairsUsed; set => Radar.CarIdxFastRepairsUsed = value; }
+        public int[] RadarCarIdxTireCompound { get => Radar.CarIdxTireCompound; set => Radar.CarIdxTireCompound = value; }
+        public float[] RadarCarIdxPowerAdjust { get => Radar.CarIdxPowerAdjust; set => Radar.CarIdxPowerAdjust = value; }
+        public float[] RadarCarIdxWeightPenalty { get => Radar.CarIdxWeightPenalty; set => Radar.CarIdxWeightPenalty = value; }
+
+        // High frequency data wrappers
+        public float HighFreqLatAccel_ST { get => HighFreq.LatAccel_ST; set => HighFreq.LatAccel_ST = value; }
+        public float HighFreqLongAccel_ST { get => HighFreq.LongAccel_ST; set => HighFreq.LongAccel_ST = value; }
+        public float HighFreqTotalAccel { get => HighFreq.TotalAccel; }
+
+        // Damage extra data wrappers (renaming to avoid conflicts with existing properties)
+        public float DamagePlayerCarWeightPenalty { get => Damage.PlayerCarWeightPenalty; set => Damage.PlayerCarWeightPenalty = value; }
+        public float DamagePlayerCarPowerAdjust { get => Damage.PlayerCarPowerAdjust; set => Damage.PlayerCarPowerAdjust = value; }
+        public float DamagePlayerCarTowTime { get => Damage.PlayerCarTowTime; set => Damage.PlayerCarTowTime = value; }
+
+        // Replay data wrappers (some already exist from TelemetryAdditionalFields.cs)
+        // DCU data wrappers (some already exist from TelemetryAdditionalFields.cs)
+
+        // Vehicle additional data wrappers (some already exist from TelemetryAdditionalFields.cs)
+
         public void Sanitize() => TelemetryCalculations.SanitizeModel(this);
 
         public static string FormatTime(double seconds)
