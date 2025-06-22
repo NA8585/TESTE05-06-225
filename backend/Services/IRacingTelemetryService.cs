@@ -432,10 +432,21 @@ namespace SuperBackendNR85IA.Services
 
         private Dictionary<string, object?> BuildFrontendPayload(TelemetryModel t)
         {
-            var payload = new Dictionary<string, object?>(_telemetryProps.Length + 3);
+            var payload = new Dictionary<string, object?>(_telemetryProps.Length * 2 + 3);
             for (int i = 0; i < _telemetryProps.Length; i++)
             {
-                payload[_telemetryPropNames[i]] = _telemetryProps[i].GetValue(t);
+                var pascalName = _telemetryProps[i].Name;           // Ex.: "Speed"
+                var camelName  = _telemetryPropNames[i];            // Ex.: "speed"
+                var value      = _telemetryProps[i].GetValue(t);
+
+                // Sempre inclui a versão camelCase preferida
+                payload[camelName] = value;
+
+                // Adiciona a versão PascalCase apenas se não existir –
+                // garante compatibilidade com overlays antigos que ainda
+                // acessam as propriedades com letra maiúscula.
+                if (!payload.ContainsKey(pascalName))
+                    payload[pascalName] = value;
             }
 
             // Snapshot simplificado de pneus e dados principais

@@ -206,6 +206,12 @@ namespace SuperBackendNR85IA.Models
         public float LapCurrentLapTime { get; set; }
         public float LapLastLapTime { get; set; }
         public float LapBestLapTime { get; set; }
+        // Alias para compatibilidade com overlays que ainda usam BestLapTime
+        public float BestLapTime
+        {
+            get => LapBestLapTime;
+            set => LapBestLapTime = value;
+        }
         public float LapDeltaToSessionBestLap { get; set; }
         public float LapDeltaToSessionOptimalLap { get; set; }
         public float LapDeltaToDriverBestLap { get; set; }
