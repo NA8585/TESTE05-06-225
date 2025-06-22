@@ -10,6 +10,7 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="../telemetry-context.js"></script>
   <style>
     /* Estilos globais para o corpo */
     body {
@@ -192,7 +193,7 @@
     </div>
   </div>
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useContext } = React;
 
     import('../overlay-common.js').then(m => {
       window.isElectron = m.enableBrowserEditMode('wrapper','overlay-header');
@@ -208,38 +209,23 @@
       const [safetyMargin, setSafetyMargin] = useState(2.0);
       const [voltasSimuladas, setVoltasSimuladas] = useState('');
       const [resultado, setResultado]       = useState('');
+      const telemetry = useContext(TelemetryContext);
 
-      // WebSocket para atualizar dados de telemetria
       useEffect(() => {
-        const host = window.location.hostname || 'localhost';
-        const url = window.OVERLAY_WS_URL || `ws://${host}:5221/ws`;
-        const socket = new WebSocket(url);
-        socket.addEventListener('open', () => console.log('WS FuelCalculator conectado'));
-        let latest = null;
-        let rafId = null;
-        const applyData = () => {
-          rafId = null;
-          if (!latest) return;
-          const d = latest;
-          latest = null;
-          setCurrentLap(d.lap ?? 0);
-          const fuel = d.fuelLevel ?? (d.fuelLevelPct ?? 0) * (d.fuelCapacity ?? tankCapacity);
-          setFuelLeft(fuel);
-          if (d.fuelCapacity) setTankCapacity(d.fuelCapacity);
-          if (typeof d.consumoMedio === 'number' && d.consumoMedio > 0) {
-            setLapConsumption(d.consumoMedio);
-          } else if (typeof d.fuelUsePerLap === 'number' && d.fuelUsePerLap > 0) {
-            setLapConsumption(d.fuelUsePerLap);
-          } else if (typeof d.fuelPerLap === 'number' && d.fuelPerLap > 0) {
-            setLapConsumption(d.fuelPerLap);
-          }
-        };
-        socket.addEventListener('message', ({ data }) => {
-          latest = JSON.parse(data);
-          if (!rafId) rafId = requestAnimationFrame(applyData);
-        });
-        return () => socket.close();
-      }, []);
+        if (!telemetry) return;
+        const d = telemetry.vehicle || telemetry;
+        setCurrentLap(d.lap ?? 0);
+        const fuel = d.fuelLevel ?? (d.fuelLevelPct ?? 0) * (d.fuelCapacity ?? tankCapacity);
+        setFuelLeft(fuel);
+        if (d.fuelCapacity) setTankCapacity(d.fuelCapacity);
+        if (typeof d.consumoMedio === 'number' && d.consumoMedio > 0) {
+          setLapConsumption(d.consumoMedio);
+        } else if (typeof d.fuelUsePerLap === 'number' && d.fuelUsePerLap > 0) {
+          setLapConsumption(d.fuelUsePerLap);
+        } else if (typeof d.fuelPerLap === 'number' && d.fuelPerLap > 0) {
+          setLapConsumption(d.fuelPerLap);
+        }
+      }, [telemetry]);
 
       // Função de cálculo rápido
       const calcular = () => {
@@ -301,7 +287,8 @@
     }
 
     ReactDOM.createRoot(document.getElementById('root'))
-             .render(<FuelCalculator />);
+             .render(React.createElement(TelemetryProvider, null,
+                     React.createElement(FuelCalculator, null)));
   </script>
 
   <script>

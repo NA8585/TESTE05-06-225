@@ -1,9 +1,10 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useContext } from 'react';
 import './App.css';
 import paiImg from './assets/images/pai.jpg';
 import filhoImg from './assets/images/filho.jpg';
 import alcoraoImg from './assets/images/alcorao.jpg';
 import overlayList from './overlayList';
+import { TelemetryContext } from './TelemetryContext';
 
 export default function App() {
   const [started, setStarted] = useState(false);
@@ -16,6 +17,7 @@ export default function App() {
   engineSoundRef.current.volume = 0.5;
 
   const overlays = overlayList;
+  const telemetry = useContext(TelemetryContext);
 
   const openOverlay = useCallback((name, file) => {
     const audio = clickSoundRef.current;
@@ -98,6 +100,9 @@ export default function App() {
         {overlays.map(({ name, file }) => (
           <button key={name} onClick={() => openOverlay(name, file)}>{name}</button>
         ))}
+      </div>
+      <div className="telemetry-status">
+        Velocidade: {telemetry?.player?.speed ? telemetry.player.speed.toFixed(0) : '--'} km/h
       </div>
     </div>
   );

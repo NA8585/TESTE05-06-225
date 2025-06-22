@@ -21,7 +21,7 @@ namespace SuperBackendNR85IA.Services
         private const float MIN_VALID_LAP_FUEL = 0.05f; // ignora voltas sem consumo
         private readonly ILogger<IRacingTelemetryService> _log;
         private readonly TelemetryBroadcaster _broadcaster;
-        private readonly IRacingSdk _sdk = new();
+        private readonly TelemetryReader _reader;
         private readonly SessionYamlParser _yamlParser;
 
         private string _lastYaml = string.Empty;
@@ -99,26 +99,25 @@ namespace SuperBackendNR85IA.Services
             ILogger<IRacingTelemetryService> log,
             TelemetryBroadcaster broadcaster,
             ICarTrackRepository store,
-            SessionYamlParser yamlParser)
+            SessionYamlParser yamlParser,
+            TelemetryReader reader)
         {
             _log = log;
             TelemetryCalculations.SetLogger(log);
             _broadcaster = broadcaster;
             _store = store;
             _yamlParser = yamlParser;
+            _reader = reader;
         }
 
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
             _log.LogInformation("IRacingTelemetryService está iniciando.");
 
-            _sdk.OnConnected += () => _log.LogInformation("SDK Conectado ao iRacing.");
-            _sdk.OnDisconnected += () => _log.LogInformation("SDK Desconectado do iRacing.");
-            _sdk.OnException += (ex) => _log.LogError(ex, "Exceção no IRSDKSharper.");
-
+                                    
             try
             {
-                StartSdkWithFlags();
+                _reader.Start();
                 _log.LogInformation("IRSDKSharper iniciado e aguardando conexão com o iRacing.");
             }
             catch (Exception ex)
@@ -133,17 +132,17 @@ namespace SuperBackendNR85IA.Services
             {
                 try
                 {
-                    if (!_sdk.IsConnected || !_sdk.IsStarted)
+                    if (!_reader.IsConnected || !_reader.IsStarted)
                         continue;
 
-                    if (!_loggedAvailableVars && _sdk.Data != null)
+                    if (!_loggedAvailableVars && _reader.Data != null)
                     {
-                        var available = _sdk.Data.TelemetryDataProperties.Keys;
+                        var available = _reader.Data.TelemetryDataProperties.Keys;
                         _log.LogInformation("Variáveis disponíveis no SDK: " + string.Join(", ", available));
                         _loggedAvailableVars = true;
                     }
 
-                    if (_sdk.Data != null && _sdk.Data.TickCount != _lastTick)
+                    if (_reader.Data != null && _reader.Data.TickCount != _lastTick)
                     {
                         var telemetryModel = await BuildTelemetryModelAsync(ct);
                         if (telemetryModel != null)
@@ -158,7 +157,7 @@ namespace SuperBackendNR85IA.Services
                             var inputsPayload = BuildInputsPayload(telemetryModel);
                             await _broadcaster.BroadcastTelemetry(payload, inputsPayload);
                         }
-                        _lastTick = _sdk.Data.TickCount;
+                        _lastTick = _reader.Data.TickCount;
                     }
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -172,44 +171,10 @@ namespace SuperBackendNR85IA.Services
             }
 
             _log.LogInformation("IRacingTelemetryService está parando.");
-            _sdk.Stop();
+            _reader.Stop();
         }
 
 
-        private async Task<TelemetryModel?> BuildTelemetryModelAsync(CancellationToken ct)
-        {
-            if (_sdk.Data == null) return null;
-
-            var d = _sdk.Data;
-            var t = new TelemetryModel();
-            using var perf = new Utilities.PerformanceMonitor(_log, "BuildTelemetry");
-
-            PopulateVehicleData(d, t);
-            PopulateAllExtraData(d, t);
-            UpdateLapInfo(d, t);
-            ReadSectorTimes(d, t);
-            ComputeForceFeedback(d, t);
-            ComputeRelativeDistances(d, t);
-            PopulateSessionInfo(d, t);
-            PopulateTyres(d, t);
-            if (_log.IsEnabled(LogLevel.Debug))
-            {
-                _log.LogDebug(
-                    $"Tyre snapshot - Pressures LF:{t.LfPress} RF:{t.RfPress} LR:{t.LrPress} RR:{t.RrPress}, " +
-                    $"HotPress LF:{_lfLastHotPress} RF:{_rfLastHotPress} LR:{_lrLastHotPress} RR:{_rrLastHotPress}, " +
-                    $"ColdPress LF:{_lfColdPress} RF:{_rfColdPress} LR:{_lrColdPress} RR:{_rrColdPress}, " +
-                    $"Temps LF:{t.LfTempCl}/{t.LfTempCm}/{t.LfTempCr} RF:{t.RfTempCl}/{t.RfTempCm}/{t.RfTempCr} " +
-                    $"LR:{t.LrTempCl}/{t.LrTempCm}/{t.LrTempCr} RR:{t.RrTempCl}/{t.RrTempCm}/{t.RrTempCr}, " +
-                    $"Tread FL:{t.TreadRemainingFl} FR:{t.TreadRemainingFr} RL:{t.TreadRemainingRl} RR:{t.TreadRemainingRr}");
-            }
-            UpdateLastHotPress(t);
-            await ApplyYamlData(d, t);
-            RunCustomCalculations(d, t);
-            TelemetryCalculations.SanitizeModel(t);
-            await PersistCarTrackData(t);
-
-            return t;
-        }
 
         private void UpdateLastHotPress(TelemetryModel t)
         {
@@ -441,9 +406,6 @@ namespace SuperBackendNR85IA.Services
             // Snapshot simplificado de pneus e dados principais
             payload["telemetrySnapshot"] = BuildTelemetrySnapshot(t);
 
-            // Preserve old property name for overlays that expect "telemetry"
-            payload["telemetry"] = t;
-
             // Inform clients which SDK variables are missing
             payload["missingVars"] = _missingVarWarned.ToArray();
 
@@ -461,27 +423,5 @@ namespace SuperBackendNR85IA.Services
             };
         }
 
-        private void StartSdkWithFlags()
-        {
-            try
-            {
-                var flagsType = Type.GetType("IRSDKSharper.DefinitionFlags, IRSDKSharper");
-                if (flagsType != null)
-                {
-                    var allValue = Enum.Parse(flagsType, "All");
-                    var startMethod = _sdk.GetType().GetMethod("Start", new[] { flagsType });
-                    if (startMethod != null)
-                    {
-                        startMethod.Invoke(_sdk, new[] { allValue });
-                        return;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _log.LogWarning(ex, "Falha ao usar DefinitionFlags. Iniciando com Start() padrão.");
-            }
-            _sdk.Start();
-        }
     }
 }

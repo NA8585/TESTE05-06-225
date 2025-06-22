@@ -65,3 +65,19 @@
 
 
 ## Optimization Plan Completed
+
+## Refactor & Correction Roadmap
+
+### Backend
+- [x] Isolar logica de captura do IRSDK em um servico `TelemetryReader`
+- [x] Aplicar configuracao de `UpdateInterval` via `appsettings.json`
+ - [x] Simplificar `BuildTelemetryModelAsync` separando calculos em classes
+ - [x] Revisar serializacao JSON e remover dados nao utilizados
+ - [x] Implementar testes unitarios para `SessionYamlParser`
+ - [x] Documentar estrutura dos payloads no README
+
+- [x] Centralizar estado de telemetria em um `TelemetryContext`
+- [x] Revisar cada overlay para consumir o contexto em vez de acessar `window`
+ - [x] Extrair utilitarios de animacao para `utils/animation.js`
+ - [x] Adicionar script `npm run lint` com configuracao do ESLint
+ - [x] Criar checklist visual para validar cada overlay

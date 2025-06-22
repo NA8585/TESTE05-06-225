@@ -8,6 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <script crossorigin src="https://unpkg.com/react/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com//standalone/babel.min.js"></script>
+  <script src="../telemetry-context.js"></script>
   <style>
     /* Estilos globais */
     html, body {
@@ -476,10 +480,6 @@
         setupEventListeners();
         await loadSettings();
         
-        initOverlayWebSocket(data => {
-            state.latestData = data.casper || data;
-        });
-
         function animationLoop() {
             render();
             window.requestAnimationFrame(animationLoop);
@@ -487,5 +487,15 @@
         animationLoop();
     });
   </script>
+<div id="react-root"></div>
+<script type="text/babel">
+const { useContext, useEffect } = React;
+function DeltaBridge(){
+  const telemetry = useContext(TelemetryContext);
+  useEffect(()=>{ if(telemetry){ state.latestData = telemetry.casper || telemetry; } }, [telemetry]);
+  return null;
+}
+ReactDOM.createRoot(document.getElementById("react-root")).render(React.createElement(TelemetryProvider,null,React.createElement(DeltaBridge,null)));
+</script>
 </body>
 </html>

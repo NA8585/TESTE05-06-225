@@ -4,7 +4,7 @@ This project contains a .NET backend that streams telemetry data through WebSock
 
 ## Prerequisites
 
-- **.NET 6 SDK** – required to build and run the backend
+- **.NET 6 SDK** – required to build and run the backend (any OS)
 - **Node.js** with **npm** – required for the Electron/React frontend
 
 ## Running the backend
@@ -12,6 +12,12 @@ This project contains a .NET backend that streams telemetry data through WebSock
 ```bash
 # from the repository root
  dotnet run --project backend/SuperBackendNR85IA.csproj
+```
+
+To build only the executable without running it:
+
+```bash
+dotnet build backend/SuperBackendNR85IA.csproj -c Release
 ```
 
 This starts the WebSocket server on `http://0.0.0.0:5221` (or the value of the `BACKEND_BIND_URL` environment variable). Overlays connect to the `/ws` endpoint on that port. You can provide a custom WebSocket URL to the overlays by setting the environment variable `OVERLAY_WS_URL` before launching the Electron app or by defining `window.OVERLAY_WS_URL` in a browser. If you need to bind to a different address/port, set `BACKEND_BIND_URL` before running the backend.
@@ -41,6 +47,16 @@ Every WebSocket payload includes the raw `sessionInfoYaml` string from iRacing *
 - `missingVars` – array of SDK variable names that were unavailable
 
 A sample payload is available in `ws/messages/overlay_message.json` and the latest YAML dump is written to `yamls/input_current.yaml` whenever the backend updates.
+
+### Telemetry Payload Structure
+
+Each WebSocket message contains the following top-level keys in addition to the YAML objects above:
+
+- `session` – high level session info such as track name and remaining time
+- `player` – telemetry for the player's car (speed, gear, throttle, etc.)
+- `cars` – array with a summary of all cars (`carIdx`, `position`, `lapDistPct`, `onPitRoad`)
+
+The backend may include extra fields for tires and lap calculations as shown in the sample file. Consumers should ignore unknown fields for forward compatibility.
 
 ## Overlays
 
