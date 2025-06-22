@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
+using System.Text; // for Encoding
 using SuperBackendNR85IA.Services;
 using SuperBackendNR85IA.Repositories;
+
+// Enable code pages encoding for IRSDKSharper (e.g., Windows-1252)
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 var builder = WebApplication.CreateBuilder(args);
 
