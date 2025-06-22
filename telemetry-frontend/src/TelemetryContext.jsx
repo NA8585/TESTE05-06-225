@@ -7,7 +7,9 @@ export function TelemetryProvider({ children }) {
 
   useEffect(() => {
     const url = window.OVERLAY_WS_URL || 'ws://localhost:5221/ws';
-    const socket = new WebSocket(url);
+    let socket;
+    let reconnect;
+
     const handle = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -16,9 +18,19 @@ export function TelemetryProvider({ children }) {
         console.error('WebSocket parse error:', err);
       }
     };
-    socket.addEventListener('message', handle);
+
+    const connect = () => {
+      socket = new WebSocket(url);
+      socket.addEventListener('message', handle);
+      socket.onclose = () => {
+        reconnect = setTimeout(connect, 3000);
+      };
+    };
+
+    connect();
 
     return () => {
+      clearTimeout(reconnect);
       socket.removeEventListener('message', handle);
       socket.close();
     };
