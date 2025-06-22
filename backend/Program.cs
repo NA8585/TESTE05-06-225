@@ -14,8 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Porta única para HTTP + WebSocket, igual às overlays
 
-// Restringe o acesso apenas ao localhost
-builder.WebHost.UseUrls("http://localhost:5221");
+// Configura endereço de escuta via variável de ambiente ou padrão
+var bindUrl = Environment.GetEnvironmentVariable("BACKEND_BIND_URL")
+              ?? "http://0.0.0.0:5221";
+builder.WebHost.UseUrls(bindUrl);
 
 // DI ------------------------------------------------------------------------
 builder.Services.AddSingleton<TelemetryBroadcaster>();
