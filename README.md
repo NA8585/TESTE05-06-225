@@ -22,6 +22,7 @@ dotnet build backend/SuperBackendNR85IA.csproj -c Release
 
 This starts the WebSocket server on `http://0.0.0.0:5221` (or the value of the `BACKEND_BIND_URL` environment variable). Overlays connect to the `/ws` endpoint on that port. You can provide a custom WebSocket URL to the overlays by setting the environment variable `OVERLAY_WS_URL` before launching the Electron app or by defining `window.OVERLAY_WS_URL` in a browser. If you need to bind to a different address/port, set `BACKEND_BIND_URL` before running the backend.
 Each overlay may also specify `?overlay=name` in the WebSocket URL to request a reduced payload optimized for that overlay.
+React-based overlays use a `TelemetryProvider` component which now automatically reconnects if the WebSocket is closed, allowing them to recover after restarting the backend.
 
 ## Running the Electron frontend
 
